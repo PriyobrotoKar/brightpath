@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/globals.css",
+    "baseColor": "zinc",
+    "cssVariables": true
+  },
+  "rsc": true,
+  "tsx": true,
+  "aliases": {
+    "utils": "@brightpath/ui/lib/utils",
+    "components": "@brightpath/ui/components",
+    "ui": "@brightpath/ui/components/ui",
+    "lib": "@brightpath/ui/lib",
+    "hooks": "@brightpath/ui/hooks"
+  }
+}
