@@ -1,0 +1,19 @@
+{
+  "name": "notification",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "npx tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@brightpath/kafka": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@brightpath/typescript-config": "workspace:*"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

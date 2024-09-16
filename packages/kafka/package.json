@@ -1,0 +1,19 @@
+{
+  "name": "@brightpath/kafka",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "npx tsx watch src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@brightpath/typescript-config": "workspace:*"
+  }
+}
