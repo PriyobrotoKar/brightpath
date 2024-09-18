@@ -2,7 +2,7 @@
   "extends": "@brightpath/typescript-config/base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "dist",
+    "outDir": "./dist",
     "plugins": [{ "transform": "typescript-transform-paths" }]
   },
   "tsc-alias": {
