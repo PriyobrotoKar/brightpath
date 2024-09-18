@@ -3,17 +3,20 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "scripts": {
-    "dev": "npx tsx watch src/index.ts"
-  },
+  "types": "src/index.ts",
   "keywords": [],
   "author": "",
+  "scripts": {
+    "dev": "tsup src/index.ts --watch",
+    "build": "tsup"
+  },
   "license": "ISC",
   "dependencies": {
     "kafkajs": "^2.2.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@brightpath/typescript-config": "workspace:*"
+    "@brightpath/typescript-config": "workspace:*",
+    "tsup": "^8.3.0"
   }
 }

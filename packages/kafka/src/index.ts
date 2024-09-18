@@ -1,15 +1,32 @@
 import { Consumer, Kafka, KafkaMessage, Partitioners, Producer } from 'kafkajs';
 import z from 'zod';
 
-const transactionNotificationMessageSchame = z.object({
-  eventType: z.enum(['email_verification']),
+const emailVerificationMessageSchema = z.object({
+  eventType: z.literal('email_verification'),
+  recipient: z.object({
+    email: z.string().email(),
+  }),
+  otp: z.string().min(6).max(6),
+});
+
+const accountCreationMessageSchema = z.object({
+  eventType: z.literal('account_creation'),
   recipient: z.object({
     email: z.string().email(),
   }),
 });
 
+export const transactionNotificationMessageSchema = z.discriminatedUnion(
+  'eventType',
+  [emailVerificationMessageSchema, accountCreationMessageSchema],
+);
+
+export type TransactionalMessage = z.infer<
+  typeof transactionNotificationMessageSchema
+>;
+
 type TopicMessage = {
-  'transaction-notification': Record<string, string>;
+  'transaction-notification': TransactionalMessage;
 };
 interface IKafkaClient {
   checkStatus(): Promise<{ topics: string[] }>;
@@ -29,7 +46,6 @@ const groupID = {
 } as const;
 
 type ClientId = keyof typeof groupID;
-
 type Topic = keyof TopicMessage;
 
 export class KafkaClient implements IKafkaClient {
