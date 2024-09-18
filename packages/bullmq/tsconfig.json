@@ -1,0 +1,3 @@
+{
+  "extends": "@brightpath/typescript-config/base.json"
+}
