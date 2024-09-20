@@ -1,6 +1,6 @@
 import redisConnection from '@brightpath/redis';
 import { TransactionalMessage } from '@brightpath/kafka';
-import { Job, Queue, Worker, WorkerOptions } from 'bullmq';
+import { Job, JobsOptions, Queue, Worker, WorkerOptions } from 'bullmq';
 
 const queues = ['Mail Queue', 'Some queue'] as const;
 
@@ -12,12 +12,12 @@ export class BullMQClient {
     this.mailQueue = new Queue(name, { connection: redisConnection });
   }
 
-  async addJob(data: TransactionalMessage) {
-    this.mailQueue.add('mail', data);
+  async addJob(data: TransactionalMessage, priority: JobsOptions['priority']) {
+    this.mailQueue.add('mail', data, { priority });
   }
 
   async consumeJob(
-    callback: (job: Job) => void,
+    callback: (job: Job<TransactionalMessage>) => void,
     options?: Omit<WorkerOptions, 'connection'>,
   ) {
     const worker = new Worker(
