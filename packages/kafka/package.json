@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "types": "src/index.ts",
+  "types": "dist/index.d.ts",
   "keywords": [],
   "author": "",
   "scripts": {
-    "dev": "tsup src/index.ts --watch",
-    "build": "tsup"
+    "dev": "npx tsc",
+    "build": "npx tsc"
   },
   "license": "ISC",
   "dependencies": {
@@ -16,7 +16,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@brightpath/typescript-config": "workspace:*",
-    "tsup": "^8.3.0"
+    "@brightpath/typescript-config": "workspace:*"
   }
 }

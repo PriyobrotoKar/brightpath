@@ -1,4 +1,11 @@
-import { Consumer, Kafka, KafkaMessage, Partitioners, Producer } from 'kafkajs';
+import {
+  Admin,
+  Consumer,
+  Kafka,
+  KafkaMessage,
+  Partitioners,
+  Producer,
+} from 'kafkajs';
 import z from 'zod';
 
 const emailVerificationMessageSchema = z.object({
@@ -52,6 +59,7 @@ export class KafkaClient implements IKafkaClient {
   private kafkaClient: Kafka;
   private producer: Producer;
   private consumer: Consumer;
+  private admin: Admin;
   constructor(
     clientId: ClientId,
     brokers: string[],
@@ -62,6 +70,7 @@ export class KafkaClient implements IKafkaClient {
       brokers,
       connectionTimeout: connectionTimeout,
     });
+    this.admin = this.kafkaClient.admin();
     this.producer = this.kafkaClient.producer({
       createPartitioner: Partitioners.LegacyPartitioner,
       idempotent: true,
@@ -76,6 +85,12 @@ export class KafkaClient implements IKafkaClient {
     handleKafkaMessage: (message: KafkaMessage, topic: T[number]) => void,
   ): Promise<void> {
     await this.consumer.connect();
+    await this.admin.connect();
+    if ((await this.admin.listTopics()).length === 0) {
+      await this.admin.createTopics({
+        topics: topics.map((topic) => ({ topic })),
+      });
+    }
     await this.consumer.subscribe({ topics: topics });
     console.log(`consumer subscribed to ${topics}`);
     await this.consumer.run({
@@ -90,10 +105,10 @@ export class KafkaClient implements IKafkaClient {
   }
 
   async checkStatus() {
-    const admin = this.kafkaClient.admin();
-    await admin.connect();
+    await this.admin.connect();
 
-    const topics = await admin.listTopics();
+    const topics = await this.admin.listTopics();
+    this.admin.disconnect();
     return { topics };
   }
 
