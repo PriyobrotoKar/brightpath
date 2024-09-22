@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "npx tsc --watch "
+    "dev": "npx tsx watch src/index.ts"
   },
   "dependencies": {
     "@brightpath/kafka": "workspace:*",

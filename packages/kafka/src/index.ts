@@ -13,7 +13,9 @@ const emailVerificationMessageSchema = z.object({
   recipient: z.object({
     email: z.string().email(),
   }),
-  otp: z.string().min(6).max(6),
+  variables: z.object({
+    otp: z.string().min(6).max(6),
+  }),
 });
 
 const accountCreationMessageSchema = z.object({
