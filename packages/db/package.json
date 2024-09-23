@@ -1,0 +1,23 @@
+{
+  "name": "@brightpath/db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npx tsc",
+    "db:generate": "pnpx dotenv-cli -e ../../.env -- pnpx prisma generate",
+    "db:migrate": "pnpx dotenv-cli -e ../../.env -- pnpx prisma migrate dev",
+    "db:studio": "pnpx dotenv-cli -e ../../.env -- pnpx prisma studio"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.19.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.19.1",
+    "@brightpath/typescript-config": "workspace:*"
+  }
+}
