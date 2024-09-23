@@ -7,12 +7,14 @@ import * as Email from './templates';
 
 const queue = new BullMQClient('Mail Queue');
 
+console.log('Email Service started');
+
 queue.consumeJob(
   async (job) => {
     console.log('Job consumed at', new Date().toUTCString(), ':', job.data);
 
-    const TemplateComponent: React.FC =
-      Email[getEmailTemplate(job.data.eventType)];
+    const TemplateComponent: any =
+      Email[getEmailTemplate(job.data.eventType) as keyof typeof Email];
 
     if (!TemplateComponent) {
       console.error(
