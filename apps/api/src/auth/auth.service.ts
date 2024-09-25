@@ -16,7 +16,7 @@ export class AuthService {
     // Create a new user if there does not exist any user with that email.
     const user = await this.createUserIfNotExist(email);
     // Generate an OTP
-    const otp = await this.generateOtp(user.email);
+    const otp = await this.generateOtp(user.email, user.id);
     // Create an event of `email_validation`
     await createEvent({
       eventType: 'email_verification',
@@ -48,10 +48,29 @@ export class AuthService {
     return user;
   }
 
-  private async generateOtp(email: string) {
-    const otp = randomInt(100000, 999999);
-    const optDuration = Date.now() + OTP_EXPIRY;
-    //TODO: Store the otp in the db.
+  private async generateOtp(email: string, userId: string) {
+    const otp = randomInt(100000, 999999).toString();
+    const otpDuration = new Date(Date.now() + OTP_EXPIRY);
+
+    await this.prisma.otp.upsert({
+      where: {
+        userId,
+      },
+      update: {
+        code: otp,
+        expiresAt: otpDuration,
+      },
+      create: {
+        code: otp,
+        expiresAt: otpDuration,
+        user: {
+          connect: {
+            email,
+          },
+        },
+      },
+    });
+
     return otp.toString();
   }
 }
