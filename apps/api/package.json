@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:prepare": "cd ../../ && docker compose down && docker compose -f docker-compose-test.yml up -d && sleep 3 && cd packages/db && pnpm db:generate &&  pnpm run db:migrate-test",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:int": "pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare &&  jest --config ./jest-int.json",
+    "test:dev": "pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare && jest --watch --config ./jest-int.json"
   },
   "dependencies": {
     "@brightpath/db": "workspace:*",
