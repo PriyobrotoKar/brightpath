@@ -11,7 +11,7 @@ export class AuthService {
   async sendOtp(email: string) {
     // Check if the email is valid or not
     if (!email || !email.includes('@')) {
-      return new BadRequestException('Invalid email');
+      throw new BadRequestException('Invalid email');
     }
     // Create a new user if there does not exist any user with that email.
     const user = await this.createUserIfNotExist(email);
