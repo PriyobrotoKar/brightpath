@@ -26,14 +26,4 @@ model User {
   profilePicuture String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  Otp             Otp?
-}
-
-model Otp {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  expiresAt DateTime
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @unique
 }
