@@ -9,3 +9,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: brightpath_tests
+
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
