@@ -8,4 +8,8 @@ const redisConfig: RedisOptions = {
 
 const redisConnection = new ioredis(redisConfig);
 
+redisConnection.on('error', () => {
+  console.log('Error in Redis Connection');
+});
+
 export default redisConnection;
