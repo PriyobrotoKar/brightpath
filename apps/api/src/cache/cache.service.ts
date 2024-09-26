@@ -24,7 +24,6 @@ export class CacheService implements OnModuleDestroy, OnModuleInit {
   }
   async setCache(entity: Entity, key: string, value: string, ttl?: number) {
     const cacheKey = `${entity}:${key}`;
-    console.log(ttl);
     if (ttl) {
       await redisConnection.setex(cacheKey, ttl, value);
     } else {

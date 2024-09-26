@@ -2,7 +2,12 @@ import { CacheService } from '@/cache/cache.service';
 import { OTP_EXPIRY } from '@/common/constants';
 import { createEvent } from '@/common/event';
 import { PrismaService } from '@/prisma/prisma.service';
-import { Injectable, BadRequestException, LoggerService } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  LoggerService,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomInt } from 'crypto';
 
 @Injectable()
@@ -33,6 +38,41 @@ export class AuthService {
       },
     });
     return `OTP has been sent to ${email}`;
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    // Check if the email is valid or not
+    if (!email || !email.includes('@')) {
+      throw new BadRequestException('Invalid email');
+    }
+
+    if (!otp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+
+    // Check if any user exists with this email or not
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('No user is found with this email');
+    }
+    // Check if any otp exists in redis with this email
+    const correctOtp = await this.cache.getCachedValue('otp', email);
+
+    const isOtpValid = correctOtp === otp;
+
+    if (!isOtpValid) {
+      throw new BadRequestException('Incorrect OTP');
+    }
+    // If valid then delete the otp from redis
+    await this.cache.deleteCachedValue('otp', email);
+    // create a jwt token for the user and set it as a cookie
+    // return the user object as response
+    return user;
   }
 
   private async createUserIfNotExist(email: string) {
