@@ -1,12 +1,17 @@
+import { CacheService } from '@/cache/cache.service';
 import { OTP_EXPIRY } from '@/common/constants';
 import { createEvent } from '@/common/event';
 import { PrismaService } from '@/prisma/prisma.service';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, LoggerService } from '@nestjs/common';
 import { randomInt } from 'crypto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger: LoggerService;
+  constructor(
+    private readonly prisma: PrismaService,
+    private cache: CacheService,
+  ) {}
 
   async sendOtp(email: string) {
     // Check if the email is valid or not
@@ -16,7 +21,7 @@ export class AuthService {
     // Create a new user if there does not exist any user with that email.
     const user = await this.createUserIfNotExist(email);
     // Generate an OTP
-    const otp = await this.generateOtp(user.email, user.id);
+    const otp = await this.generateOtp(user.email);
     // Create an event of `email_validation`
     await createEvent({
       eventType: 'email_verification',
@@ -48,29 +53,11 @@ export class AuthService {
     return user;
   }
 
-  private async generateOtp(email: string, userId: string) {
+  private async generateOtp(email: string) {
     const otp = randomInt(100000, 999999).toString();
-    const otpDuration = new Date(Date.now() + OTP_EXPIRY);
 
-    await this.prisma.otp.upsert({
-      where: {
-        userId,
-      },
-      update: {
-        code: otp,
-        expiresAt: otpDuration,
-      },
-      create: {
-        code: otp,
-        expiresAt: otpDuration,
-        user: {
-          connect: {
-            email,
-          },
-        },
-      },
-    });
+    await this.cache.setCache('otp', email, otp, OTP_EXPIRY);
 
-    return otp.toString();
+    return otp;
   }
 }

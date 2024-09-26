@@ -5,11 +5,14 @@ import { AuthModule } from './auth.module';
 import { INestApplication } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { AuthService } from './auth.service';
+import { CacheService } from '@/cache/cache.service';
+import { OTP_EXPIRY } from '@/common/constants';
 
 describe('Auth Controller Tests', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let authService: AuthService;
+  let cacheService: CacheService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -19,6 +22,7 @@ describe('Auth Controller Tests', () => {
     app = moduleRef.createNestApplication();
     prisma = moduleRef.get(PrismaService);
     authService = moduleRef.get(AuthService);
+    cacheService = moduleRef.get(CacheService);
     await app.init();
   });
 
@@ -54,51 +58,36 @@ describe('Auth Controller Tests', () => {
   });
 
   it('should generate an otp', async () => {
-    await authService.sendOtp('johndoe@gmail.com');
-
-    const otp = await prisma.otp.findFirst({
-      where: {
-        user: {
-          email: 'johndoe@gmail.com',
-        },
-      },
-    });
     await request(app.getHttpServer())
       .post('/auth/send-otp')
       .send({ email: 'johndoe@gmail.com' });
 
-    const newOtp = await prisma.otp.findFirst({
-      where: {
-        user: {
-          email: 'johndoe@gmail.com',
-        },
-      },
-    });
+    const otp = await cacheService.getCachedValue('otp', 'johndoe@gmail.com');
+    const expiry = await cacheService.getExpiry('otp', 'johndoe@gmail.com');
 
-    expect(newOtp).toBeDefined();
-    expect(newOtp.code).toBeDefined();
-    expect(newOtp.expiresAt).toBeDefined();
-    expect(newOtp.code.length).toBe(6);
-    expect(newOtp.code).not.toBe(otp.code);
+    expect(otp).toBeDefined();
+    expect(expiry).toBe(OTP_EXPIRY);
+    expect(otp.length).toBe(6);
   });
 
   it('should replace the otp if regenerated', async () => {
+    await authService.sendOtp('johndoe@gmail.com');
+
+    const otp = await cacheService.getCachedValue('otp', 'johndoe@gmail.com');
     await request(app.getHttpServer())
       .post('/auth/send-otp')
       .send({ email: 'johndoe@gmail.com' });
 
-    const otp = await prisma.otp.findFirst({
-      where: {
-        user: {
-          email: 'johndoe@gmail.com',
-        },
-      },
-    });
+    const newOtp = await cacheService.getCachedValue(
+      'otp',
+      'johndoe@gmail.com',
+    );
+    const expiry = await cacheService.getExpiry('otp', 'johndoe@gmail.com');
 
-    expect(otp).toBeDefined();
-    expect(otp.code).toBeDefined();
-    expect(otp.expiresAt).toBeDefined();
-    expect(otp.code.length).toBe(6);
+    expect(newOtp).toBeDefined();
+    expect(expiry).toBe(OTP_EXPIRY);
+    expect(newOtp.length).toBe(6);
+    expect(newOtp).not.toBe(otp);
   });
 
   it('should create a new user if does not exist', async () => {
