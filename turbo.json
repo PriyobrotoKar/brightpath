@@ -10,6 +10,9 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "test:int": {
+      "dependsOn": ["^test:int"]
+    },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,

@@ -19,8 +19,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:prepare": "cd ../../ && docker compose down && docker compose -f docker-compose-test.yml up -d && sleep 3 && cd packages/db && pnpm db:generate &&  pnpm run db:migrate-test",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:int": "pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare &&  jest --config ./jest-int.json",
-    "test:dev": "pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare && jest --watch --config ./jest-int.json"
+    "test:int": "cross-env NODE_ENV=test && pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare &&  jest --config ./jest-int.json && pnpm run test:teardown",
+    "test:dev": "cross-env NODE_ENV=test && pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare && jest --watch --config ./jest-int.json",
+    "test:teardown": "cd ../../ && docker compose -f docker-compose-test.yml down"
   },
   "dependencies": {
     "@brightpath/db": "workspace:*",
@@ -35,6 +36,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.6",
+    "cross-env": "^7.0.3",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"

@@ -30,6 +30,10 @@ describe('Auth Controller Tests', () => {
     prisma.user.deleteMany();
   });
 
+  afterAll(async () => {
+    await cacheService.onModuleDestroy();
+  });
+
   describe('/send-otp', () => {
     it('should not send the otp if the email is blank', async () => {
       const response = await request(app.getHttpServer())
