@@ -1,0 +1,36 @@
+name: Validate API
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'apps/api/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm int:api
+
+      - name: Run lint
+        run: pnpm lint:api

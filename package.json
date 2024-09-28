@@ -7,7 +7,9 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:api": "turbo dev --filter=api",
     "lint": "turbo lint",
+    "lint:api": "turbo lint --filter=api",
     "int:api": "turbo test:int --filter=api",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
