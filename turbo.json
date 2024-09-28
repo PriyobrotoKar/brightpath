@@ -11,7 +11,7 @@
       "dependsOn": ["^lint"]
     },
     "test:int": {
-      "dependsOn": ["^test:int"]
+      "dependsOn": ["build"]
     },
     "dev": {
       "dependsOn": ["^build"],
