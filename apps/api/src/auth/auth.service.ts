@@ -8,6 +8,7 @@ import {
   LoggerService,
   NotFoundException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { randomInt } from 'crypto';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private cache: CacheService,
+    private jwt: JwtService,
   ) {}
 
   async sendOtp(email: string) {
@@ -71,8 +73,12 @@ export class AuthService {
     // If valid then delete the otp from redis
     await this.cache.deleteCachedValue('otp', email);
     // create a jwt token for the user and set it as a cookie
+    const access_token = await this.jwt.signAsync({
+      id: user.id,
+      email: user.email,
+    });
     // return the user object as response
-    return user;
+    return { ...user, access_token };
   }
 
   private async createUserIfNotExist(email: string) {
