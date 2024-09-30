@@ -5,12 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npx tsc",
     "db:generate": "pnpx prisma generate",
     "db:migrate": "pnpx dotenv-cli -e ../../.env -- pnpx prisma migrate dev",
     "db:migrate-deploy": "pnpx dotenv-cli -e ../../.env -- pnpx prisma migrate deploy",
     "db:migrate-test": "pnpx dotenv-cli -e ../../.env.test -- pnpx prisma migrate deploy",
-    "db:studio": "pnpx dotenv-cli -e ../../.env -- pnpx prisma studio"
+    "db:studio": "pnpx dotenv-cli -e ../../.env -- pnpx prisma studio",
+    "build": "pnpm db:generate && npx tsc"
   },
   "keywords": [],
   "author": "",
