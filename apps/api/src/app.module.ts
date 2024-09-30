@@ -9,6 +9,7 @@ import { CacheService } from './cache/cache.service';
 import { CacheModule } from './cache/cache.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guard/auth.guard';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { JwtAuthGuard } from './auth/guard/auth.guard';
     AuthModule,
     PrismaModule,
     CacheModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

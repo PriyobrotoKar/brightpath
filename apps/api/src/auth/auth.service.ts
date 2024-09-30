@@ -7,6 +7,7 @@ import {
   BadRequestException,
   LoggerService,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomInt } from 'crypto';
@@ -18,18 +19,16 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private cache: CacheService,
     private jwt: JwtService,
-  ) {}
+  ) {
+    this.logger = new Logger(AuthService.name);
+  }
 
   async sendOtp(email: string) {
-    // Check if the email is valid or not
     if (!email || !email.includes('@')) {
       throw new BadRequestException('Invalid email');
     }
-    // Create a new user if there does not exist any user with that email.
     const user = await this.createUserIfNotExist(email);
-    // Generate an OTP
     const otp = await this.generateOtp(user.email);
-    // Create an event of `email_validation`
     await createEvent({
       eventType: 'email_verification',
       recipient: {
@@ -43,7 +42,6 @@ export class AuthService {
   }
 
   async verifyOtp(email: string, otp: string) {
-    // Check if the email is valid or not
     if (!email || !email.includes('@')) {
       throw new BadRequestException('Invalid email');
     }
@@ -52,7 +50,6 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP');
     }
 
-    // Check if any user exists with this email or not
     const user = await this.prisma.user.findUnique({
       where: {
         email,
@@ -62,7 +59,6 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('No user is found with this email');
     }
-    // Check if any otp exists in redis with this email
     const correctOtp = await this.cache.getCachedValue('otp', email);
 
     const isOtpValid = correctOtp === otp;
@@ -70,14 +66,14 @@ export class AuthService {
     if (!isOtpValid) {
       throw new BadRequestException('Incorrect OTP');
     }
-    // If valid then delete the otp from redis
     await this.cache.deleteCachedValue('otp', email);
-    // create a jwt token for the user and set it as a cookie
     const access_token = await this.jwt.signAsync({
       id: user.id,
       email: user.email,
     });
-    // return the user object as response
+
+    this.logger.log(`User: ${user.id} has been successfully logged in`);
+
     return { ...user, access_token };
   }
 
@@ -94,6 +90,8 @@ export class AuthService {
           email,
         },
       });
+
+      this.logger.log(`A new user with id: ${user.id} has been created`);
     }
 
     return user;
@@ -103,6 +101,10 @@ export class AuthService {
     const otp = randomInt(100000, 999999).toString();
 
     await this.cache.setCache('otp', email, otp, OTP_EXPIRY);
+
+    this.logger.log(
+      `New otp: ${otp} has been generated for email: ${email} which will be valid till ${new Date(Date.now() + OTP_EXPIRY * 1000).toLocaleDateString()}`,
+    );
 
     return otp;
   }
