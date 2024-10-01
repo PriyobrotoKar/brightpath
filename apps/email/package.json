@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "pnpx dotenv-cli -e ../../.env -- pnpx tsx watch src/index.tsx",
+    "dev": "pnpx dotenv-cli -e ../../.env -- pnpx tsx watch ./src/index.tsx ./src/templates/index.tsx",
     "dev:email": "email dev --dir=src/templates --port=4321"
   },
   "keywords": [],

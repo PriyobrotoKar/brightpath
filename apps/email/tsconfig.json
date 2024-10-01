@@ -3,12 +3,13 @@
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "./dist",
-    "plugins": [{ "transform": "typescript-transform-paths" }]
+    "plugins": [{ "transform": "typescript-transform-paths" }],
+    "jsx": "react-jsx"
   },
   "tsc-alias": {
     "resolveFullPaths": true,
     "verbose": false
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "jest.config.ts"],
+  "include": ["src/**/*.tsx", "src/**/*.ts", "tests/**/*.ts", "jest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
