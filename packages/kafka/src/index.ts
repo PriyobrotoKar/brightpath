@@ -23,6 +23,9 @@ const accountCreationMessageSchema = z.object({
   recipient: z.object({
     email: z.string().email(),
   }),
+  variables: z.object({
+    name: z.string(),
+  }),
 });
 
 export const transactionNotificationMessageSchema = z.discriminatedUnion(
