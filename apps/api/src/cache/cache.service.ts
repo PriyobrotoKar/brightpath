@@ -8,7 +8,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 
-type Entity = 'otp' | 'user';
+type Entity = 'otp' | 'user' | 'tempEmail';
 
 @Injectable()
 export class CacheService implements OnModuleDestroy, OnModuleInit {
@@ -22,18 +22,24 @@ export class CacheService implements OnModuleDestroy, OnModuleInit {
       throw new InternalServerErrorException("Couldn't connect to redis");
     });
   }
-  async setCache(entity: Entity, key: string, value: string, ttl?: number) {
+  async setCache(
+    entity: Entity,
+    key: string,
+    value: Record<string, any> | string,
+    ttl?: number,
+  ) {
     const cacheKey = `${entity}:${key}`;
     if (ttl) {
-      await redisConnection.setex(cacheKey, ttl, value);
+      await redisConnection.setex(cacheKey, ttl, JSON.stringify(value));
     } else {
-      await redisConnection.set(cacheKey, value);
+      await redisConnection.set(cacheKey, JSON.stringify(value));
     }
   }
 
   async getCachedValue(entity: Entity, key: string) {
     const cacheKey = `${entity}:${key}`;
-    return await redisConnection.get(cacheKey);
+    const value = await redisConnection.get(cacheKey);
+    return JSON.parse(value);
   }
 
   async getExpiry(entity: Entity, key: string) {

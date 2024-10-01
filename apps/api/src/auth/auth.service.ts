@@ -1,6 +1,6 @@
 import { CacheService } from '@/cache/cache.service';
-import { OTP_EXPIRY } from '@/common/constants';
 import { createEvent } from '@/common/event';
+import { generateOtp } from '@/common/utils';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   Injectable,
@@ -10,7 +10,6 @@ import {
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { randomInt } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +27,8 @@ export class AuthService {
       throw new BadRequestException('Invalid email');
     }
     const user = await this.createUserIfNotExist(email);
-    const otp = await this.generateOtp(user.email);
+    const otp = await generateOtp(user.email, this.cache);
+
     await createEvent({
       eventType: 'email_verification',
       recipient: {
@@ -66,7 +66,9 @@ export class AuthService {
     if (!isOtpValid) {
       throw new BadRequestException('Incorrect OTP');
     }
+
     await this.cache.deleteCachedValue('otp', email);
+
     const access_token = await this.jwt.signAsync({
       id: user.id,
       email: user.email,
@@ -95,17 +97,5 @@ export class AuthService {
     }
 
     return user;
-  }
-
-  private async generateOtp(email: string) {
-    const otp = randomInt(100000, 999999).toString();
-
-    await this.cache.setCache('otp', email, otp, OTP_EXPIRY);
-
-    this.logger.log(
-      `New otp: ${otp} has been generated for email: ${email} which will be valid till ${new Date(Date.now() + OTP_EXPIRY * 1000).toLocaleDateString()}`,
-    );
-
-    return otp;
   }
 }

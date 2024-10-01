@@ -2,6 +2,7 @@ import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from '@/decorators/public.decorator';
 import type { Response } from 'express';
+import { setResponseCookie } from '@/common/utils';
 
 @Public()
 @Controller('auth')
@@ -23,11 +24,7 @@ export class AuthController {
       email,
       otp,
     );
-    res.cookie('access_token', `Bearer ${access_token}`, {
-      domain: 'localhost',
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
-      httpOnly: true,
-    });
+    setResponseCookie(res, access_token);
     return user;
   }
 }
