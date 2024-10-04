@@ -12,7 +12,7 @@
   "aliases": {
     "utils": "@brightpath/ui/lib/utils",
     "components": "@brightpath/ui/components",
-    "ui": "@brightpath/ui/components/ui",
+    "ui": "@brightpath/ui/components",
     "lib": "@brightpath/ui/lib",
     "hooks": "@brightpath/ui/hooks"
   }
