@@ -26,15 +26,15 @@ describe('Auth Controller Tests', () => {
     await app.init();
   });
 
-  afterEach(() => {
-    prisma.user.deleteMany();
-  });
-
   afterAll(async () => {
     await cacheService.onModuleDestroy();
   });
 
   describe('/send-otp', () => {
+    afterEach(async () => {
+      await prisma.user.deleteMany();
+    });
+
     it('should not send the otp if the email is blank', async () => {
       const response = await request(app.getHttpServer())
         .post('/auth/send-otp')
@@ -135,15 +135,6 @@ describe('Auth Controller Tests', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe('Invalid email');
-    });
-
-    it('should not verify the otp if the user does not exists with this email', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/auth/verify-otp')
-        .send({ email: 'test@gmail.com', otp: '123456' });
-
-      expect(response.status).toBe(404);
-      expect(response.body.message).toBe('No user is found with this email');
     });
 
     it('should not verify the otp if the otp is blank', async () => {

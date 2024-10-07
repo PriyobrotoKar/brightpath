@@ -2,6 +2,15 @@ import { CacheService } from '@/cache/cache.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { User } from '@brightpath/db';
 
+export async function createUser(
+  data: Partial<User> & { email: string },
+  prisma: PrismaService,
+) {
+  return prisma.user.create({
+    data,
+  });
+}
+
 export async function getUserByEmailOrId(
   search: string,
   prisma: PrismaService,

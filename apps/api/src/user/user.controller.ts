@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CurrentUser } from '@/decorators/user.decorator';
 import type { JWTPayload } from './user.types';
@@ -21,6 +29,7 @@ export class UserController {
   }
 
   @Post('validate-email-change')
+  @HttpCode(200)
   async validateEmailChange(
     @CurrentUser() user: JWTPayload,
     @Body('otp') otp: string,

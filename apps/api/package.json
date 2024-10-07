@@ -19,8 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:prepare": "cd ../../ && docker compose down && docker compose -f docker-compose-test.yml up -d && sleep 3 && cd packages/db && pnpm db:generate &&  pnpm run db:migrate-test",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:int": "cross-env NODE_ENV=test && pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare &&  jest --config ./jest-int.json && pnpm run test:teardown",
-    "test:dev": "cross-env NODE_ENV=test && pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare && jest --watch --config ./jest-int.json",
+    "test:int": "cross-env NODE_ENV=test && pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare &&  jest --runInBand --coverage --config ./jest-int.json && pnpm run test:teardown",
+    "test:dev": "cross-env NODE_ENV=test && pnpx dotenv-cli -e ../../.env.test -- pnpm run test:prepare && jest --watch --runInBand --config ./jest-int.json",
     "test:teardown": "cd ../../ && docker compose -f docker-compose-test.yml down"
   },
   "dependencies": {

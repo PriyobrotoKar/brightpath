@@ -97,19 +97,25 @@ export class UserService {
   }
 
   async verifyEmailChange(otp: string, user: JWTPayload) {
-    if (!otp) {
+    const correctOtp = await this.cache.getCachedValue('otp', user.email);
+
+    if (!otp || !correctOtp) {
       throw new BadRequestException('Invalid OTP');
     }
 
-    const correctOtp = await this.cache.getCachedValue('otp', user.email);
+    const isOtpCorrect = correctOtp === otp;
 
-    const isOtpValid = correctOtp === otp;
-
-    if (!isOtpValid) {
-      throw new BadRequestException('Invalid OTP');
+    if (!isOtpCorrect) {
+      throw new BadRequestException('Incorrect OTP');
     }
 
     const newEmail = await this.cache.getCachedValue('tempEmail', user.email);
+
+    if (!newEmail) {
+      throw new BadRequestException(
+        'No pending email change request found for this user',
+      );
+    }
 
     const updateUserEmail = this.prisma.user.update({
       where: {

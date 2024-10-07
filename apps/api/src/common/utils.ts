@@ -3,11 +3,32 @@ import type { Request, Response } from 'express';
 import { OTP_EXPIRY } from './constants';
 import { CacheService } from '@/cache/cache.service';
 import { Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { JWTPayload } from '@/user/user.types';
 
-export function cookieExtractor(req: Request) {
-  const token = req.cookies.access_token?.split(' ')[1] ?? undefined;
-  return token;
+export async function generateJwtToken(
+  payload: Omit<JWTPayload, 'exp' | 'iat'>,
+  jwtService: JwtService,
+) {
+  return await jwtService.signAsync(payload);
 }
+
+export const jwtExtractor = (req: Request) => {
+  let token = null;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer ')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token && req.cookies) {
+    token = req.cookies.access_token;
+  }
+
+  return token;
+};
 
 export async function generateOtp(email: string, cache: CacheService) {
   const logger = new Logger();

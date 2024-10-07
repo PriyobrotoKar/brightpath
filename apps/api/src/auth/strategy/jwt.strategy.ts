@@ -1,11 +1,11 @@
 import { Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { cookieExtractor } from '@/common/utils';
+import { jwtExtractor } from '@/common/utils';
 
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: cookieExtractor,
+      jwtFromRequest: jwtExtractor,
       ignoreExpiration: false,
       secretOrKey: 'secret',
     });

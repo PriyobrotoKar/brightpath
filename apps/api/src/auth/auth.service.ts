@@ -1,6 +1,7 @@
 import { CacheService } from '@/cache/cache.service';
 import { createEvent } from '@/common/event';
-import { generateOtp } from '@/common/utils';
+import { createUser } from '@/common/user';
+import { generateJwtToken, generateOtp } from '@/common/utils';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   Injectable,
@@ -46,7 +47,9 @@ export class AuthService {
       throw new BadRequestException('Invalid email');
     }
 
-    if (!otp) {
+    const correctOtp = await this.cache.getCachedValue('otp', email);
+
+    if (!otp || !correctOtp) {
       throw new BadRequestException('Invalid OTP');
     }
 
@@ -59,7 +62,6 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('No user is found with this email');
     }
-    const correctOtp = await this.cache.getCachedValue('otp', email);
 
     const isOtpValid = correctOtp === otp;
 
@@ -69,10 +71,10 @@ export class AuthService {
 
     await this.cache.deleteCachedValue('otp', email);
 
-    const access_token = await this.jwt.signAsync({
-      id: user.id,
-      email: user.email,
-    });
+    const access_token = await generateJwtToken(
+      { id: user.id, email: user.email },
+      this.jwt,
+    );
 
     this.logger.log(`User: ${user.id} has been successfully logged in`);
 
@@ -87,11 +89,7 @@ export class AuthService {
     });
 
     if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          email,
-        },
-      });
+      user = await createUser({ email }, this.prisma);
 
       this.logger.log(`A new user with id: ${user.id} has been created`);
     }

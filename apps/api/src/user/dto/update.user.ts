@@ -8,6 +8,7 @@ export class UpdateUserDto {
 
   @IsString()
   @IsEmail()
+  @IsOptional()
   email: string;
 
   @IsEnum(Role)
