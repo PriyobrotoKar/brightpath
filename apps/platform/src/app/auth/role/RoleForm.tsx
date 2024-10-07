@@ -8,7 +8,7 @@ import {
   FormLabel,
 } from '@brightpath/ui/components/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, type FieldValues, type SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@brightpath/ui/components/button';
 import {
@@ -16,26 +16,34 @@ import {
   RadioGroupItem,
 } from '@brightpath/ui/components/radio-group';
 import { useRouter } from 'next/navigation';
+import { useAtom } from 'jotai';
 import Icon from '@/components/Icon';
+import { roleAtom } from '@/state';
+import { setOnboardingStatus } from '@/lib/onboardingStatus';
 
 const roleSchema = z.object({
   role: z.nativeEnum(Role),
 });
 
 function RoleForm(): React.JSX.Element {
+  const [_, setUserRole] = useAtom(roleAtom);
   const router = useRouter();
-  const form = useForm({
+  const form = useForm<{ role: Role | '' }>({
     resolver: zodResolver(roleSchema),
+    defaultValues: {
+      role: '',
+    },
   });
 
-  const onSubmit: SubmitHandler<FieldValues> = () => {
-    //TODO: Save this data to state or context
+  const onSubmit = form.handleSubmit(async (data) => {
+    setUserRole(data.role);
+    await setOnboardingStatus({ step: 2 });
     router.push('/auth/signup');
-  };
+  });
 
   return (
     <Form {...form}>
-      <form className="space-y-10" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="space-y-10" onSubmit={onSubmit}>
         <FormField
           name="role"
           render={({ field }) => {
