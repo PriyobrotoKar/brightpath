@@ -24,7 +24,7 @@ export const jwtExtractor = (req: Request) => {
   }
 
   if (!token && req.cookies) {
-    token = req.cookies.access_token;
+    token = req.cookies['access_token'];
   }
 
   return token;
@@ -44,7 +44,7 @@ export async function generateOtp(email: string, cache: CacheService) {
 }
 
 export function setResponseCookie(res: Response, access_token: string) {
-  res.cookie('access_token', `Bearer ${access_token}`, {
+  res.cookie('access_token', access_token, {
     domain: 'localhost',
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
     httpOnly: true,
