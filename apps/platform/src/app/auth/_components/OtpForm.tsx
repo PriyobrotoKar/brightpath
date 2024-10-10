@@ -29,12 +29,17 @@ const FormSchema = z.object({
     message: 'Your one-time password must be 6 characters.',
   }),
 });
+const redirects = {
+  signin: '/auth/role',
+  signup: '/auth/profile',
+};
 
 interface OtpFormProps {
   email: string | undefined;
+  scope: keyof typeof redirects;
 }
 
-function OtpForm({ email }: OtpFormProps): React.JSX.Element {
+function OtpForm({ email, scope }: OtpFormProps): React.JSX.Element {
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof FormSchema>) => {
@@ -50,6 +55,13 @@ function OtpForm({ email }: OtpFormProps): React.JSX.Element {
       if (data.isOnboardingFinished) {
         await removeOnboardingStatus();
         router.push('/dashboard');
+        return;
+      }
+      if (scope === 'signin') {
+        await setOnboardingStatus({
+          step: 1,
+        });
+        router.push('/auth/role?error=ACCOUNT_NOT_FOUND');
         return;
       }
       await setOnboardingStatus({

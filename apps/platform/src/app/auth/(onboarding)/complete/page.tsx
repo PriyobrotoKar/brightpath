@@ -2,11 +2,11 @@
 import { Button } from '@brightpath/ui/components/button';
 import Link from 'next/link';
 import { removeOnboardingStatus } from '@/lib/onboardingStatus';
-import FormInfo from '../_components/FormInfo';
+import FormInfo from '../../_components/FormInfo';
 
 export default function CompletePage(): React.JSX.Element {
   return (
-    <div className="flex w-full max-w-sm flex-col items-center justify-center gap-10">
+    <div className="flex w-full max-w-sm flex-col items-center justify-center gap-10 text-center">
       <FormInfo
         subtitle="Get up and running in less than 3 mins"
         title="Welcome to BrightPath"

@@ -57,7 +57,7 @@ function ProfileForm(): React.JSX.Element {
 
   return (
     <Form {...form}>
-      <form className="w-full space-y-10" onSubmit={onSubmit}>
+      <form className="w-full space-y-10 text-left" onSubmit={onSubmit}>
         <div className="space-y-6">
           <FormField
             name="fullname"

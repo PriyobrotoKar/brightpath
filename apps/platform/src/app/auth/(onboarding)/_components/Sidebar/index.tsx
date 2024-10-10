@@ -3,6 +3,7 @@ import { IconArrowLeft } from '@tabler/icons-react';
 import Image from 'next/image';
 import { getOnboardingStatus } from '@/lib/onboardingStatus';
 import Stages from './Stages';
+import Link from 'next/link';
 
 export default async function Sidebar(): Promise<React.JSX.Element> {
   const { step: currentStep } = await getOnboardingStatus();
@@ -28,7 +29,9 @@ export default async function Sidebar(): Promise<React.JSX.Element> {
           <IconArrowLeft />
           Back to home
         </Button>
-        <Button variant="ghost">Sign in</Button>
+        <Link href="/auth/signin">
+          <Button variant="ghost">Sign in</Button>
+        </Link>
       </div>
     </aside>
   );

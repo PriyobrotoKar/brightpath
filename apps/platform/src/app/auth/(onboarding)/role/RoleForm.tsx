@@ -15,7 +15,7 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@brightpath/ui/components/radio-group';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAtom } from 'jotai';
 import Icon from '@/components/Icon';
 import { roleAtom } from '@/state';
@@ -26,6 +26,9 @@ const roleSchema = z.object({
 });
 
 function RoleForm(): React.JSX.Element {
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
+
   const [_, setUserRole] = useAtom(roleAtom);
   const router = useRouter();
   const form = useForm<{ role: Role | '' }>({
@@ -37,13 +40,18 @@ function RoleForm(): React.JSX.Element {
 
   const onSubmit = form.handleSubmit(async (data) => {
     setUserRole(data.role);
+    if (error === 'ACCOUNT_NOT_FOUND') {
+      await setOnboardingStatus({ step: 4 });
+      router.push('/auth/profile');
+      return;
+    }
     await setOnboardingStatus({ step: 2 });
     router.push('/auth/signup');
   });
 
   return (
     <Form {...form}>
-      <form className="space-y-10" onSubmit={onSubmit}>
+      <form className="space-y-10 text-left" onSubmit={onSubmit}>
         <FormField
           name="role"
           render={({ field }) => {

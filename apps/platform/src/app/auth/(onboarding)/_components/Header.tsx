@@ -1,5 +1,6 @@
 import { Button } from '@brightpath/ui/components/button';
 import { IconArrowLeft } from '@tabler/icons-react';
+import Link from 'next/link';
 
 function Header(): React.JSX.Element {
   return (
@@ -8,7 +9,9 @@ function Header(): React.JSX.Element {
         <IconArrowLeft />
         Back to home
       </Button>
-      <Button variant="ghost">Sign in</Button>
+      <Link href="/auth/signin">
+        <Button variant="ghost">Sign in</Button>
+      </Link>
     </header>
   );
 }

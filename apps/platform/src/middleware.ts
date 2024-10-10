@@ -8,8 +8,9 @@ export async function middleware(
   const { step } = await getOnboardingStatus();
   if (
     request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/auth/signin') &&
     request.nextUrl.pathname !== getPath(step)
   ) {
-    return NextResponse.redirect(new URL(getPath(step), request.url));
+    // return NextResponse.redirect(new URL(getPath(step), request.url));
   }
 }

@@ -19,11 +19,15 @@ import { IconBrandGoogleFilled } from '@tabler/icons-react';
 import auth from '@/api/services/auth';
 import { setOnboardingStatus } from '@/lib/onboardingStatus';
 
+interface AuthFormProps {
+  scope: 'signin' | 'signup';
+}
+
 const signupSchema = z.object({
   email: z.string().email(),
 });
 
-function SignupForm(): React.JSX.Element {
+function AuthForm({ scope }: AuthFormProps): React.JSX.Element {
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: async (email: string) => {
@@ -32,9 +36,13 @@ function SignupForm(): React.JSX.Element {
     onError: (error) => {
       toast.error(error.message);
     },
-    onSuccess: async () => {
+    onSuccess: async (_, variables) => {
       await setOnboardingStatus({ step: 3 });
-      router.push(`/auth/otp?email=${form.getValues().email}`);
+      const redirectUrl =
+        scope === 'signin'
+          ? `/auth/signin/otp?email=${variables}`
+          : `/auth/otp?email=${variables}`;
+      router.push(redirectUrl);
     },
   });
 
@@ -51,7 +59,7 @@ function SignupForm(): React.JSX.Element {
 
   return (
     <Form {...form}>
-      <form className="space-y-10" onSubmit={onSubmit}>
+      <form className="w-full space-y-10 text-left" onSubmit={onSubmit}>
         <div className="space-y-6">
           <FormField
             name="email"
@@ -90,4 +98,4 @@ function SignupForm(): React.JSX.Element {
   );
 }
 
-export default SignupForm;
+export default AuthForm;
