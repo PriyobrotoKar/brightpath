@@ -11,6 +11,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guard/auth.guard';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+import { CourseModule } from './course/course.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { JwtModule } from '@nestjs/jwt';
     PrismaModule,
     CacheModule,
     UserModule,
+    CourseModule,
   ],
   controllers: [AppController],
   providers: [
