@@ -1,7 +1,8 @@
 import { CacheService } from '@/cache/cache.service';
 import { createEvent } from '@/common/event';
-import { createUser } from '@/common/user';
-import { generateJwtToken, generateOtp } from '@/common/utils';
+import { createUser, getUserByEmailOrId } from '@/common/user';
+import { generateJwtTokens, generateOtp } from '@/common/utils';
+import bcrypt from 'bcrypt';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   Injectable,
@@ -9,8 +10,13 @@ import {
   LoggerService,
   NotFoundException,
   Logger,
+  Inject,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { JWTPayload } from './types/jwt-payload';
+import refreshJwtConfig from './config/refresh-jwt.config';
+import type { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +25,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private cache: CacheService,
     private jwt: JwtService,
+    @Inject(refreshJwtConfig.KEY)
+    private refreshJwtConfiguration: ConfigType<typeof refreshJwtConfig>,
   ) {
     this.logger = new Logger(AuthService.name);
   }
@@ -71,14 +79,31 @@ export class AuthService {
 
     await this.cache.deleteCachedValue('otp', email);
 
-    const access_token = await generateJwtToken(
-      { id: user.id, email: user.email },
+    const tokens = await generateJwtTokens(
+      {
+        id: user.id,
+        email: user.email,
+      },
       this.jwt,
+      this.refreshJwtConfiguration,
     );
+
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     this.logger.log(`User: ${user.id} has been successfully logged in`);
 
-    return { ...user, access_token };
+    return { ...user, ...tokens };
+  }
+
+  async refreshToken(user: JWTPayload) {
+    const tokens = await generateJwtTokens(
+      user,
+      this.jwt,
+      this.refreshJwtConfiguration,
+    );
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    return tokens;
   }
 
   private async createUserIfNotExist(email: string) {
@@ -95,5 +120,48 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async validateRefreshToken(token: string, currentUser: JWTPayload) {
+    const user = await getUserByEmailOrId(
+      currentUser.id,
+      this.prisma,
+      this.cache,
+    );
+
+    if (!user) {
+      throw new UnauthorizedException('User not found!');
+    }
+
+    const hashedRefreshToken = await this.cache.getCachedValue(
+      'refreshToken',
+      user.id,
+    );
+
+    if (!hashedRefreshToken)
+      throw new UnauthorizedException('Refresh token not found for this user');
+
+    const refreshTokenMatched = await bcrypt.compare(token, hashedRefreshToken);
+
+    if (!refreshTokenMatched) {
+      throw new UnauthorizedException('Invalid Refresh Token');
+    }
+
+    return { id: user.id, email: user.email };
+  }
+
+  private async updateRefreshToken(userId: string, refresh_token: string) {
+    const hashedRefreshToken = await bcrypt.hash(refresh_token, 12);
+    const expiryInSecs =
+      Number(this.refreshJwtConfiguration.expiresIn.toString().slice(0, -1)) *
+      24 *
+      60 *
+      60;
+    await this.cache.setCache(
+      'refreshToken',
+      userId,
+      hashedRefreshToken,
+      expiryInSecs,
+    );
   }
 }

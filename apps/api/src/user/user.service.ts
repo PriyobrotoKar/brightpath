@@ -5,13 +5,13 @@ import {
   Logger,
   LoggerService,
 } from '@nestjs/common';
-import { JWTPayload } from './user.types';
+import { JWTPayload } from '../auth/types/jwt-payload';
 import { UpdateUserDto } from './dto/update.user';
 import { generateOtp } from '@/common/utils';
 import { CacheService } from '@/cache/cache.service';
 import { createEvent } from '@/common/event';
-import { JwtService } from '@nestjs/jwt';
 import { getUserByEmailOrId } from '@/common/user';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export class UserService {
@@ -19,7 +19,7 @@ export class UserService {
   constructor(
     private prisma: PrismaService,
     private cache: CacheService,
-    private jwt: JwtService,
+    private authService: AuthService,
   ) {
     this.logger = new Logger(UserService.name);
   }
@@ -141,11 +141,11 @@ export class UserService {
 
     const updatedUser = results[0];
 
-    const access_token = await this.jwt.signAsync({
+    const tokens = await this.authService.refreshToken({
       id: updatedUser.id,
       email: updatedUser.email,
     });
 
-    return { ...updatedUser, access_token };
+    return { ...updatedUser, ...tokens };
   }
 }

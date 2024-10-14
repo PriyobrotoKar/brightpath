@@ -10,7 +10,6 @@ import { CacheModule } from './cache/cache.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guard/auth.guard';
 import { UserModule } from './user/user.module';
-import { JwtModule } from '@nestjs/jwt';
 import { CourseModule } from './course/course.module';
 
 @Module({
@@ -18,13 +17,6 @@ import { CourseModule } from './course/course.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `../../.env${process.env.NODE_ENV ? '.' + process.env.NODE_ENV : ''}`,
-    }),
-    JwtModule.register({
-      secret: 'secret',
-      signOptions: {
-        expiresIn: '1d',
-      },
-      global: true,
     }),
     AuthModule,
     PrismaModule,

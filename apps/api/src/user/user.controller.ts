@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CurrentUser } from '@/decorators/user.decorator';
-import type { JWTPayload } from './user.types';
+import type { JWTPayload } from '../auth/types/jwt-payload';
 import { UpdateUserDto } from './dto/update.user';
 import type { Response } from 'express';
 import { setResponseCookie } from '@/common/utils';
@@ -35,10 +35,11 @@ export class UserController {
     @Body('otp') otp: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { access_token, ...updatedUser } =
+    const { access_token, refresh_token, ...updatedUser } =
       await this.userService.verifyEmailChange(otp, user);
 
-    setResponseCookie(res, access_token);
+    setResponseCookie(res, 'access_token', access_token);
+    setResponseCookie(res, 'refresh_token', refresh_token);
 
     return updatedUser;
   }

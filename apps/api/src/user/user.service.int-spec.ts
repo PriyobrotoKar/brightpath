@@ -7,9 +7,10 @@ import { UserModule } from './user.module';
 import { UserService } from './user.service';
 import request from 'supertest';
 import { createUser, getUserByEmailOrId } from '@/common/user';
-import { generateJwtToken } from '@/common/utils';
+import { generateJwtTokens } from '@/common/utils';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@brightpath/db';
+import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
 
 describe('User Controller Tests', () => {
   let app: INestApplication;
@@ -20,7 +21,7 @@ describe('User Controller Tests', () => {
 
   let headers: Record<string, string>;
   let testUser: User;
-  let jwtToken: string;
+  let jwtTokens: { access_token: string; refresh_token: string };
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -36,8 +37,12 @@ describe('User Controller Tests', () => {
 
     await prisma.user.deleteMany();
     testUser = await createUser({ email: 'johndoe@gmail.com' }, prisma);
-    jwtToken = await generateJwtToken(testUser, jwtService);
-    headers = { Authorization: `Bearer ${jwtToken}` };
+    jwtTokens = await generateJwtTokens(
+      testUser,
+      jwtService,
+      refreshJwtConfig(),
+    );
+    headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
   });
 
   afterAll(async () => {
@@ -153,7 +158,7 @@ describe('User Controller Tests', () => {
     });
 
     it('should update the email if otp is valid', async () => {
-      const payload = jwtService.decode(jwtToken);
+      const payload = jwtService.decode(jwtTokens.access_token);
       await userService.updateSelf(payload, { email: 'alice@gmail.com' });
       const otp = await cacheService.getCachedValue('otp', 'johndoe@gmail.com');
       const tempEmail = await cacheService.getCachedValue(
