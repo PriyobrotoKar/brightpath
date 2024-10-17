@@ -49,5 +49,6 @@ module.exports = {
         checksVoidReturn: false,
       },
     ],
+    'import/no-cycle': 'off',
   },
 };
