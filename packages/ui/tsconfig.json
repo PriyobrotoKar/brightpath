@@ -1,13 +1,13 @@
 {
   "extends": "@brightpath/typescript-config/react-library.json",
   "compilerOptions": {
-    "rootDir": "./src",
+    "rootDir": "./",
     "outDir": "dist",
     "paths": {
       "@brightpath/ui/*": ["./src/*"]
     }
   },
 
-  "include": ["src"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "dist"]
 }
