@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": ["JWT_SECRET", "JWT_EXPIRES_IN", "REFRESH_JWT_EXPIRES_IN"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
