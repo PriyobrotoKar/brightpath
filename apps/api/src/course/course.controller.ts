@@ -3,7 +3,7 @@ import { CourseService } from './course.service';
 import { CreatorGuard } from './guard/creator.guard';
 import { Creator } from '@/decorators/role.decorator';
 import { CurrentUser } from '@/decorators/user.decorator';
-import { type JWTPayload } from '@/user/user.types';
+import { type JWTPayload } from '@/auth/types/jwt-payload';
 import { CreateCourseDto } from './dto/create.course';
 
 @Creator()
@@ -14,6 +14,6 @@ export class CourseController {
 
   @Post()
   createCourse(@CurrentUser() user: JWTPayload, @Body() dto: CreateCourseDto) {
-    return 'New Course has been created';
+    return this.courseService.createCourse(user, dto);
   }
 }

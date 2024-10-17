@@ -34,7 +34,7 @@ export class AuthController {
       await this.authService.verifyOtp(email, otp);
     setResponseCookie(res, 'access_token', access_token);
     setResponseCookie(res, 'refresh_token', refresh_token);
-    return user;
+    return { access_token, refresh_token, user };
   }
 
   @UseGuards(RefreshJwtAuthGuard)
@@ -48,5 +48,6 @@ export class AuthController {
       await this.authService.refreshToken(user);
     setResponseCookie(res, 'access_token', access_token);
     setResponseCookie(res, 'refresh_token', refresh_token);
+    return { access_token, refresh_token, user };
   }
 }

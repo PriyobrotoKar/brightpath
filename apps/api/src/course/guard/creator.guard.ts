@@ -2,7 +2,7 @@ import { CacheService } from '@/cache/cache.service';
 import { getUserByEmailOrId } from '@/common/user';
 import { IS_CREATOR_KEY } from '@/decorators/role.decorator';
 import { PrismaService } from '@/prisma/prisma.service';
-import { JWTPayload } from '@/user/user.types';
+import { JWTPayload } from '@/auth/types/jwt-payload';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
