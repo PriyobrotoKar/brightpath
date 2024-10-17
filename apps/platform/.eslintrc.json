@@ -1,3 +1,0 @@
-{
-  "extends": ["@brightpath/eslint-config/next.js"]
-}

@@ -17,7 +17,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@brightpath/ui/components/button';
 import { useAtomValue } from 'jotai';
-import user from '@/api/services/user';
+import { updateSelf } from '@/api/services/user';
 import { roleAtom } from '@/state';
 import { setOnboardingStatus } from '@/lib/onboardingStatus';
 
@@ -33,7 +33,7 @@ function ProfileForm(): React.JSX.Element {
       if (!role) {
         throw new Error('Please select a role');
       }
-      return user.updateSelf({ name: fullname, role });
+      return updateSelf({ name: fullname, role });
     },
     onError: (error) => {
       toast.error(error.message);

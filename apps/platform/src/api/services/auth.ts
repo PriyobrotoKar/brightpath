@@ -1,17 +1,28 @@
+'use server';
 import type { User } from '@brightpath/db';
 import apiClient from '../client';
 
-class AuthController {
-  constructor(private base: string) {}
+const base = '/auth';
 
-  async sendOtp(email: string): Promise<void> {
-    return apiClient.post(`${this.base}/send-otp`, { email });
-  }
+export const sendOtp = async (email: string): Promise<void> => {
+  return apiClient.post(`${base}/send-otp`, { email });
+};
 
-  async verifyOtp(email: string, otp: string): Promise<User> {
-    return apiClient.post(`${this.base}/verify-otp`, { email, otp });
-  }
-}
+export const verifyOtp = async (
+  email: string,
+  otp: string,
+): Promise<{ access_token: string; refresh_token: string; user: User }> => {
+  return apiClient.post(`${base}/verify-otp`, { email, otp });
+};
 
-const auth = new AuthController('/auth');
-export default auth;
+export const refreshToken = async (
+  oldRefreshToken: string,
+): Promise<{ access_token: string; refresh_token: string }> => {
+  return apiClient.post(
+    `${base}/refresh-token`,
+    {},
+    {
+      Authorization: `Bearer ${oldRefreshToken}`,
+    },
+  );
+};

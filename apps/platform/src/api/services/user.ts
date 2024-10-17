@@ -1,17 +1,13 @@
+'use server';
 import type { User } from '@brightpath/db';
 import apiClient from '../client';
 
-class UserController {
-  constructor(private base: string) {}
+const base = '/user';
 
-  async getSelf(): Promise<User> {
-    return apiClient.get<User>(this.base);
-  }
+export const getSelf = async (): Promise<User> => {
+  return apiClient.get<User>(base);
+};
 
-  async updateSelf(data: Partial<User>): Promise<void> {
-    return apiClient.patch(this.base, data);
-  }
-}
-
-const user = new UserController('/user');
-export default user;
+export const updateSelf = (data: Partial<User>): Promise<User> => {
+  return apiClient.patch(base, data);
+};

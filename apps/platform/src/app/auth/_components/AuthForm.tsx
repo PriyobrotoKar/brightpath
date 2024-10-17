@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from '@brightpath/ui/components/sonner';
 import { IconBrandGoogleFilled } from '@tabler/icons-react';
-import auth from '@/api/services/auth';
+import { sendOtp } from '@/api/services/auth';
 import { setOnboardingStatus } from '@/lib/onboardingStatus';
 
 interface AuthFormProps {
@@ -31,7 +31,7 @@ function AuthForm({ scope }: AuthFormProps): React.JSX.Element {
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: async (email: string) => {
-      return auth.sendOtp(email);
+      return sendOtp(email);
     },
     onError: (error) => {
       toast.error(error.message);

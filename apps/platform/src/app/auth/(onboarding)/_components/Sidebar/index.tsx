@@ -1,9 +1,9 @@
 import { Button } from '@brightpath/ui/components/button';
 import { IconArrowLeft } from '@tabler/icons-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { getOnboardingStatus } from '@/lib/onboardingStatus';
 import Stages from './Stages';
-import Link from 'next/link';
 
 export default async function Sidebar(): Promise<React.JSX.Element> {
   const { step: currentStep } = await getOnboardingStatus();

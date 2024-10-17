@@ -1,3 +1,6 @@
+import { cookies } from 'next/headers';
+import { getSession } from '@/lib/session';
+
 class ApiError extends Error {
   status: number;
 
@@ -15,28 +18,51 @@ class ApiClient {
   }
 
   private async request<T>(url: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(this.baseUrl + url, options);
+    const session = await getSession();
+    const headers = {
+      ...(session && { Authorization: `Bearer ${session.accessToken}` }),
+      ...options?.headers,
+    };
+
+    const response = await fetch(this.baseUrl + url, {
+      ...options,
+      headers,
+    });
+
     if (!response.ok) {
       const message = ((await response.json()) as { message: string }).message;
       throw new ApiError(message, response.status);
     }
+
     const contentType = response.headers.get('Content-Type');
+
     if (contentType && contentType.includes('text/html')) {
       return (await response.text()) as unknown as T;
     }
+
     return (await response.json()) as Promise<T>;
   }
 
   get<T>(url: string): Promise<T> {
-    return this.request<T>(url);
+    return this.request<T>(url, {
+      method: 'GET',
+      headers: {
+        Cookie: cookies().toString(),
+      },
+    });
   }
 
-  post<T>(url: string, data: Record<string, unknown>): Promise<T> {
+  post<T>(
+    url: string,
+    data: Record<string, unknown>,
+    headers?: Record<string, string>,
+  ): Promise<T> {
     return this.request<T>(url, {
       method: 'POST',
-      credentials: 'include',
       headers: {
         'Content-type': 'application/json',
+        Cookie: cookies().toString(),
+        ...headers,
       },
       body: JSON.stringify(data),
     });
@@ -45,9 +71,9 @@ class ApiClient {
   patch<T>(url: string, data: Record<string, unknown>): Promise<T> {
     return this.request<T>(url, {
       method: 'PATCH',
-      credentials: 'include',
       headers: {
         'Content-type': 'application/json',
+        Cookie: cookies().toString(),
       },
       body: JSON.stringify(data),
     });

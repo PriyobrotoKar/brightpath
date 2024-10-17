@@ -18,11 +18,9 @@ import { v4 as uuid } from 'uuid';
 import { z } from 'zod';
 import { toast } from '@brightpath/ui/components/sonner';
 import { useRouter } from 'next/navigation';
-import auth from '@/api/services/auth';
-import {
-  removeOnboardingStatus,
-  setOnboardingStatus,
-} from '@/lib/onboardingStatus';
+import { verifyOtp } from '@/api/services/auth';
+import { setOnboardingStatus } from '@/lib/onboardingStatus';
+import { createSession } from '@/lib/session';
 
 const FormSchema = z.object({
   pin: z.string().min(6, {
@@ -46,17 +44,27 @@ function OtpForm({ email, scope }: OtpFormProps): React.JSX.Element {
       if (!email) {
         throw new Error('Email is required.');
       }
-      return auth.verifyOtp(email, data.pin);
+      return verifyOtp(email, data.pin);
     },
     onError: (error) => {
       toast.error(error.message);
     },
     onSuccess: async (data) => {
-      if (data.isOnboardingFinished) {
-        await removeOnboardingStatus();
+      await createSession({
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          isOnboardingFinished: data.user.isOnboardingFinished,
+        },
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+      });
+
+      if (data.user.isOnboardingFinished) {
         router.push('/dashboard');
         return;
       }
+
       if (scope === 'signin') {
         await setOnboardingStatus({
           step: 1,
@@ -64,9 +72,11 @@ function OtpForm({ email, scope }: OtpFormProps): React.JSX.Element {
         router.push('/auth/role?error=ACCOUNT_NOT_FOUND');
         return;
       }
+
       await setOnboardingStatus({
         step: 4,
       });
+
       router.push('/auth/profile');
     },
   });
