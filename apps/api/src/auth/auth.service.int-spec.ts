@@ -181,9 +181,13 @@ describe('Auth Controller Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        ...user,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        user: {
+          ...user,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        },
+        access_token: expect.any(String),
+        refresh_token: expect.any(String),
       });
     });
   });
