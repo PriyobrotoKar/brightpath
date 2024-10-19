@@ -63,18 +63,27 @@ export const getSession = async (): Promise<Session | null> => {
 };
 
 export const updateSession = async (
-  request: NextRequest,
+  request?: NextRequest,
+  user?: Partial<Session['user']>,
 ): Promise<NextResponse | undefined> => {
   try {
-    const session = request.cookies.get('session')?.value;
+    const session = request
+      ? request.cookies.get('session')?.value
+      : cookies().get('session')?.value;
 
     if (!session) {
       return;
     }
 
-    await jwtVerify<Session>(session, encodedKey, {
+    const { payload } = await jwtVerify<Session>(session, encodedKey, {
       algorithms: ['HS256'],
     });
+
+    payload.user = { ...payload.user, ...user };
+
+    if (!request) {
+      await handleExiredSession(payload, 'cookies');
+    }
   } catch (error) {
     if (error instanceof JWTExpired) {
       const payload = error.payload as Session;
@@ -85,7 +94,8 @@ export const updateSession = async (
 
 const handleExiredSession = async (
   expiredSession: Session,
-): Promise<NextResponse> => {
+  method: 'cookies' | 'response' = 'response',
+): Promise<NextResponse | undefined> => {
   const res = NextResponse.next();
 
   const refreshTokenRes = await refreshToken(expiredSession.refreshToken);
@@ -95,14 +105,18 @@ const handleExiredSession = async (
     refreshToken: refreshTokenRes.refresh_token,
   };
 
-  const newSession = await encode(newSessionPayload);
+  if (method === 'response') {
+    const newSession = await encode(newSessionPayload);
 
-  res.cookies.set('session', newSession, {
-    httpOnly: true,
-    secure: true,
-    expires: expiredAt,
-    sameSite: 'lax',
-  });
+    res.cookies.set('session', newSession, {
+      httpOnly: true,
+      secure: true,
+      expires: expiredAt,
+      sameSite: 'lax',
+    });
 
-  return res;
+    return res;
+  }
+
+  await createSession(newSessionPayload);
 };

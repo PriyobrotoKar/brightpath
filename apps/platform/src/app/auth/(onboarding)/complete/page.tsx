@@ -1,7 +1,7 @@
 'use client';
 import { Button } from '@brightpath/ui/components/button';
 import Link from 'next/link';
-import { removeOnboardingStatus } from '@/lib/onboardingStatus';
+import { updateSession } from '@/lib/session';
 import FormInfo from '../../_components/FormInfo';
 
 export default function CompletePage(): React.JSX.Element {
@@ -14,7 +14,9 @@ export default function CompletePage(): React.JSX.Element {
       <Link className="w-full" href="/dashboard">
         <Button
           className="w-full"
-          onClick={async () => removeOnboardingStatus()}
+          onClick={async () =>
+            updateSession(undefined, { isOnboardingFinished: true })
+          }
         >
           Continue
         </Button>

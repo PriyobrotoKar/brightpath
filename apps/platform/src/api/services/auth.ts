@@ -17,7 +17,7 @@ export const verifyOtp = async (
 
 export const refreshToken = async (
   oldRefreshToken: string,
-): Promise<{ access_token: string; refresh_token: string }> => {
+): Promise<{ access_token: string; refresh_token: string; user: User }> => {
   return apiClient.post(
     `${base}/refresh-token`,
     {},

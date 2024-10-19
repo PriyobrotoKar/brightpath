@@ -23,7 +23,8 @@ export async function middleware(
 
   // If a session exists and the user is trying to access an auth-related page (e.g., sign in/up), redirect them to the dashboard.
   if (
-    session?.user.isOnboardingFinished &&
+    session &&
+    session.user.isOnboardingFinished &&
     request.nextUrl.pathname.startsWith('/auth')
   ) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
