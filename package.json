@@ -11,8 +11,12 @@
     "dev:platform": "turbo dev --filter=platform",
     "lint": "turbo lint",
     "lint:api": "turbo lint --filter=api",
+    "lint:platform": "turbo lint --filter=platform",
     "int:api": "turbo test:int --filter=api",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "format:check:api": "prettier --check \"apps/api/**/*.{ts,tsx,md}\"",
+    "format:check:platform": "prettier --check \"apps/platform/**/*.{ts,tsx,md}\"",
+    "build:platform": "turbo build --filter=platform"
   },
   "devDependencies": {
     "prettier": "^3.3.3",

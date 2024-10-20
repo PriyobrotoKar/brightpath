@@ -1,11 +1,11 @@
-name: Validate API
+name: Validate Platform
 
 on:
   push:
     branches:
       - develop
     paths:
-      - 'apps/api/**'
+      - 'apps/platform/**'
 
 jobs:
   validate:
@@ -30,10 +30,10 @@ jobs:
         run: pnpm install
 
       - name: Check formatting
-        run: pnpm format:check:api
-
-      - name: Run tests
-        run: pnpm int:api
+        run: pnpm format:check:platform
 
       - name: Run lint
-        run: pnpm lint:api
+        run: pnpm lint:platform
+
+      - name: Run build
+        run: pnpm build:platform
