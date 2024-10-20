@@ -25,7 +25,8 @@ export async function middleware(
   if (
     session &&
     session.user.isOnboardingFinished &&
-    request.nextUrl.pathname.startsWith('/auth')
+    (request.nextUrl.pathname.startsWith('/auth') ||
+      request.nextUrl.pathname === '/')
   ) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }

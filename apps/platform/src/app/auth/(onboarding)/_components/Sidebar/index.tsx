@@ -3,6 +3,7 @@ import { IconArrowLeft } from '@tabler/icons-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getOnboardingStatus } from '@/lib/onboardingStatus';
+import Logo from '@/components/Logo';
 import Stages from './Stages';
 
 export default async function Sidebar(): Promise<React.JSX.Element> {
@@ -10,10 +11,7 @@ export default async function Sidebar(): Promise<React.JSX.Element> {
 
   return (
     <aside className="bg-card hidden flex-col overflow-x-hidden p-6 md:flex">
-      <div className="flex items-center gap-2">
-        <Image alt="logo" height={28} src="/logo.svg" width={28} />
-        <span className="text-lg">BrightPath</span>
-      </div>
+      <Logo />
       <Stages initialStep={currentStep} />
       <div>
         <Image
