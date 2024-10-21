@@ -3,6 +3,14 @@ import {
   AvatarFallback,
   AvatarImage,
 } from '@brightpath/ui/components/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@brightpath/ui/components/dropdown-menu';
 
 interface HeaderProps {
   title: string;
@@ -19,10 +27,24 @@ export default function Header({
         <h1 className="text-xl">{title}</h1>
         <p className="text-muted-foreground text-md">{subtitle}</p>
       </div>
-      <Avatar>
-        <AvatarImage src="" />
-        <AvatarFallback>P</AvatarFallback>
-      </Avatar>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Avatar>
+            <AvatarImage src="" />
+            <AvatarFallback>P</AvatarFallback>
+          </Avatar>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-40">
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="focus:bg-destructive focus:text-destructive-foreground">
+            Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   );
 }
