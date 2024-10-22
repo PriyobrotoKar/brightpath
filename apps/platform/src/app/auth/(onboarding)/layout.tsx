@@ -10,7 +10,7 @@ export default function Layout({
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex min-h-screen flex-1 flex-col gap-2 py-3">
+      <div className="flex min-h-svh flex-1 flex-col gap-2 py-3">
         <Header />
         <div className="flex flex-1 justify-center px-4">{children}</div>
         <Steps />

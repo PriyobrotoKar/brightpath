@@ -24,6 +24,13 @@ const expiredAt = new Date(
 );
 const jwtExpiry = process.env.JWT_EXPIRES_IN || '30s';
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  expires: expiredAt,
+  sameSite: 'lax' as const,
+};
+
 const encode = async (payload: Session): Promise<string> => {
   const session = await new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
@@ -37,13 +44,7 @@ const encode = async (payload: Session): Promise<string> => {
 export const createSession = async (payload: Session): Promise<void> => {
   const session = await encode(payload);
 
-  cookies().set('session', session, {
-    httpOnly: true,
-    secure: true,
-    expires: expiredAt,
-    sameSite: 'lax',
-    path: '/',
-  });
+  cookies().set('session', session, cookieOptions);
 };
 
 export const getSession = async (): Promise<Session | null> => {
@@ -108,12 +109,7 @@ const handleExiredSession = async (
   if (method === 'response') {
     const newSession = await encode(newSessionPayload);
 
-    res.cookies.set('session', newSession, {
-      httpOnly: true,
-      secure: true,
-      expires: expiredAt,
-      sameSite: 'lax',
-    });
+    res.cookies.set('session', newSession, cookieOptions);
 
     return res;
   }
