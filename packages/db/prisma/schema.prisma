@@ -24,12 +24,17 @@ enum PaymentPlan {
   RECURRING
 }
 
+enum DiscountType {
+  PERCENTAGE
+  AMOUNT
+}
+
 model User {
-  id              String  @id @default(cuid())
-  email           String  @unique
-  name            String?
-  role            Role    @default(CREATOR)
-  profilePicuture String?
+  id             String  @id @default(cuid())
+  email          String  @unique
+  name           String?
+  role           Role    @default(CREATOR)
+  profilePicture String?
 
   courses Course[]
 
@@ -51,9 +56,10 @@ model Course {
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String
 
-  creator   User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
-  pricing   Pricing?
+
+  pricing Pricing?
 }
 
 model Category {
@@ -65,11 +71,33 @@ model Category {
 }
 
 model Pricing {
-  id          String      @id @default(cuid())
-  price       String
-  paymentPlan PaymentPlan
-  course      Course      @relation(fields: [courseId], references: [id])
-  courseId    String      @unique
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id              String        @id @default(cuid())
+  price           Decimal
+  paymentPlan     PaymentPlan
+  discountEnabled Boolean       @default(false)
+  discountValue   Decimal?
+  discountType    DiscountType?
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @unique
+
+  coupons Coupon[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  discountValue Decimal
+  discountType  DiscountType
+  isActive      Boolean      @default(true)
+  expiresAt     DateTime?
+
+  pricing   Pricing @relation(fields: [pricingId], references: [id])
+  pricingId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
