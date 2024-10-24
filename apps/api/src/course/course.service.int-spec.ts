@@ -1,4 +1,3 @@
-import { AppModule } from '@/app.module';
 import { Test } from '@nestjs/testing';
 import { CourseModule } from './course.module';
 import request from 'supertest';
@@ -10,11 +9,14 @@ import { generateJwtTokens } from '@/common/utils';
 import { JwtService } from '@nestjs/jwt';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
 import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from '@/app.module';
+import { CacheService } from '@/cache/cache.service';
 
 describe('Course Controller Tests', () => {
   let app: NestApplication;
   let prisma: PrismaService;
   let jwtService: JwtService;
+  let cacheService: CacheService;
 
   let studentTestUser: User;
   let creatorTestUser: User;
@@ -28,6 +30,7 @@ describe('Course Controller Tests', () => {
     app = moduleRef.createNestApplication();
     prisma = moduleRef.get(PrismaService);
     jwtService = moduleRef.get(JwtService);
+    cacheService = moduleRef.get(CacheService);
 
     app.useGlobalPipes(
       new ValidationPipe({ transform: true, whitelist: true }),
@@ -46,6 +49,10 @@ describe('Course Controller Tests', () => {
     headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
 
     await app.init();
+  });
+
+  afterAll(async () => {
+    await cacheService.onModuleDestroy();
   });
 
   describe('/course', () => {
