@@ -1,7 +1,8 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsString()
