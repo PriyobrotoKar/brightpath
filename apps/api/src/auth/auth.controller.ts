@@ -14,16 +14,17 @@ import { CurrentUser } from '@/decorators/user.decorator';
 import type { JWTPayload } from './types/jwt-payload';
 import { RefreshJwtAuthGuard } from './guard/refresh-auth.guard';
 
-@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('/send-otp')
   sendOtp(@Body('email') email: string) {
     return this.authService.sendOtp(email);
   }
 
+  @Public()
   @Post('/verify-otp')
   @HttpCode(200)
   async verifyOtp(
@@ -37,6 +38,7 @@ export class AuthController {
     return { access_token, refresh_token, user };
   }
 
+  @Public()
   @UseGuards(RefreshJwtAuthGuard)
   @Post('/refresh-token')
   @HttpCode(200)
@@ -49,5 +51,16 @@ export class AuthController {
     setResponseCookie(res, 'access_token', access_token);
     setResponseCookie(res, 'refresh_token', refresh_token);
     return { access_token, refresh_token, user };
+  }
+
+  @Post('/logout')
+  @HttpCode(200)
+  async logout(
+    @CurrentUser() user: JWTPayload,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    setResponseCookie(res, 'access_token', '');
+    setResponseCookie(res, 'refresh_token', '');
+    return this.authService.logout(user);
   }
 }

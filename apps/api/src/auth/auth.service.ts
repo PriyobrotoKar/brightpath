@@ -150,6 +150,10 @@ export class AuthService {
     return { id: user.id, email: user.email };
   }
 
+  async logout(user: JWTPayload) {
+    await this.cache.deleteCachedValue('refreshToken', user.id);
+  }
+
   private async updateRefreshToken(userId: string, refresh_token: string) {
     const hashedRefreshToken = await bcrypt.hash(refresh_token, 12);
     const expiryInSecs =
