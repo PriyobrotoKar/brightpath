@@ -7,18 +7,18 @@ import { cn } from '@brightpath/ui/lib/utils';
 import { Loader } from 'lucide-react';
 
 const buttonVariants = cva(
-  'inline-flex  items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60',
+  'inline-flex gap-2 items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background duration-300 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60',
   {
     variants: {
       variant: {
         default:
-          'bg-primary shadow-sm text-primary-foreground hover:bg-primary/90',
+          'bg-primary text-primary-foreground hover:bg-primary/90  hover:shadow-primary/20 hover:shadow-[inset_0_1px_0px_0_rgba(225,225,225,0.25),0px_4px_15px_0px_rgba(0,0,0,0.15)] ring-primary w-full shadow-[inset_0_1px_0px_0_rgba(225,225,225,0.25),0px_3px_2px_0px_rgba(0,0,0,0.15)] ring-1',
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
         outline:
           'border border-input bg-background hover:bg-accent shadow-sm hover:text-accent-foreground',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm',
+          'bg-secondary text-secondary-foreground border border-border hover:shadow-[0_2px_6px_0px_rgba(0,0,0,0.1)]  hover:bg-secondary/80 shadow',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
