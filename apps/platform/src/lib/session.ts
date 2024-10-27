@@ -6,6 +6,7 @@ import { JWTExpired } from 'jose/errors';
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { redirect } from 'next/navigation';
 import { refreshToken } from '@/api/services/auth';
 
 interface Session extends JWTPayload {
@@ -99,20 +100,30 @@ const handleExiredSession = async (
 ): Promise<NextResponse | undefined> => {
   const res = NextResponse.next();
 
-  const refreshTokenRes = await refreshToken(expiredSession.refreshToken);
-  const newSessionPayload: Session = {
-    ...expiredSession,
-    accessToken: refreshTokenRes.access_token,
-    refreshToken: refreshTokenRes.refresh_token,
-  };
+  try {
+    const refreshTokenRes = await refreshToken(expiredSession.refreshToken);
+    const newSessionPayload: Session = {
+      ...expiredSession,
+      accessToken: refreshTokenRes.access_token,
+      refreshToken: refreshTokenRes.refresh_token,
+    };
 
-  if (method === 'response') {
-    const newSession = await encode(newSessionPayload);
+    if (method === 'response') {
+      const newSession = await encode(newSessionPayload);
 
-    res.cookies.set('session', newSession, cookieOptions);
+      res.cookies.set('session', newSession, cookieOptions);
 
-    return res;
+      return res;
+    }
+
+    await createSession(newSessionPayload);
+  } catch (error) {
+    res.cookies.delete('session');
   }
+};
 
-  await createSession(newSessionPayload);
+// eslint-disable-next-line @typescript-eslint/require-await -- We don't need to await this function
+export const removeSession = async (): Promise<void> => {
+  cookies().delete('session');
+  redirect('/auth/signin');
 };

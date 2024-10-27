@@ -26,3 +26,7 @@ export const refreshToken = async (
     },
   );
 };
+
+export const logout = async (): Promise<void> => {
+  return apiClient.post(`${base}/logout`, {});
+};

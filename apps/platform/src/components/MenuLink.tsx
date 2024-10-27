@@ -28,7 +28,7 @@ function MenuLink({ link }: MenuLinkProps): React.JSX.Element {
     <Link
       className={cn(
         buttonVariants({
-          variant: link.href === pathname ? 'outline' : 'ghost',
+          variant: link.href === pathname ? 'secondary' : 'ghost',
         }),
         'justify-start gap-2',
       )}

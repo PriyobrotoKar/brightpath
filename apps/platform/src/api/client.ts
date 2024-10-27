@@ -36,11 +36,11 @@ class ApiClient {
 
     const contentType = response.headers.get('Content-Type');
 
-    if (contentType && contentType.includes('text/html')) {
-      return (await response.text()) as unknown as T;
+    if (contentType && contentType.includes('application/json')) {
+      return (await response.json()) as Promise<T>;
     }
 
-    return (await response.json()) as Promise<T>;
+    return (await response.text()) as unknown as T;
   }
 
   get<T>(url: string): Promise<T> {
