@@ -8,6 +8,7 @@ import { CreateCourseDto } from './dto/create.course';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreatePricingDto } from './dto/create.pricing';
 import { Prisma } from '@brightpath/db';
+import { CreateScheduleDto } from './dto/create.schedule';
 
 @Injectable()
 export class CourseService {
@@ -77,6 +78,104 @@ export class CourseService {
     return pricing;
   }
 
+  async createSchedule(
+    user: JWTPayload,
+    courseId: string,
+    dto: CreateScheduleDto,
+  ) {
+    const course = await this.checkAuthority(courseId, user.id);
+
+    if (dto.course_type === 'COHORT' && (!dto.start_date || !dto.end_date)) {
+      throw new BadRequestException(
+        'Start date and end date are required for cohort courses',
+      );
+    }
+
+    if (dto.course_type === 'RECORDED' && dto.sessions.length) {
+      throw new BadRequestException(
+        'Self paced course should not have sessions',
+      );
+    }
+
+    if (course.Session.length) {
+      throw new BadRequestException('Schedule already exist for this course');
+    }
+
+    const sessions: Prisma.SessionCreateWithoutCourseInput[] = [];
+
+    const currentDate = new Date();
+    if (dto.start_date < currentDate) {
+      throw new BadRequestException('Start date should be in the future');
+    }
+    if (dto.end_date < dto.start_date) {
+      throw new BadRequestException('End date should be after start date');
+    }
+
+    if (dto.sessions.length) {
+      for (const session of dto.sessions) {
+        if (session.start_time > session.end_time) {
+          throw new BadRequestException('End time should be after start time');
+        }
+
+        if (session.day_of_week < 0 || session.day_of_week > 6) {
+          throw new BadRequestException('Invalid day of week');
+        }
+
+        if (session.start_time === session.end_time) {
+          throw new BadRequestException(
+            'Start time and end time cannot be same',
+          );
+        }
+
+        const duration =
+          new Date(session.end_time).getTime() -
+          new Date(session.start_time).getTime();
+
+        const endAt =
+          dto.end_date ||
+          new Date(currentDate.setFullYear(currentDate.getFullYear() + 1));
+
+        sessions.push({
+          name: 'Session',
+          startAt: session.start_time,
+          endAt: endAt,
+          duration,
+        });
+      }
+    }
+
+    const updatedCourse = await this.prisma.course.update({
+      where: {
+        id: courseId,
+      },
+      data: {
+        type: dto.course_type,
+        startAt: dto.start_date,
+        endAt: dto.end_date,
+        accessDuration: dto.access_duration,
+        Session: {
+          createMany: {
+            data: sessions,
+          },
+        },
+      },
+      include: {
+        Session: true,
+      },
+    });
+
+    await this.prisma.recurringDetails.createMany({
+      data: dto.sessions.map((session, i) => ({
+        dayOfWeek: session.day_of_week,
+        rrule: 'FREQ=WEEKLY;BYDAY=' + session.day_of_week,
+        endAt: updatedCourse.endAt,
+        sessionId: updatedCourse.Session[i].id,
+      })),
+    });
+
+    return updatedCourse;
+  }
+
   private async createCategoryIfNotExist(name: string) {
     let category = await this.prisma.category.findUnique({
       where: { name },
@@ -95,6 +194,9 @@ export class CourseService {
     const course = await this.prisma.course.findUnique({
       where: {
         id: courseId,
+      },
+      include: {
+        Session: true,
       },
     });
 
