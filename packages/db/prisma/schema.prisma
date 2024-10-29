@@ -29,6 +29,11 @@ enum DiscountType {
   AMOUNT
 }
 
+enum CourseType {
+  COHORT
+  RECORDED
+}
+
 model User {
   id             String  @id @default(cuid())
   email          String  @unique
@@ -44,14 +49,18 @@ model User {
 }
 
 model Course {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  tags        String[]
-  banner      String?
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String     @id @default(cuid())
+  name           String
+  description    String?
+  tags           String[]
+  banner         String?
+  isPublished    Boolean    @default(false)
+  type           CourseType @default(RECORDED)
+  startAt        DateTime?
+  endAt          DateTime?
+  accessDuration Int?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String
@@ -60,6 +69,34 @@ model Course {
   creatorId String
 
   pricing Pricing?
+  Session Session[]
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startAt     DateTime
+  endAt       DateTime
+  duration    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course           Course            @relation(fields: [courseId], references: [id])
+  courseId         String
+  RecurringDetails RecurringDetails?
+}
+
+model RecurringDetails {
+  id        String   @id @default(cuid())
+  dayOfWeek Int
+  rrule     String
+  endAt     DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String  @unique
 }
 
 model Category {
