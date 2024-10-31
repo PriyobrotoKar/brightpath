@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create.course';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -51,7 +52,7 @@ export class CourseService {
       return this.prisma.pricing.create({
         data: {
           paymentPlan: 'FREE',
-          price: 0,
+          price: new Prisma.Decimal(0),
           courseId,
         },
       });
@@ -63,7 +64,7 @@ export class CourseService {
 
     data = {
       paymentPlan: dto.model,
-      price: dto.price,
+      price: new Prisma.Decimal(dto.price),
       course: { connect: { id: courseId } },
     };
 
@@ -91,7 +92,7 @@ export class CourseService {
       );
     }
 
-    if (dto.course_type === 'RECORDED' && dto.sessions.length) {
+    if (dto.course_type === 'RECORDED' && dto.sessions) {
       throw new BadRequestException(
         'Self paced course should not have sessions',
       );
@@ -104,16 +105,20 @@ export class CourseService {
     const sessions: Prisma.SessionCreateWithoutCourseInput[] = [];
 
     const currentDate = new Date();
-    if (dto.start_date < currentDate) {
+    const start_date = new Date(dto.start_date);
+    const end_date = new Date(dto.end_date);
+    if (start_date.getTime() < currentDate.getTime()) {
       throw new BadRequestException('Start date should be in the future');
     }
-    if (dto.end_date < dto.start_date) {
+    if (end_date.getTime() < start_date.getTime()) {
       throw new BadRequestException('End date should be after start date');
     }
 
     if (dto.sessions.length) {
       for (const session of dto.sessions) {
-        if (session.start_time > session.end_time) {
+        const start_time = new Date(session.start_time);
+        const end_time = new Date(session.end_time);
+        if (start_time > end_time) {
           throw new BadRequestException('End time should be after start time');
         }
 
@@ -132,7 +137,7 @@ export class CourseService {
           new Date(session.start_time).getTime();
 
         const endAt =
-          dto.end_date ||
+          end_time ||
           new Date(currentDate.setFullYear(currentDate.getFullYear() + 1));
 
         sessions.push({
@@ -201,7 +206,7 @@ export class CourseService {
     });
 
     if (!course) {
-      throw new BadRequestException('No course found!');
+      throw new NotFoundException(`Course:${courseId} not found!`);
     }
 
     const hasAuthority = course.creatorId === userId;
@@ -233,6 +238,8 @@ export class CourseService {
         discountValue: dto.discount_value,
       };
     }
+
+    return data;
   }
 
   private async addCouponToPricing(
@@ -267,5 +274,7 @@ export class CourseService {
         },
       };
     }
+
+    return data;
   }
 }

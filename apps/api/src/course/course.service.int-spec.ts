@@ -19,7 +19,9 @@ describe('Course Controller Tests', () => {
   let cacheService: CacheService;
 
   let studentTestUser: User;
-  let creatorTestUser: User;
+  let creatorTestUser1: User;
+  let creatorTestUser2: User;
+  let testCourseId: string;
   let headers: Record<string, string>;
 
   beforeAll(async () => {
@@ -37,12 +39,13 @@ describe('Course Controller Tests', () => {
     );
 
     await prisma.user.deleteMany();
-    [studentTestUser, creatorTestUser] = await Promise.all([
+    [studentTestUser, creatorTestUser1, creatorTestUser2] = await Promise.all([
       createUser({ email: 'johndoe@gmail.com', role: 'STUDENT' }, prisma),
       createUser({ email: 'janedoe@gmail.com' }, prisma),
+      createUser({ email: 'alice@gmail.com' }, prisma),
     ]);
     const jwtTokens = await generateJwtTokens(
-      creatorTestUser,
+      creatorTestUser1,
       jwtService,
       refreshJwtConfig(),
     );
@@ -99,6 +102,8 @@ describe('Course Controller Tests', () => {
           category: 'Test Category',
         });
 
+      testCourseId = response.body.id;
+
       expect(response.status).toBe(201);
       expect(response.body).toEqual({
         id: expect.any(String),
@@ -107,8 +112,12 @@ describe('Course Controller Tests', () => {
         categoryId: expect.any(String),
         tags: [],
         banner: null,
+        accessDuration: null,
+        endAt: null,
+        startAt: null,
+        type: 'RECORDED',
         isPublished: false,
-        creatorId: creatorTestUser.id,
+        creatorId: creatorTestUser1.id,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
@@ -122,6 +131,475 @@ describe('Course Controller Tests', () => {
       });
 
       expect(category).toBeDefined();
+    });
+  });
+
+  describe('/course/:id/pricing', () => {
+    afterEach(async () => {
+      await prisma.pricing.deleteMany();
+    });
+
+    it('should not create pricing if course does not exist', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/course/invalid_id/pricing')
+        .set(headers)
+        .send({
+          model: 'FREE',
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toEqual(`Course:invalid_id not found!`);
+    });
+
+    it('should not create pricing if user does not owns the course', async () => {
+      const jwtTokens = await generateJwtTokens(
+        creatorTestUser2,
+        jwtService,
+        refreshJwtConfig(),
+      );
+      const headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
+
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'FREE',
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toEqual(
+        `User:${creatorTestUser2.id} does not have the required permission`,
+      );
+    });
+
+    it('should throw error if pricing already exists for the course', async () => {
+      await prisma.pricing.create({
+        data: {
+          courseId: testCourseId,
+          paymentPlan: 'FREE',
+          price: 0,
+        },
+      });
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'FREE',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Pricing already exist for this course',
+      );
+    });
+
+    it('should throw error if price is not provided for paid courses', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'ONETIME',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Price is required for paid courses');
+    });
+
+    it('should create a new pricing for free course', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'FREE',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toEqual({
+        id: expect.any(String),
+        paymentPlan: 'FREE',
+        price: '0',
+        discountEnabled: false,
+        discountType: null,
+        discountValue: null,
+        courseId: testCourseId,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
+    });
+
+    it('should throw error if discount value is not provided', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'ONETIME',
+          price: 100,
+          discount_enabled: true,
+          discount_type: 'PERCENTAGE',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Discount type and value are required for discount',
+      );
+    });
+
+    it('should throw error if coupon value is not provided', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'ONETIME',
+          price: 100,
+          coupon_enabled: true,
+          coupon_type: 'PERCENTAGE',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Coupon type, value and code are required for coupon',
+      );
+    });
+
+    it('should create a new pricing for paid course', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'ONETIME',
+          price: 100,
+          discount_enabled: true,
+          discount_type: 'PERCENTAGE',
+          discount_value: 10,
+          coupon_enabled: true,
+          coupon_type: 'PERCENTAGE',
+          coupon_value: 10,
+          coupon_code: 'TESTCODE',
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toEqual({
+        id: expect.any(String),
+        paymentPlan: 'ONETIME',
+        price: '100',
+        discountEnabled: true,
+        discountType: 'PERCENTAGE',
+        discountValue: '10',
+        courseId: testCourseId,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
+    });
+
+    it('should throw error if courpon code already exists', async () => {
+      await prisma.course.create({
+        data: {
+          name: 'Test Course 2',
+          category: {
+            connectOrCreate: {
+              where: {
+                name: 'Test Category 2',
+              },
+              create: {
+                name: 'Test Category 2',
+              },
+            },
+          },
+          creator: {
+            connect: {
+              id: creatorTestUser1.id,
+            },
+          },
+          pricing: {
+            create: {
+              paymentPlan: 'ONETIME',
+              price: 100,
+              coupons: {
+                create: {
+                  code: 'TESTCODE',
+                  discountType: 'PERCENTAGE',
+                  discountValue: 10,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/pricing`)
+        .set(headers)
+        .send({
+          model: 'ONETIME',
+          price: 100,
+          coupon_enabled: true,
+          coupon_type: 'PERCENTAGE',
+          coupon_value: 10,
+          coupon_code: 'TESTCODE',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Coupon code already exist');
+    });
+  });
+
+  describe('/course/:id/schedule', () => {
+    afterEach(async () => {
+      await prisma.session.deleteMany();
+    });
+
+    it('should not create schedule if course does not exist', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/course/invalid_id/schedule')
+        .set(headers)
+        .send({
+          course_type: 'RECORDED',
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toEqual(`Course:invalid_id not found!`);
+    });
+
+    it('should not create schedule if user does not owns the course', async () => {
+      const jwtTokens = await generateJwtTokens(
+        creatorTestUser2,
+        jwtService,
+        refreshJwtConfig(),
+      );
+      const headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
+
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'RECORDED',
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toEqual(
+        `User:${creatorTestUser2.id} does not have the required permission`,
+      );
+    });
+
+    it('should throw error if start and end dates are not provided for cohort courses', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'COHORT',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Start date and end date are required for cohort courses',
+      );
+    });
+
+    it('should throw error if self paced course has sessions', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'RECORDED',
+          sessions: [
+            {
+              day_of_week: 1,
+              start_time: '10:00',
+              end_time: '12:00',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Self paced course should not have sessions',
+      );
+    });
+
+    it('should throw error if schedule already exists for the course', async () => {
+      await prisma.session.create({
+        data: {
+          courseId: testCourseId,
+          name: 'session',
+          startAt: '2024-11-19T18:30:00.000Z',
+          endAt: '2024-11-19T20:30:00.000Z',
+          duration: 2,
+        },
+      });
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'RECORDED',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Schedule already exist for this course',
+      );
+    });
+
+    it('should throw error if start date of a session is in the past', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'COHORT',
+          start_date: '2021-11-19T18:30:00.263Z',
+          end_date: '2022-11-19T20:30:00.263Z',
+          sessions: [
+            {
+              day_of_week: 1,
+              start_time: '2022-11-19T18:30:00.263Z',
+              end_time: '2022-11-19T20:30:00.263Z',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Start date should be in the future');
+    });
+
+    it('should throw error if end date is before start date', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'COHORT',
+          start_date: '2024-11-19T18:30:00.263Z',
+          end_date: '2023-11-19T20:30:00.263Z',
+          sessions: [
+            {
+              day_of_week: 1,
+              start_time: '2024-11-19T18:30:00.263Z',
+              end_time: '2024-11-19T20:30:00.263Z',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('End date should be after start date');
+    });
+
+    it('should throw error if end time is before start time', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'COHORT',
+          start_date: '2024-11-19T18:30:00.263Z',
+          end_date: '2025-11-19T20:30:00.263Z',
+          sessions: [
+            {
+              day_of_week: 1,
+              start_time: '2024-11-19T20:30:00.263Z',
+              end_time: '2024-11-19T18:30:00.263Z',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('End time should be after start time');
+    });
+
+    it('should throw error if day of week is invalid', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'COHORT',
+          start_date: '2024-11-19T18:30:00.263Z',
+          end_date: '2025-11-19T20:30:00.263Z',
+          sessions: [
+            {
+              day_of_week: 7,
+              start_time: '2024-11-19T18:30:00.263Z',
+              end_time: '2024-11-19T20:30:00.263Z',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Invalid day of week');
+    });
+
+    it('should throw error if start time and end time are same', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'COHORT',
+          start_date: '2024-11-19T18:30:00.263Z',
+          end_date: '2025-11-19T20:30:00.263Z',
+          sessions: [
+            {
+              day_of_week: 1,
+              start_time: '2024-11-19T18:30:00.263Z',
+              end_time: '2024-11-19T18:30:00.263Z',
+            },
+          ],
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Start time and end time cannot be same',
+      );
+    });
+
+    it('should create a new schedule for cohort course', async () => {
+      const response = await request(app.getHttpServer())
+        .post(`/course/${testCourseId}/schedule`)
+        .set(headers)
+        .send({
+          course_type: 'COHORT',
+          start_date: '2024-11-19T18:30:00.263Z',
+          end_date: '2025-11-19T20:30:00.263Z',
+          sessions: [
+            {
+              day_of_week: 1,
+              start_time: '2024-11-19T20:30:00.263Z',
+              end_time: '2024-11-19T22:30:00.263Z',
+            },
+          ],
+        });
+
+      const recurringDetails = await prisma.recurringDetails.findMany({
+        where: {
+          sessionId: response.body.Session[0].id,
+        },
+      });
+
+      expect(response.status).toBe(201);
+      expect(recurringDetails).toHaveLength(1);
+      expect(response.body).toEqual({
+        id: expect.any(String),
+        name: 'Test Course',
+        description: null,
+        categoryId: expect.any(String),
+        tags: [],
+        banner: null,
+        accessDuration: null,
+        startAt: '2024-11-19T18:30:00.263Z',
+        endAt: '2025-11-19T20:30:00.263Z',
+        type: 'COHORT',
+        isPublished: false,
+        Session: [
+          {
+            id: expect.any(String),
+            name: 'Session',
+            startAt: '2024-11-19T20:30:00.263Z',
+            endAt: '2024-11-19T22:30:00.263Z',
+            courseId: testCourseId,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+            description: null,
+            duration: 7200000,
+          },
+        ],
+        creatorId: creatorTestUser1.id,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
     });
   });
 });
