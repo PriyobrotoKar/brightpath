@@ -33,4 +33,4 @@ CREATE UNIQUE INDEX "RecurringDetails_sessionId_key" ON "RecurringDetails"("sess
 ALTER TABLE "Session" ADD CONSTRAINT "Session_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "RecurringDetails" ADD CONSTRAINT "RecurringDetails_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Session"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "RecurringDetails" ADD CONSTRAINT "RecurringDetails_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Session"("id") ON DELETE CASCADE ON UPDATE CASCADE;

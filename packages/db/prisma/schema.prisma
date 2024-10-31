@@ -95,7 +95,7 @@ model RecurringDetails {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  session   Session @relation(fields: [sessionId], references: [id])
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId String  @unique
 }
 
@@ -115,7 +115,7 @@ model Pricing {
   discountValue   Decimal?
   discountType    DiscountType?
 
-  course   Course @relation(fields: [courseId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId String @unique
 
   coupons Coupon[]
@@ -132,7 +132,7 @@ model Coupon {
   isActive      Boolean      @default(true)
   expiresAt     DateTime?
 
-  pricing   Pricing @relation(fields: [pricingId], references: [id])
+  pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
   pricingId String
 
   createdAt DateTime @default(now())
