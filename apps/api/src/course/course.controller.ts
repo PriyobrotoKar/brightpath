@@ -1,4 +1,11 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { CourseService } from './course.service';
 import { CreatorGuard } from './guard/creator.guard';
 import { Creator } from '@/decorators/role.decorator';
@@ -7,6 +14,7 @@ import { type JWTPayload } from '@/auth/types/jwt-payload';
 import { CreateCourseDto } from './dto/create.course';
 import { CreatePricingDto } from './dto/create.pricing';
 import { CreateScheduleDto } from './dto/create.schedule';
+import { UpdateEnrollmentDto } from './dto/update.enrollment';
 
 @Creator()
 @Controller('course')
@@ -35,5 +43,14 @@ export class CourseController {
     @Body() dto: CreateScheduleDto,
   ) {
     return this.courseService.createSchedule(user, id, dto);
+  }
+
+  @Patch(':id/enrollment')
+  updateEnrollmentSettings(
+    @CurrentUser() user: JWTPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateEnrollmentDto,
+  ) {
+    return this.courseService.updateEnrollmentSettings(user, id, dto);
   }
 }

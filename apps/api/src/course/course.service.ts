@@ -10,6 +10,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { CreatePricingDto } from './dto/create.pricing';
 import { Prisma } from '@brightpath/db';
 import { CreateScheduleDto } from './dto/create.schedule';
+import { UpdateEnrollmentDto } from './dto/update.enrollment';
 
 @Injectable()
 export class CourseService {
@@ -176,6 +177,43 @@ export class CourseService {
         endAt: updatedCourse.endAt,
         sessionId: updatedCourse.Session[i].id,
       })),
+    });
+
+    return updatedCourse;
+  }
+
+  async updateEnrollmentSettings(
+    user: JWTPayload,
+    courseId: string,
+    dto: UpdateEnrollmentDto,
+  ) {
+    const course = await this.checkAuthority(courseId, user.id);
+
+    if (dto.deadline) {
+      if (!course.startAt || !course.endAt) {
+        throw new BadRequestException(
+          'Course start date and end date are required',
+        );
+      }
+
+      if (
+        new Date(dto.deadline) < new Date(course.startAt) ||
+        new Date(dto.deadline) > new Date(course.endAt)
+      ) {
+        throw new BadRequestException(
+          'Deadline should be within course start and end date',
+        );
+      }
+    }
+
+    const updatedCourse = await this.prisma.course.update({
+      where: {
+        id: courseId,
+      },
+      data: {
+        accessType: dto.type,
+        enrollmentDeadline: dto.deadline,
+      },
     });
 
     return updatedCourse;

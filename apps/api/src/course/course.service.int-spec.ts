@@ -112,7 +112,9 @@ describe('Course Controller Tests', () => {
         categoryId: expect.any(String),
         tags: [],
         banner: null,
+        accessType: 'EVERYONE',
         accessDuration: null,
+        enrollmentDeadline: null,
         endAt: null,
         startAt: null,
         type: 'RECORDED',
@@ -578,7 +580,9 @@ describe('Course Controller Tests', () => {
         categoryId: expect.any(String),
         tags: [],
         banner: null,
+        accessType: 'EVERYONE',
         accessDuration: null,
+        enrollmentDeadline: null,
         startAt: '2024-11-19T18:30:00.263Z',
         endAt: '2025-11-19T20:30:00.263Z',
         type: 'COHORT',
@@ -596,6 +600,117 @@ describe('Course Controller Tests', () => {
             duration: 7200000,
           },
         ],
+        creatorId: creatorTestUser1.id,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      });
+    });
+  });
+
+  describe('/course/:id/enrollment', () => {
+    it('should throw error if course does not exist', async () => {
+      const response = await request(app.getHttpServer())
+        .patch('/course/invalid_id/enrollment')
+        .set(headers)
+        .send({});
+
+      expect(response.status).toBe(404);
+      expect(response.body.message).toEqual(`Course:invalid_id not found!`);
+    });
+
+    it('should throw error if user does not owns the course', async () => {
+      const jwtTokens = await generateJwtTokens(
+        creatorTestUser2,
+        jwtService,
+        refreshJwtConfig(),
+      );
+      const headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
+
+      const response = await request(app.getHttpServer())
+        .patch(`/course/${testCourseId}/enrollment`)
+        .set(headers)
+        .send({});
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toEqual(
+        `User:${creatorTestUser2.id} does not have the required permission`,
+      );
+    });
+
+    it('should throw error if deadline is not within course start and end date', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`/course/${testCourseId}/enrollment`)
+        .set(headers)
+        .send({
+          type: 'EVERYONE',
+          deadline: '2023-11-19T18:30:00.263Z',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Deadline should be within course start and end date',
+      );
+    });
+
+    it('should throw error if course dates are not set', async () => {
+      await prisma.course.update({
+        where: {
+          id: testCourseId,
+        },
+        data: {
+          startAt: null,
+          endAt: null,
+        },
+      });
+
+      const response = await request(app.getHttpServer())
+        .patch(`/course/${testCourseId}/enrollment`)
+        .set(headers)
+        .send({
+          type: 'EVERYONE',
+          deadline: '2024-11-19T18:30:00.263Z',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Course start date and end date are required',
+      );
+
+      await prisma.course.update({
+        where: {
+          id: testCourseId,
+        },
+        data: {
+          startAt: '2024-11-19T18:30:00.263Z',
+          endAt: '2025-11-19T18:30:00.263Z',
+        },
+      });
+    });
+
+    it('should update enrollment settings', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`/course/${testCourseId}/enrollment`)
+        .set(headers)
+        .send({
+          type: 'INVITE_ONLY',
+          deadline: '2025-11-19T18:30:00.263Z',
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        id: testCourseId,
+        name: 'Test Course',
+        description: null,
+        categoryId: expect.any(String),
+        tags: [],
+        banner: null,
+        accessType: 'INVITE_ONLY',
+        accessDuration: null,
+        enrollmentDeadline: '2025-11-19T18:30:00.263Z',
+        endAt: '2025-11-19T18:30:00.263Z',
+        startAt: '2024-11-19T18:30:00.263Z',
+        type: 'COHORT',
+        isPublished: false,
         creatorId: creatorTestUser1.id,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
