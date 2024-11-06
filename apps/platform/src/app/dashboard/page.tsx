@@ -1,6 +1,7 @@
 import { Button } from '@brightpath/ui/components/button';
 import { IconPlus } from '@tabler/icons-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import Header from './_components/Header';
 
 export default function DashboardPage(): React.JSX.Element {
@@ -33,10 +34,12 @@ export default function DashboardPage(): React.JSX.Element {
               Guide learners through your expertise, step by step.
             </p>
           </div>
-          <Button className="w-full" size="sm" variant="secondary">
-            <IconPlus />
-            Create
-          </Button>
+          <Link className="block" href="/dashboard/course/create/information">
+            <Button className="w-full" size="sm" variant="secondary">
+              <IconPlus />
+              Create
+            </Button>
+          </Link>
         </main>
       </div>
     </>
