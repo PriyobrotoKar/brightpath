@@ -12,7 +12,8 @@
     "@brightpath/db": "workspace:*",
     "@brightpath/ui": "workspace:*",
     "@hookform/resolvers": "^3.9.0",
-    "@tabler/icons-react": "^3.19.0",
+    "@mdxeditor/editor": "^3.17.0",
+    "@tabler/icons-react": "^3.21.0",
     "@tanstack/react-query": "^5.59.0",
     "class-variance-authority": "^0.7.0",
     "jose": "^5.9.4",
@@ -20,7 +21,7 @@
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.53.0",
+    "react-hook-form": "^7.53.1",
     "uuid": "^10.0.0",
     "zod": "^3.23.8"
   },

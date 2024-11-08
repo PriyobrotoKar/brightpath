@@ -7,7 +7,7 @@ export default function CreateCourseLayout({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <div>
+    <div className="relative flex h-full flex-col">
       <Header
         subtitle="Here's an overview of your bootcamps and active learners"
         title="Create a Bootcamp"
