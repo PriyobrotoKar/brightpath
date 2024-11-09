@@ -4,14 +4,20 @@ import { Button, buttonVariants } from '@brightpath/ui/components/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
 } from '@brightpath/ui/components/form';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@brightpath/ui/components/popover';
 import { Input } from '@brightpath/ui/components/input';
 import { Label } from '@brightpath/ui/components/label';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconPhoto } from '@tabler/icons-react';
+import { IconChevronDown, IconPhoto } from '@tabler/icons-react';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -24,6 +30,27 @@ import {
   quotePlugin,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@brightpath/ui/components/command';
+import React from 'react';
+import { v4 as uuid } from 'uuid';
+
+const items = [
+  'Web Development',
+  'Mobile Development',
+  'Data Science',
+  'Machine Learning',
+  'Artificial Intelligence',
+  'Cyber Security',
+  'Cloud Computing',
+  'DevOps',
+];
 
 const BasicInformationSchema = z.object({
   name: z.string(),
@@ -41,6 +68,8 @@ const BasicInformationSchema = z.object({
 });
 
 export default function BasicInformationForm(): React.JSX.Element {
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState('');
   const form = useForm<z.infer<typeof BasicInformationSchema>>({
     resolver: zodResolver(BasicInformationSchema),
     defaultValues: {
@@ -52,10 +81,11 @@ export default function BasicInformationForm(): React.JSX.Element {
       tags: [],
     },
   });
+
   return (
     <Form {...form}>
-      <form className="flex min-h-0 flex-1 flex-col">
-        <div className="h-full flex-1 space-y-6 overflow-scroll py-6">
+      <form className="flex flex-1 flex-col">
+        <div className="h-full flex-1 space-y-6 py-6">
           <FormField
             name="name"
             render={({ field }) => {
@@ -203,8 +233,12 @@ export default function BasicInformationForm(): React.JSX.Element {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <MDXEditor
-                    markdown=""
                     className="border-border max-w-screen-sm rounded-md border"
+                    contentEditableClassName="prose h-full"
+                    markdown=""
+                    onChange={(markdown) => {
+                      field.onChange(markdown);
+                    }}
                     plugins={[
                       headingsPlugin(),
                       markdownShortcutPlugin(),
@@ -212,8 +246,103 @@ export default function BasicInformationForm(): React.JSX.Element {
                       quotePlugin(),
                       linkPlugin(),
                     ]}
-                    contentEditableClassName="prose"
                   />
+                </FormItem>
+              );
+            }}
+          />
+
+          <FormField
+            name="category"
+            render={({ field }) => {
+              return (
+                <FormItem>
+                  <FormLabel className="block">Category</FormLabel>
+                  <FormControl>
+                    <Popover onOpenChange={setOpen} open={open}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          aria-expanded={open}
+                          className="w-full max-w-screen-sm justify-between"
+                          role="combobox"
+                          variant="outline"
+                        >
+                          {value
+                            ? items.find((item) => item === value)
+                            : 'Choose a category or create a new one'}
+                          <IconChevronDown />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0">
+                        <Command>
+                          <CommandInput placeholder="Search category" />
+                          <CommandList>
+                            <CommandEmpty>No item found.</CommandEmpty>
+                            <CommandGroup>
+                              {items.map((item) => (
+                                <CommandItem
+                                  key={item}
+                                  onSelect={(currentValue) => {
+                                    setValue(
+                                      currentValue === value
+                                        ? ''
+                                        : currentValue,
+                                    );
+                                    field.onChange(currentValue);
+                                    setOpen(false);
+                                  }}
+                                  value={item}
+                                >
+                                  {item}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </FormControl>
+                </FormItem>
+              );
+            }}
+          />
+          <FormField
+            name="tags"
+            render={({ field }) => {
+              return (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <div className="border-border flex max-w-screen-sm flex-wrap items-center gap-2 rounded-md border p-2">
+                    {(field.value as string[]).map((tag) => (
+                      <Label
+                        className="bg-primary/10 text-primary rounded-full px-4 py-2 text-sm"
+                        key={uuid()}
+                      >
+                        {tag}
+                      </Label>
+                    ))}
+                    <FormControl>
+                      <Input
+                        className="h-fit w-fit min-w-0 flex-1 border-none p-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        onKeyDown={(e) => {
+                          if (e.key === ',') {
+                            e.preventDefault();
+                            const currentValue = e.currentTarget.value;
+                            if (currentValue.trim() === '') return;
+                            field.onChange([
+                              ...(field.value as string[]),
+                              currentValue.trim(),
+                            ]);
+                            e.currentTarget.value = '';
+                          }
+                        }}
+                        placeholder="Add tags..."
+                      />
+                    </FormControl>
+                  </div>
+                  <FormDescription>
+                    Enter a comma after each tag
+                  </FormDescription>
                 </FormItem>
               );
             }}

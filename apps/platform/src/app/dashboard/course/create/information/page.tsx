@@ -3,7 +3,7 @@ import BasicInformationForm from './BasicInformationForm';
 
 export default function BasicInformationPage(): React.JSX.Element {
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col">
+    <div className="flex w-full flex-1 flex-col">
       <FormInfo
         subtitle="Add some basic details about your bootcamp"
         title="Basic Information"

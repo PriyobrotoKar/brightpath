@@ -20,7 +20,7 @@ export default function RootLayout({
 }>): React.JSX.Element {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-svh`}>
+      <body className={`${inter.className} min-h-svh overflow-y-hidden`}>
         <ReactQueryProvider>
           {children}
           <Toaster richColors />
