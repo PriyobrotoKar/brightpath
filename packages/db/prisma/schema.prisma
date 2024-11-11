@@ -70,7 +70,7 @@ model Course {
   updatedAt          DateTime   @updatedAt
 
   category   Category @relation(fields: [categoryId], references: [id])
-  categoryId String
+  categoryId Int
 
   creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
@@ -107,7 +107,7 @@ model RecurringDetails {
 }
 
 model Category {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String   @unique
   courses   Course[]
   createdAt DateTime @default(now())
