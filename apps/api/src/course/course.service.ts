@@ -11,13 +11,14 @@ import { CreatePricingDto } from './dto/create.pricing';
 import { Prisma } from '@brightpath/db';
 import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
+import { createCategoryIfNotExist } from '@/common/category';
 
 @Injectable()
 export class CourseService {
   constructor(private prisma: PrismaService) {}
 
   async createCourse(user: JWTPayload, dto: CreateCourseDto) {
-    const category = await this.createCategoryIfNotExist(dto.category);
+    const category = await createCategoryIfNotExist(dto.category, this.prisma);
 
     return await this.prisma.course.create({
       data: {
@@ -217,20 +218,6 @@ export class CourseService {
     });
 
     return updatedCourse;
-  }
-
-  private async createCategoryIfNotExist(name: string) {
-    let category = await this.prisma.category.findUnique({
-      where: { name },
-    });
-
-    if (!category) {
-      category = await this.prisma.category.create({
-        data: { name },
-      });
-    }
-
-    return category;
   }
 
   private async checkAuthority(courseId: string, userId: string) {
