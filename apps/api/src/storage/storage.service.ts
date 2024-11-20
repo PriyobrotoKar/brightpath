@@ -22,7 +22,7 @@ export class StorageService {
   async getS3SignedUrl(contentType: string) {
     const { url, fields } = await createPresignedPost(this.s3, {
       Bucket: this.bucketName,
-      Key: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`,
+      Key: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${contentType.split('/')[1]}`,
       Conditions: [
         ['content-length-range', 0, 6291456],
         ['starts-with', '$Content-Type', contentType],

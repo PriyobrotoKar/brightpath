@@ -19,5 +19,10 @@ export class CreateCourseDto {
 
   @IsString()
   @IsOptional()
-  banner?: string;
+  logo?: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  thumbnails?: string[];
 }

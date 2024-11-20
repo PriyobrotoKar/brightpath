@@ -20,13 +20,16 @@ export class CourseService {
   async createCourse(user: JWTPayload, dto: CreateCourseDto) {
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
 
+    console.log(dto, user.id);
+
     return await this.prisma.course.create({
       data: {
         name: dto.name,
         description: dto.description,
         categoryId: category.id,
         tags: dto.tags,
-        banner: dto.banner,
+        logo: dto.logo,
+        thumbnails: dto.thumbnails,
         creatorId: user.id,
       },
     });
