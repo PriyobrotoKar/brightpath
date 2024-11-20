@@ -58,7 +58,8 @@ model Course {
   name               String
   description        String?
   tags               String[]
-  banner             String?
+  thumbnails         String[]
+  logo               String?
   isPublished        Boolean    @default(false)
   type               CourseType @default(RECORDED)
   startAt            DateTime?
