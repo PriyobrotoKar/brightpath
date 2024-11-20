@@ -24,6 +24,9 @@
     "test:teardown": "cd ../../ && docker compose -f docker-compose-test.yml down"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.693.0",
+    "@aws-sdk/s3-presigned-post": "^3.693.0",
+    "@aws-sdk/s3-request-presigner": "^3.693.0",
     "@brightpath/db": "workspace:*",
     "@brightpath/kafka": "workspace:*",
     "@brightpath/redis": "workspace:*",
