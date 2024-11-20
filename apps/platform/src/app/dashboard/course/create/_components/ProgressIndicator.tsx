@@ -2,6 +2,7 @@
 import { cn } from '@brightpath/ui/lib/utils';
 import { IconChevronRight } from '@tabler/icons-react';
 import { usePathname } from 'next/navigation';
+import { Fragment } from 'react';
 import { v4 as uuid } from 'uuid';
 
 const steps = [
@@ -19,8 +20,8 @@ export default function ProgressIndicator(): React.JSX.Element {
     <div className="flex items-center gap-4 py-6">
       {steps.map((step, index) => {
         return (
-          <>
-            <div className="flex items-center gap-2" key={uuid()}>
+          <Fragment key={uuid()}>
+            <div className="flex items-center gap-2">
               <span
                 className={cn(
                   'bg-muted text-muted-foreground inline-flex size-6 items-center justify-center rounded-full',
@@ -37,7 +38,7 @@ export default function ProgressIndicator(): React.JSX.Element {
             {index < steps.length - 1 && (
               <IconChevronRight className="text-muted-foreground" />
             )}
-          </>
+          </Fragment>
         );
       })}
     </div>

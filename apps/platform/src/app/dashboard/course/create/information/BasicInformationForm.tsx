@@ -17,7 +17,7 @@ import {
 import { Input } from '@brightpath/ui/components/input';
 import { Label } from '@brightpath/ui/components/label';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconChevronDown, IconPhoto } from '@tabler/icons-react';
+import { IconChevronDown, IconLoader, IconPhoto } from '@tabler/icons-react';
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -38,36 +38,36 @@ import {
   CommandItem,
   CommandList,
 } from '@brightpath/ui/components/command';
-import React from 'react';
+import React, { Fragment } from 'react';
 import { v4 as uuid } from 'uuid';
-
-const items = [
-  'Web Development',
-  'Mobile Development',
-  'Data Science',
-  'Machine Learning',
-  'Artificial Intelligence',
-  'Cyber Security',
-  'Cloud Computing',
-  'DevOps',
-];
+import { useInfiniteQuery } from '@tanstack/react-query';
+import type { CategoryResponse } from '@/api/services/category';
+import { getAllCategories } from '@/api/services/category';
+import type { GetUploadUrlResponse } from '@/api/services/storage';
+import { getUploadUrl } from '@/api/services/storage';
+import { createCourse } from '@/api/services/course';
+import { useRouter } from 'next/navigation';
+import { toast } from '@brightpath/ui/components/sonner';
 
 const BasicInformationSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1),
   logo: z.instanceof(File).refine((file) => file.type.startsWith('image/'), {
     message: 'File must be an image',
   }),
-  thumbnails: z.array(
-    z.instanceof(File).refine((file) => file.type.startsWith('image/'), {
-      message: 'File must be an image',
-    }),
-  ),
-  description: z.string(),
-  category: z.string(),
-  tags: z.array(z.string()),
+  thumbnails: z
+    .array(
+      z.instanceof(File).refine((file) => file.type.startsWith('image/'), {
+        message: 'File must be an image',
+      }),
+    )
+    .min(1),
+  description: z.string().min(1),
+  category: z.string().min(1),
+  tags: z.array(z.string()).min(1),
 });
 
 export default function BasicInformationForm(): React.JSX.Element {
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
   const form = useForm<z.infer<typeof BasicInformationSchema>>({
@@ -82,9 +82,73 @@ export default function BasicInformationForm(): React.JSX.Element {
     },
   });
 
+  const { data: categories } = useInfiniteQuery({
+    queryKey: ['categories'],
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
+      return getAllCategories({ cursor: pageParam });
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastpage: CategoryResponse) => {
+      return lastpage.metadata.lastCursor;
+    },
+  });
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    //upload images to s3
+    const images = [data.logo, ...data.thumbnails];
+    // get the presigned url for the images
+    const getUploadUrls: Promise<GetUploadUrlResponse>[] = [];
+    for (const image of images) {
+      // get the presigned url for the image
+      getUploadUrls.push(getUploadUrl({ contentType: image.type }));
+    }
+    const uploadUrls = await Promise.all(getUploadUrls);
+    // upload the images to s3
+
+    const uploadImages: Promise<Response>[] = [];
+    for (const [index, uploadUrl] of uploadUrls.entries()) {
+      const formData = new FormData();
+      formData.append('key', uploadUrl.fields.key);
+      const file = images.at(index);
+      if (file) {
+        formData.append('file', file);
+      }
+      uploadImages.push(
+        fetch(uploadUrl.url, {
+          method: 'POST',
+          body: formData,
+        }),
+      );
+    }
+
+    try {
+      const uploadedImages = await Promise.all(uploadImages);
+      for (const response of uploadedImages) {
+        if (!response.ok) {
+          throw new Error('Failed to upload image');
+        }
+      }
+
+      // create a new bootcamp
+      const newCourse = await createCourse({
+        ...data,
+        logo: uploadUrls[0]?.fields.key ?? '',
+        thumbnails: uploadUrls
+          .slice(1)
+          .map((uploadUrl) => uploadUrl.fields.key),
+      });
+
+      router.push(`/dashboard/course/create/${newCourse.id}/pricing`);
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+
+    //create a new bootcamp
+  });
+
   return (
     <Form {...form}>
-      <form className="flex flex-1 flex-col">
+      <form className="flex flex-1 flex-col" onSubmit={onSubmit}>
         <div className="h-full flex-1 space-y-6 py-6">
           <FormField
             name="name"
@@ -104,7 +168,13 @@ export default function BasicInformationForm(): React.JSX.Element {
             render={({ field }) => {
               return (
                 <FormItem>
-                  <Label>Logo</Label>
+                  <Label
+                    className={
+                      form.formState.errors.logo ? 'text-destructive' : ''
+                    }
+                  >
+                    Logo
+                  </Label>
                   <div className="flex items-center gap-4">
                     <div className="bg-muted text-muted-foreground border-border flex size-16 items-center justify-center overflow-hidden rounded-lg border">
                       {field.value ? (
@@ -120,7 +190,10 @@ export default function BasicInformationForm(): React.JSX.Element {
                       )}
                     </div>
                     <FormLabel
-                      className={buttonVariants({ variant: 'outline' })}
+                      className={buttonVariants({
+                        variant: 'outline',
+                        className: 'text-foreground',
+                      })}
                     >
                       Upload Logo
                     </FormLabel>
@@ -146,7 +219,13 @@ export default function BasicInformationForm(): React.JSX.Element {
             render={({ field }) => {
               return (
                 <FormItem>
-                  <Label>Thumbnail</Label>
+                  <Label
+                    className={
+                      form.formState.errors.thumbnails ? 'text-destructive' : ''
+                    }
+                  >
+                    Thumbnail
+                  </Label>
                   <div
                     className="border-border h-52 max-w-screen-sm rounded-lg border border-dashed p-3"
                     onDragOver={(e) => {
@@ -267,9 +346,7 @@ export default function BasicInformationForm(): React.JSX.Element {
                           role="combobox"
                           variant="outline"
                         >
-                          {value
-                            ? items.find((item) => item === value)
-                            : 'Choose a category or create a new one'}
+                          {value || 'Choose a category or create a new one'}
                           <IconChevronDown />
                         </Button>
                       </PopoverTrigger>
@@ -279,23 +356,25 @@ export default function BasicInformationForm(): React.JSX.Element {
                           <CommandList>
                             <CommandEmpty>No item found.</CommandEmpty>
                             <CommandGroup>
-                              {items.map((item) => (
-                                <CommandItem
-                                  key={item}
-                                  onSelect={(currentValue) => {
-                                    setValue(
-                                      currentValue === value
-                                        ? ''
-                                        : currentValue,
-                                    );
-                                    field.onChange(currentValue);
-                                    setOpen(false);
-                                  }}
-                                  value={item}
-                                >
-                                  {item}
-                                </CommandItem>
-                              ))}
+                              {categories?.pages.map((page) => {
+                                return (
+                                  <>
+                                    {page.categories.map((item) => (
+                                      <CommandItem
+                                        key={item.id}
+                                        onSelect={(currentValue) => {
+                                          setValue(currentValue);
+                                          field.onChange(currentValue);
+                                          setOpen(false);
+                                        }}
+                                        value={item.name}
+                                      >
+                                        {item.name}
+                                      </CommandItem>
+                                    ))}
+                                  </>
+                                );
+                              })}
                             </CommandGroup>
                           </CommandList>
                         </Command>
@@ -352,8 +431,19 @@ export default function BasicInformationForm(): React.JSX.Element {
           <Button size="sm" variant="secondary">
             Cancel
           </Button>
-          <Button className="w-fit" size="sm">
-            Save & Continue
+          <Button
+            className="w-fit"
+            disabled={form.formState.isSubmitting}
+            size="sm"
+          >
+            {form.formState.isSubmitting ? (
+              <>
+                <IconLoader className="animate-spin" />
+                Please wait{' '}
+              </>
+            ) : (
+              'Save & Continue'
+            )}
           </Button>
         </div>
       </form>

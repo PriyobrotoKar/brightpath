@@ -43,13 +43,16 @@ class ApiClient {
     return (await response.text()) as unknown as T;
   }
 
-  get<T>(url: string): Promise<T> {
-    return this.request<T>(url, {
-      method: 'GET',
-      headers: {
-        Cookie: cookies().toString(),
+  get<T>(url: string, queryParams?: Record<string, string>): Promise<T> {
+    return this.request<T>(
+      `${url}?${new URLSearchParams(queryParams).toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          Cookie: cookies().toString(),
+        },
       },
-    });
+    );
   }
 
   post<T>(
