@@ -41,13 +41,13 @@ import {
 import React, { Fragment } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { toast } from '@brightpath/ui/components/sonner';
 import type { CategoryResponse } from '@/api/services/category';
 import { getAllCategories } from '@/api/services/category';
 import type { GetUploadUrlResponse } from '@/api/services/storage';
 import { getUploadUrl } from '@/api/services/storage';
 import { createCourse } from '@/api/services/course';
-import { useRouter } from 'next/navigation';
-import { toast } from '@brightpath/ui/components/sonner';
 
 const BasicInformationSchema = z.object({
   name: z.string().min(1),
@@ -142,8 +142,6 @@ export default function BasicInformationForm(): React.JSX.Element {
     } catch (error) {
       toast.error((error as Error).message);
     }
-
-    //create a new bootcamp
   });
 
   return (
