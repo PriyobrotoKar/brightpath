@@ -50,5 +50,6 @@ module.exports = {
       },
     ],
     'import/no-cycle': 'off',
+    '@typescript-eslint/consistent-type-definitions': 'off',
   },
 };
