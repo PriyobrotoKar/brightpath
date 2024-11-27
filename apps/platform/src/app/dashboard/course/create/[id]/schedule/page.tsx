@@ -1,5 +1,6 @@
 import React from 'react';
 import FormInfo from '../../_components/FormInfo';
+import ScheduleForm from './ScheduleForm';
 
 export default function SchedulePage(): React.JSX.Element {
   return (
@@ -8,6 +9,7 @@ export default function SchedulePage(): React.JSX.Element {
         subtitle="Setup the schedule for your bootcamp"
         title="Add Schedule"
       />
+      <ScheduleForm />
     </div>
   );
 }
