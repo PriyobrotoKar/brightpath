@@ -1,5 +1,5 @@
 'use server';
-import type { Course } from '@brightpath/db';
+import type { Course, CourseType } from '@brightpath/db';
 import apiClient from '../client';
 
 const base = '/course';
@@ -25,6 +25,18 @@ export type CreateCoursePricingPayload = {
   coupon_code?: string;
 };
 
+export type CreateCourseSchedulePayload = {
+  course_type: CourseType;
+  start_date?: Date;
+  end_date?: Date;
+  access_duration: number;
+  sessions: {
+    start_time?: Date;
+    end_time?: Date;
+    day_of_week: number;
+  }[];
+};
+
 export const createCourse = (data: CreateCoursePayload): Promise<Course> => {
   return apiClient.post(base, data);
 };
@@ -34,4 +46,11 @@ export const createCoursePricing = (
   data: CreateCoursePricingPayload,
 ): Promise<Course> => {
   return apiClient.post(`${base}/${courseId}/pricing`, data);
+};
+
+export const createCourseSchedule = (
+  courseId: string,
+  data: CreateCourseSchedulePayload,
+): Promise<Course> => {
+  return apiClient.post(`${base}/${courseId}/schedule`, data);
 };
