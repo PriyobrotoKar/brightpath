@@ -364,15 +364,15 @@ export default function ScheduleForm(): React.JSX.Element {
                                         session.day_of_week === index,
                                     )?.start_time
                                     ? format(
-                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain -- We are checking if the value exists
-                                        form
-                                          .watch('sessions')
-                                          .find(
-                                            (session) =>
-                                              session.day_of_week === index,
-                                          )?.start_time!,
-                                        'hh:mm a',
-                                      )
+                                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain -- We are checking if the value exists
+                                      form
+                                        .watch('sessions')
+                                        .find(
+                                          (session) =>
+                                            session.day_of_week === index,
+                                        )?.start_time!,
+                                      'hh:mm a',
+                                    )
                                     : null}
                                 </SelectValue>
                               </SelectTrigger>
@@ -453,15 +453,15 @@ export default function ScheduleForm(): React.JSX.Element {
                                         session.day_of_week === index,
                                     )?.end_time
                                     ? format(
-                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain -- We are checking if the value exists
-                                        form
-                                          .watch('sessions')
-                                          .find(
-                                            (session) =>
-                                              session.day_of_week === index,
-                                          )?.end_time!,
-                                        'hh:mm a',
-                                      )
+                                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain -- We are checking if the value exists
+                                      form
+                                        .watch('sessions')
+                                        .find(
+                                          (session) =>
+                                            session.day_of_week === index,
+                                        )?.end_time!,
+                                      'hh:mm a',
+                                    )
                                     : null}
                                 </SelectValue>
                               </SelectTrigger>

@@ -37,6 +37,11 @@ export type CreateCourseSchedulePayload = {
   }[];
 };
 
+export type UpdateEnrollmentSettingsPayload = {
+  type: string;
+  deadline: Date;
+};
+
 export const createCourse = (data: CreateCoursePayload): Promise<Course> => {
   return apiClient.post(base, data);
 };
@@ -53,4 +58,11 @@ export const createCourseSchedule = (
   data: CreateCourseSchedulePayload,
 ): Promise<Course> => {
   return apiClient.post(`${base}/${courseId}/schedule`, data);
+};
+
+export const updateEnrollmentSettings = (
+  courseId: string,
+  data: UpdateEnrollmentSettingsPayload,
+): Promise<Course> => {
+  return apiClient.patch(`${base}/${courseId}/enrollment`, data);
 };
