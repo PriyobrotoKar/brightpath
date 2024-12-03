@@ -10,7 +10,7 @@ const steps = [
   { label: 'Pricing & Monetization', path: '/pricing' },
   { label: 'Schedule', path: '/schedule' },
   { label: 'Enrollment Settings', path: '/enrollment' },
-  { label: 'Finish', path: '/finish' },
+  { label: 'Finish', path: '/complete' },
 ];
 
 export default function ProgressIndicator(): React.JSX.Element {

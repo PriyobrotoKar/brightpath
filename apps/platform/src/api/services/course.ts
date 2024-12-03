@@ -66,3 +66,7 @@ export const updateEnrollmentSettings = (
 ): Promise<Course> => {
   return apiClient.patch(`${base}/${courseId}/enrollment`, data);
 };
+
+export const getCourse = (courseId: string): Promise<Course> => {
+  return apiClient.get(`${base}/${courseId}`);
+};
