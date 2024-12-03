@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -21,6 +22,11 @@ import { UpdateEnrollmentDto } from './dto/update.enrollment';
 @UseGuards(CreatorGuard)
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
+
+  @Get(':id')
+  getCourse(@Param('id') id: string) {
+    return this.courseService.getCourse(id);
+  }
 
   @Post()
   createCourse(@CurrentUser() user: JWTPayload, @Body() dto: CreateCourseDto) {

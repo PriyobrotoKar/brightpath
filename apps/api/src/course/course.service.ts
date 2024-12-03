@@ -17,6 +17,20 @@ import { createCategoryIfNotExist } from '@/common/category';
 export class CourseService {
   constructor(private prisma: PrismaService) {}
 
+  async getCourse(courseId: string) {
+    const course = await this.prisma.course.findUnique({
+      where: {
+        id: courseId,
+      },
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course:${courseId} not found!`);
+    }
+
+    return course;
+  }
+
   async createCourse(user: JWTPayload, dto: CreateCourseDto) {
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
 
