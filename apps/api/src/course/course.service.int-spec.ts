@@ -109,9 +109,10 @@ describe('Course Controller Tests', () => {
         id: expect.any(String),
         name: 'Test Course',
         description: null,
-        categoryId: expect.any(String),
+        categoryId: expect.any(Number),
         tags: [],
-        banner: null,
+        logo: null,
+        thumbnails: [],
         accessType: 'EVERYONE',
         accessDuration: null,
         enrollmentDeadline: null,
@@ -346,6 +347,9 @@ describe('Course Controller Tests', () => {
   });
 
   describe('/course/:id/schedule', () => {
+    const start_date = new Date(new Date().setDate(new Date().getDate() + 1));
+    const end_date = new Date(new Date().setDate(new Date().getDate() + 2));
+
     afterEach(async () => {
       await prisma.session.deleteMany();
     });
@@ -468,8 +472,8 @@ describe('Course Controller Tests', () => {
         .set(headers)
         .send({
           course_type: 'COHORT',
-          start_date: '2024-11-19T18:30:00.263Z',
-          end_date: '2023-11-19T20:30:00.263Z',
+          start_date,
+          end_date: new Date('2024-11-19T20:30:00.263Z'),
           sessions: [
             {
               day_of_week: 1,
@@ -489,8 +493,8 @@ describe('Course Controller Tests', () => {
         .set(headers)
         .send({
           course_type: 'COHORT',
-          start_date: '2024-11-19T18:30:00.263Z',
-          end_date: '2025-11-19T20:30:00.263Z',
+          start_date,
+          end_date,
           sessions: [
             {
               day_of_week: 1,
@@ -510,8 +514,8 @@ describe('Course Controller Tests', () => {
         .set(headers)
         .send({
           course_type: 'COHORT',
-          start_date: '2024-11-19T18:30:00.263Z',
-          end_date: '2025-11-19T20:30:00.263Z',
+          start_date,
+          end_date,
           sessions: [
             {
               day_of_week: 7,
@@ -531,8 +535,8 @@ describe('Course Controller Tests', () => {
         .set(headers)
         .send({
           course_type: 'COHORT',
-          start_date: '2024-11-19T18:30:00.263Z',
-          end_date: '2025-11-19T20:30:00.263Z',
+          start_date,
+          end_date,
           sessions: [
             {
               day_of_week: 1,
@@ -554,8 +558,8 @@ describe('Course Controller Tests', () => {
         .set(headers)
         .send({
           course_type: 'COHORT',
-          start_date: '2024-11-19T18:30:00.263Z',
-          end_date: '2025-11-19T20:30:00.263Z',
+          start_date,
+          end_date,
           sessions: [
             {
               day_of_week: 1,
@@ -577,14 +581,15 @@ describe('Course Controller Tests', () => {
         id: expect.any(String),
         name: 'Test Course',
         description: null,
-        categoryId: expect.any(String),
+        categoryId: expect.any(Number),
         tags: [],
-        banner: null,
+        logo: null,
+        thumbnails: [],
         accessType: 'EVERYONE',
         accessDuration: null,
         enrollmentDeadline: null,
-        startAt: '2024-11-19T18:30:00.263Z',
-        endAt: '2025-11-19T20:30:00.263Z',
+        startAt: start_date.toISOString(),
+        endAt: end_date.toISOString(),
         type: 'COHORT',
         isPublished: false,
         Session: [
@@ -701,9 +706,10 @@ describe('Course Controller Tests', () => {
         id: testCourseId,
         name: 'Test Course',
         description: null,
-        categoryId: expect.any(String),
+        categoryId: expect.any(Number),
         tags: [],
-        banner: null,
+        logo: null,
+        thumbnails: [],
         accessType: 'INVITE_ONLY',
         accessDuration: null,
         enrollmentDeadline: '2025-11-19T18:30:00.263Z',
