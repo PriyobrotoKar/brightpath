@@ -70,3 +70,7 @@ export const updateEnrollmentSettings = (
 export const getCourse = (courseId: string): Promise<Course> => {
   return apiClient.get(`${base}/${courseId}`);
 };
+
+export const getCoursesForSelf = (): Promise<Course[]> => {
+  return apiClient.get(base);
+};

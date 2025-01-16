@@ -8,6 +8,7 @@ import {
   IconHomeFilled,
   IconLayoutDashboard,
   IconPlus,
+  IconSchool,
   IconSelector,
   IconUsers,
 } from '@tabler/icons-react';
@@ -22,11 +23,15 @@ import {
   DropdownMenuTrigger,
 } from '@brightpath/ui/components/dropdown-menu';
 import Image from 'next/image';
-import { Button } from '@brightpath/ui/components/button';
 import Link from 'next/link';
-import Search from './Search';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import type { Course } from '@brightpath/db';
 import Logo from '@/components/Logo';
 import { Menu, MenuLink } from '@/components/MenuLink';
+import { getCoursesForSelf } from '@/api/services/course';
+import { mediaUrl } from '@/lib/utils';
+import Search from './Search';
 
 function PrimarySidebar(): React.JSX.Element {
   const links = [
@@ -89,20 +94,47 @@ function CourseSidebar(): React.JSX.Element {
     },
   ];
 
+  const { data, isLoading } = useQuery({
+    queryKey: ['courses'],
+    queryFn: () => getCoursesForSelf(),
+  });
+  const [activeItem, setActiveItem] = useState<Course>();
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+    setActiveItem(data[0]);
+  }, [data]);
+
+  if (isLoading || !data) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <aside className="w-64 flex-shrink-0 space-y-5 px-3 py-5">
       <Logo />
       <DropdownMenu>
         <DropdownMenuTrigger className="bg-muted flex w-full items-center gap-2 rounded-md border p-2">
-          <div className="overflow-hidden rounded-md border">
-            <Image alt="Course Logo" height={36} src="/logo.svg" width={36} />
+          <div className="bg-background flex size-9 items-center justify-center overflow-hidden rounded-md border">
+            {mediaUrl(activeItem?.logo) ? (
+              <Image
+                alt="Course Logo"
+                height={36}
+                src={mediaUrl(activeItem?.logo) || ''}
+                width={36}
+              />
+            ) : (
+              <IconSchool className="text-muted-foreground" />
+            )}
           </div>
           <div className="space-y-1 text-left">
             <div className="text-md-semibold w-36 overflow-hidden text-ellipsis text-nowrap">
-              Sigma Web Development
+              {activeItem?.name}
             </div>
             <p className="text-muted-foreground text-xs">
-              Course - 10 Learners
+              {activeItem?.type === 'RECORDED' ? 'Course' : 'Cohort'} - 10
+              Learners
             </p>
           </div>
           <IconSelector className="text-muted-foreground" />
@@ -111,30 +143,34 @@ function CourseSidebar(): React.JSX.Element {
           <DropdownMenuLabel className="text-muted-foreground">
             Courses
           </DropdownMenuLabel>
-          <DropdownMenuItem>
-            <div className="overflow-hidden rounded-sm border">
-              <Image alt="Course Logo" height={20} src="/logo.svg" width={20} />
-            </div>
-            <div className="text-md w-40 overflow-hidden text-ellipsis text-nowrap">
-              Sigma Web Development
-            </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <div className="overflow-hidden rounded-sm border">
-              <Image alt="Course Logo" height={20} src="/logo.svg" width={20} />
-            </div>
-            <div className="text-md w-40 overflow-hidden text-ellipsis text-nowrap">
-              Sigma Web Development
-            </div>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <div className="overflow-hidden rounded-sm border">
-              <Image alt="Course Logo" height={20} src="/logo.svg" width={20} />
-            </div>
-            <div className="text-md w-40 overflow-hidden text-ellipsis text-nowrap">
-              Sigma Web Development
-            </div>
-          </DropdownMenuItem>
+          {data.map((course) => {
+            const logo = mediaUrl(course.logo);
+            return (
+              <DropdownMenuItem
+                key={course.id}
+                onClick={() => {
+                  setActiveItem(course);
+                }}
+              >
+                <div className="flex size-6 items-center justify-center overflow-hidden rounded-sm border">
+                  {logo ? (
+                    <Image
+                      alt="Course Logo"
+                      className="h-full w-full"
+                      height={20}
+                      src={logo}
+                      width={20}
+                    />
+                  ) : (
+                    <IconSchool className="text-muted-foreground" />
+                  )}
+                </div>
+                <div className="text-md w-40 overflow-hidden text-ellipsis text-nowrap">
+                  {course.name}
+                </div>
+              </DropdownMenuItem>
+            );
+          })}
           <DropdownMenuSeparator />
           <Link href="/dashboard/course/create/information">
             <DropdownMenuItem>
