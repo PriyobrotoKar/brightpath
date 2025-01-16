@@ -31,6 +31,14 @@ export class CourseService {
     return course;
   }
 
+  async getCoursesForSelf(user: JWTPayload) {
+    return await this.prisma.course.findMany({
+      where: {
+        creatorId: user.id,
+      },
+    });
+  }
+
   async createCourse(user: JWTPayload, dto: CreateCourseDto) {
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
 

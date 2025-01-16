@@ -28,6 +28,11 @@ export class CourseController {
     return this.courseService.getCourse(id);
   }
 
+  @Get()
+  getCoursesForSelf(@CurrentUser() user: JWTPayload) {
+    return this.courseService.getCoursesForSelf(user);
+  }
+
   @Post()
   createCourse(@CurrentUser() user: JWTPayload, @Body() dto: CreateCourseDto) {
     return this.courseService.createCourse(user, dto);
