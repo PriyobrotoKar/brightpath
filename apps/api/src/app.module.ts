@@ -13,6 +13,8 @@ import { UserModule } from './user/user.module';
 import { CourseModule } from './course/course.module';
 import { CategoryModule } from './category/category.module';
 import { StorageModule } from './storage/storage.module';
+import { ModuleModule } from './module/module.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { StorageModule } from './storage/storage.module';
       isGlobal: true,
       envFilePath: `../../.env${process.env.NODE_ENV ? '.' + process.env.NODE_ENV : ''}`,
     }),
+    CommonModule,
     AuthModule,
     PrismaModule,
     CacheModule,
@@ -27,6 +30,7 @@ import { StorageModule } from './storage/storage.module';
     CourseModule,
     CategoryModule,
     StorageModule,
+    ModuleModule,
   ],
   controllers: [AppController],
   providers: [

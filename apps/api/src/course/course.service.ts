@@ -1,7 +1,6 @@
 import { JWTPayload } from '@/auth/types/jwt-payload';
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,10 +11,14 @@ import { Prisma } from '@brightpath/db';
 import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
 import { createCategoryIfNotExist } from '@/common/category';
+import { AuthorityCheckerService } from '@/common/authority-checker.service';
 
 @Injectable()
 export class CourseService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private authorityChecker: AuthorityCheckerService,
+  ) {}
 
   async getCourse(courseId: string) {
     const course = await this.prisma.course.findUnique({
@@ -60,7 +63,7 @@ export class CourseService {
     courseId: string,
     dto: CreatePricingDto,
   ) {
-    await this.checkAuthority(courseId, user.id);
+    await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
     let data: Prisma.PricingCreateInput | null = null;
 
     const isPricingAlreadyExist = await this.prisma.pricing.findUnique({
@@ -109,7 +112,10 @@ export class CourseService {
     courseId: string,
     dto: CreateScheduleDto,
   ) {
-    const course = await this.checkAuthority(courseId, user.id);
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseId,
+      user.id,
+    );
 
     if (dto.course_type === 'COHORT' && (!dto.start_date || !dto.end_date)) {
       throw new BadRequestException(
@@ -211,7 +217,10 @@ export class CourseService {
     courseId: string,
     dto: UpdateEnrollmentDto,
   ) {
-    const course = await this.checkAuthority(courseId, user.id);
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseId,
+      user.id,
+    );
 
     if (dto.deadline) {
       if (!course.startAt || !course.endAt) {
@@ -241,31 +250,6 @@ export class CourseService {
     });
 
     return updatedCourse;
-  }
-
-  private async checkAuthority(courseId: string, userId: string) {
-    const course = await this.prisma.course.findUnique({
-      where: {
-        id: courseId,
-      },
-      include: {
-        Session: true,
-      },
-    });
-
-    if (!course) {
-      throw new NotFoundException(`Course:${courseId} not found!`);
-    }
-
-    const hasAuthority = course.creatorId === userId;
-
-    if (!hasAuthority) {
-      throw new ForbiddenException(
-        `User:${userId} does not have the required permission`,
-      );
-    }
-
-    return course;
   }
 
   private addDiscountToPricing(

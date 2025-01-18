@@ -39,6 +39,17 @@ enum AccessType {
   INVITE_ONLY
 }
 
+enum Status {
+  ARCHIVED
+  DRAFT
+  PUBLISHED
+}
+
+enum SubmissionType {
+  FILE_UPLOAD
+  FORM_SUBMISSION
+}
+
 model User {
   id             String  @id @default(cuid())
   email          String  @unique
@@ -78,6 +89,67 @@ model Course {
 
   pricing Pricing?
   Session Session[]
+  Module  Module[]
+}
+
+model Module {
+  id       String @id @default(cuid())
+  name     String
+  status   Status @default(DRAFT)
+  duration Int    @default(0)
+  order    Int
+
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Document   Document[]
+  Video      Video[]
+  Assignment Assignment[]
+}
+
+model Document {
+  id       String @id @default(cuid())
+  name     String
+  content  String
+  duration Int
+
+  module   Module @relation(fields: [moduleId], references: [id])
+  moduleId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Video {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  source      String
+  duration    Int
+  thumbnail   String?
+
+  module   Module @relation(fields: [moduleId], references: [id])
+  moduleId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Assignment {
+  id             String         @id @default(cuid())
+  name           String
+  description    String?
+  dueAt          DateTime
+  submissionType SubmissionType @default(FILE_UPLOAD)
+
+  module   Module @relation(fields: [moduleId], references: [id])
+  moduleId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Session {
@@ -90,7 +162,7 @@ model Session {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  course           Course            @relation(fields: [courseId], references: [id])
+  course           Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId         String
   RecurringDetails RecurringDetails?
 }
