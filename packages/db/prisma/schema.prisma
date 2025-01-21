@@ -93,11 +93,12 @@ model Course {
 }
 
 model Module {
-  id       String @id @default(cuid())
-  name     String
-  status   Status @default(DRAFT)
-  duration Int    @default(0)
-  order    Int
+  id          String @id @default(cuid())
+  name        String
+  status      Status @default(DRAFT)
+  duration    Int    @default(0)
+  order       Int
+  lessonCount Int    @default(0)
 
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId String
