@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ModuleService } from './module.service';
 import { Creator } from '@/decorators/role.decorator';
 import { CurrentUser } from '@/decorators/user.decorator';
@@ -17,5 +17,13 @@ export class ModuleController {
     @Param('courseId') courseId: string,
   ) {
     return this.moduleService.createModule(user, dto, courseId);
+  }
+
+  @Get(':courseId')
+  async getModules(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user: JWTPayload,
+  ) {
+    return this.moduleService.getModules(user, courseId);
   }
 }

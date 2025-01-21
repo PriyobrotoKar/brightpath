@@ -31,4 +31,19 @@ export class ModuleService {
       },
     });
   }
+
+  async getModules(user: JWTPayload, courseId: string) {
+    //check if the course exists and the user is the creator of that course
+    await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
+
+    //get the modules of the course
+    return await this.prisma.module.findMany({
+      where: {
+        courseId,
+      },
+      orderBy: {
+        order: 'asc',
+      },
+    });
+  }
 }

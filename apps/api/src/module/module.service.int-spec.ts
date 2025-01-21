@@ -121,5 +121,33 @@ describe('Module Controller Test', () => {
         updatedAt: expect.any(String),
       });
     });
+
+    it('should not get the modules of a course if the user does not have the authority over the course', async () => {
+      const headers = {
+        Authorization: `Bearer ${jwtTokens.invalidTestUser.access_token}`,
+      };
+
+      const response = await request(app.getHttpServer())
+        .get(`/module/${testCourse.id}`)
+        .set(headers);
+
+      expect(response.status).toBe(403);
+      expect(response.body.message).toBe(
+        `User:${invalidTestUser.id} does not have the required permission`,
+      );
+    });
+
+    it('should get the modules of a course', async () => {
+      const headers = {
+        Authorization: `Bearer ${jwtTokens.validTestUser.access_token}`,
+      };
+
+      const response = await request(app.getHttpServer())
+        .get(`/module/${testCourse.id}`)
+        .set(headers);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(1);
+    });
   });
 });
