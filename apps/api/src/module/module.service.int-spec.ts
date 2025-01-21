@@ -10,10 +10,12 @@ import { createUser } from '@/common/user';
 import { generateJwtTokens } from '@/common/utils';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
 import { CourseService } from '@/course/course.service';
+import { CacheService } from '@/cache/cache.service';
 
 describe('Module Controller Test', () => {
   let app: NestApplication;
   let prisma: PrismaService;
+  let cacheService: CacheService;
 
   let invalidTestUser: User;
   let validTestUser: User;
@@ -32,6 +34,7 @@ describe('Module Controller Test', () => {
     app = moduleRef.createNestApplication();
 
     prisma = moduleRef.get(PrismaService);
+    cacheService = moduleRef.get(CacheService);
     const jwtService = moduleRef.get(JwtService);
     const courseService = moduleRef.get(CourseService);
 
@@ -66,6 +69,10 @@ describe('Module Controller Test', () => {
     };
 
     await app.init();
+  });
+
+  afterAll(async () => {
+    await cacheService.onModuleDestroy();
   });
 
   describe('/module/:courseId', () => {
@@ -116,6 +123,7 @@ describe('Module Controller Test', () => {
         order: 0,
         status: 'DRAFT',
         duration: 0,
+        lessonCount: 0,
         courseId: testCourse.id,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
