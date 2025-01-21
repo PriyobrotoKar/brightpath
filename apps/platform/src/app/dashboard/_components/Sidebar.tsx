@@ -13,7 +13,7 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 import { v4 as uuid } from 'uuid';
-import { usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,6 @@ import {
   DropdownMenuTrigger,
 } from '@brightpath/ui/components/dropdown-menu';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { Course } from '@brightpath/db';
@@ -61,35 +60,40 @@ function PrimarySidebar(): React.JSX.Element {
 }
 
 function CourseSidebar(): React.JSX.Element {
+  const path = usePathname();
+  const router = useRouter();
+  const params = useParams();
+  const courseId = params.id as string;
+
   const links = [
     {
       name: 'Overview',
-      href: '/dashboard/course/id',
+      href: `/dashboard/course/${courseId}`,
       icon: IconLayoutDashboard,
     },
     {
       name: 'Content Library',
-      href: '/dashboard/course/id/content',
+      href: `/dashboard/course/${courseId}/content`,
       icon: IconFolder,
     },
     {
       name: 'Schedule & Sessions',
-      href: '/dashboard/course/id/schedule',
+      href: `/dashboard/course/${courseId}/schedule`,
       icon: IconCalendarTime,
     },
     {
       name: 'Enrollment',
-      href: '/dashboard/course/id/enrollment',
+      href: `/dashboard/course/${courseId}/enrollment`,
       icon: IconUsers,
     },
     {
       name: 'Engagement & Analytics',
-      href: '/dashboard/course/id/analytics',
+      href: `/dashboard/course/${courseId}/analytics`,
       icon: IconBrandGoogleAnalytics,
     },
     {
       name: 'Community',
-      href: '/dashboard/course/id/analytics',
+      href: `/dashboard/course/${courseId}/analytics`,
       icon: IconBrandHipchat,
     },
   ];
@@ -104,8 +108,9 @@ function CourseSidebar(): React.JSX.Element {
     if (!data) {
       return;
     }
-    setActiveItem(data[0]);
-  }, [data]);
+    const initialCourse = data.find((c) => c.id === courseId);
+    setActiveItem(initialCourse);
+  }, [data, courseId]);
 
   if (isLoading || !data) {
     return <div>Loading...</div>;
@@ -150,6 +155,7 @@ function CourseSidebar(): React.JSX.Element {
                 key={course.id}
                 onClick={() => {
                   setActiveItem(course);
+                  router.push(path.replace(courseId, course.id));
                 }}
               >
                 <div className="flex size-6 items-center justify-center overflow-hidden rounded-sm border">
@@ -172,16 +178,18 @@ function CourseSidebar(): React.JSX.Element {
             );
           })}
           <DropdownMenuSeparator />
-          <Link href="/dashboard/course/create/information">
-            <DropdownMenuItem>
-              <div className="rounded-sm border p-1">
-                <IconPlus />
-              </div>
-              <div className="text-muted-foreground text-md-semibold">
-                Create Course
-              </div>
-            </DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem
+            onClick={() => {
+              router.push('/dashboard/course/create/information');
+            }}
+          >
+            <div className="rounded-sm border p-1">
+              <IconPlus />
+            </div>
+            <div className="text-muted-foreground text-md-semibold">
+              Create Course
+            </div>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       <Search />

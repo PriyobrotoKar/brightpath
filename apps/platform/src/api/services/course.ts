@@ -1,6 +1,6 @@
 'use server';
 import type { Course, CourseType } from '@brightpath/db';
-import apiClient from '../client';
+import apiClient, { ApiError } from '../client';
 
 const base = '/course';
 
@@ -67,8 +67,19 @@ export const updateEnrollmentSettings = (
   return apiClient.patch(`${base}/${courseId}/enrollment`, data);
 };
 
-export const getCourse = (courseId: string): Promise<Course> => {
-  return apiClient.get(`${base}/${courseId}`);
+export const getCourse = async (courseId: string): Promise<Course | null> => {
+  try {
+    const course = await apiClient.get<Course>(`${base}/${courseId}`);
+    return course;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+
+    // eslint-disable-next-line no-console -- we need to log the error
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getCoursesForSelf = (): Promise<Course[]> => {
