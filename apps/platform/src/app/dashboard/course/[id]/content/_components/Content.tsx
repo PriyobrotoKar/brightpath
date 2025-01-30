@@ -160,8 +160,8 @@ function ContentTable({ modules }: { modules: Module[] }): React.JSX.Element {
     queryKey: ['modules'],
     queryFn: () =>
       getModulesByCourseId(courseId, {
-        status: searchParams.get('status') as string,
-        createdAt: searchParams.get('createdAt') as string,
+        status: searchParams.get('status'),
+        createdAt: searchParams.get('createdAt'),
       }),
     initialData: modules,
   });
@@ -184,7 +184,7 @@ function ContentTable({ modules }: { modules: Module[] }): React.JSX.Element {
 
   useEffect(() => {
     queryClient.setQueryData(['modules'], modules);
-  }, [modules]);
+  }, [modules, queryClient]);
 
   return (
     <div>

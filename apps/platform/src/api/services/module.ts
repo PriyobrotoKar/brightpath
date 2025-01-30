@@ -11,20 +11,21 @@ export type CreateModulePayload = {
 export const getModulesByCourseId = async (
   courseId: string,
   filters?: {
-    status?: string;
-    createdAt?: string;
+    status?: string | null;
+    createdAt?: string | null;
     sort?: string;
   },
 ): Promise<Module[]> => {
+  let params = {};
   if (filters) {
     Object.keys(filters).forEach((key) => {
-      if (filters[key as keyof typeof filters] === undefined) {
-        delete filters[key as keyof typeof filters];
+      if (!filters[key as keyof typeof filters]) {
+        params = { ...params, [key]: filters[key as keyof typeof filters] };
       }
     });
   }
 
-  return apiClient.get(`${base}/${courseId}`, filters);
+  return apiClient.get(`${base}/${courseId}`, params);
 };
 
 export const createModule = async (

@@ -18,8 +18,6 @@ export default async function ContentManagementPage({
     sort,
   });
 
-  console.log(modules);
-
   return (
     <div>
       <Header

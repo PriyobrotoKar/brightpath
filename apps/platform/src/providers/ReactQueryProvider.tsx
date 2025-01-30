@@ -9,6 +9,7 @@ function ReactQueryProvider({
 }: {
   children: React.ReactNode;
 }): React.JSX.Element {
+  // eslint-disable-next-line react/hook-use-state -- The queryClient setter is not required
   const [queryClient] = useState(() => new QueryClient());
 
   return (
