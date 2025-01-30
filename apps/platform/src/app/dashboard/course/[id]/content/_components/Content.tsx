@@ -158,10 +158,11 @@ function ContentTable({ modules }: { modules: Module[] }): React.JSX.Element {
 
   const { data } = useQuery({
     queryKey: ['modules'],
-    queryFn: () => getModulesByCourseId(courseId, {
-      status: searchParams.get("status") as string,
-      createdAt: searchParams.get("createdAt") as string,
-    }),
+    queryFn: () =>
+      getModulesByCourseId(courseId, {
+        status: searchParams.get('status') as string,
+        createdAt: searchParams.get('createdAt') as string,
+      }),
     initialData: modules,
   });
 
@@ -181,10 +182,9 @@ function ContentTable({ modules }: { modules: Module[] }): React.JSX.Element {
     })
     .filter((option) => option.id !== 'status');
 
-
   useEffect(() => {
-    queryClient.setQueryData(['modules'], modules)
-  }, [modules])
+    queryClient.setQueryData(['modules'], modules);
+  }, [modules]);
 
   return (
     <div>
