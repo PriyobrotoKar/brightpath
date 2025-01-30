@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateModuleDto } from './dto/create.module';
 import { AuthorityCheckerService } from '@/common/authority-checker.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { ModuleFilterDto } from './dto/filter.module';
 
 @Injectable()
 export class ModuleService {
@@ -32,18 +33,40 @@ export class ModuleService {
     });
   }
 
-  async getModules(user: JWTPayload, courseId: string) {
+  async getModules(
+    user: JWTPayload,
+    courseId: string,
+    {
+      filters: { status, createdAt },
+      sort,
+    }: {
+      filters: Pick<ModuleFilterDto, 'status' | 'createdAt'>;
+      sort: ModuleFilterDto['sort'];
+    },
+  ) {
     //check if the course exists and the user is the creator of that course
     await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
+
+    let orderBy: Record<string, 'asc' | 'desc'> = { order: 'asc' };
+
+    if (sort) {
+      const isDesc = sort.startsWith('-');
+      const field = isDesc ? sort.slice(1) : sort;
+      orderBy = {
+        [field]: isDesc ? 'desc' : 'asc',
+      };
+    }
 
     //get the modules of the course
     return await this.prisma.module.findMany({
       where: {
         courseId,
+        status,
+        createdAt: {
+          gte: createdAt ? new Date(createdAt) : undefined,
+        },
       },
-      orderBy: {
-        order: 'asc',
-      },
+      orderBy,
     });
   }
 }
