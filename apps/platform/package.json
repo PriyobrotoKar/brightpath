@@ -31,6 +31,7 @@
   "devDependencies": {
     "@brightpath/eslint-config": "workspace:*",
     "@brightpath/typescript-config": "workspace:*",
+    "@tanstack/react-query-devtools": "^5.64.2",
     "@types/node": "^20.16.5",
     "@types/react": "^18.3.6",
     "@types/react-dom": "^18.3.0",

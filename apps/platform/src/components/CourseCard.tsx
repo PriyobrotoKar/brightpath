@@ -1,16 +1,15 @@
 import { Button } from '@brightpath/ui/components/button';
 import { IconSchool } from '@tabler/icons-react';
 import Image from 'next/image';
-import { getCourse } from '@/api/services/course';
+import type { Course } from '@brightpath/db';
 
 interface CourseCardProps {
-  id: string;
+  course: Course;
 }
 
-export default async function CourseCard({
-  id,
-}: CourseCardProps): Promise<React.JSX.Element> {
-  const course = await getCourse(id);
+export default function CourseCard({
+  course,
+}: CourseCardProps): React.JSX.Element {
   return (
     <div className="bg- bg-secondary border-border relative z-10 w-full max-w-xs rounded-md border p-2 text-left">
       <div className="h-40 overflow-hidden rounded">
@@ -18,10 +17,7 @@ export default async function CourseCard({
           alt="Course Thumbnail"
           className="h-full w-full object-cover"
           height={600}
-          src={
-            `https://priyobroto-brightpath.s3.ap-south-1.amazonaws.com/${course.thumbnails[0]}` ||
-            ''
-          }
+          src={`https://priyobroto-brightpath.s3.ap-south-1.amazonaws.com/${course.thumbnails[0]}`}
           width={1200}
         />
       </div>

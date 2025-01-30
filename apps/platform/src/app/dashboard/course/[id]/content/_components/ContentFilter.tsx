@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@brightpath/ui/components/button';
 import { IconFilter } from '@tabler/icons-react';
 import {
@@ -16,26 +16,56 @@ import {
 } from '@brightpath/ui/components/accordion';
 import { Status } from '@brightpath/db';
 import type { VariantProps } from 'class-variance-authority';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { add } from 'date-fns';
 import type { statusVariants } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
+import { addQueryParam, removeQueryParam } from '@/lib/utils';
 
 const createdAtOptions = [
-  'Today',
-  'Last 7 days',
-  'Last 30 days',
-  'Last 90 days',
-  'Last year',
-  'Custom',
+  {
+    label: 'Today',
+    value: new Date(),
+  },
+  {
+    label: 'Yesterday',
+    value: add(new Date(), {
+      days: -1,
+    }),
+  },
+  {
+    label: 'Last 7 days',
+    value: add(new Date(), {
+      days: -7,
+    }),
+  },
+  {
+    label: 'Last 30 days',
+    value: add(new Date(), {
+      days: -30,
+    }),
+  },
+  {
+    label: 'Last 90 days',
+    value: add(new Date(), {
+      days: -90,
+    }),
+  },
+  {
+    label: 'Last year',
+    value: add(new Date(), {
+      years: -1,
+    }),
+  },
 ];
 
 function ContentFilter(): React.JSX.Element {
-  const [filters, setFilters] = useState<{
-    status: Status | undefined;
-    createdAt: (typeof createdAtOptions)[number] | undefined;
-  }>({
-    status: undefined,
-    createdAt: undefined,
-  });
+  const searchParams = useSearchParams();
+  const path = usePathname();
+  const router = useRouter();
+
+  const status = searchParams.get('status');
+  const createdAt = searchParams.get('createdAt');
 
   return (
     <DropdownMenu>
@@ -58,20 +88,22 @@ function ContentFilter(): React.JSX.Element {
                   keyof typeof Status,
                   VariantProps<typeof statusVariants>['status']
                 > = {
-                  DRAFT: 'ongoing',
+                  DRAFT: 'pending',
                   PUBLISHED: 'completed',
                   ARCHIVED: 'rejected',
                 };
+
                 return (
                   <DropdownMenuCheckboxItem
-                    checked={filters.status === value}
+                    checked={status === value}
                     className="py-2"
                     key={key}
                     onCheckedChange={(checked) => {
-                      setFilters({
-                        ...filters,
-                        status: checked ? value : undefined,
-                      });
+                      const url = checked
+                        ? `${path}?${addQueryParam('status', value, searchParams)}`
+                        : `${path}?${removeQueryParam('status', searchParams)}`;
+
+                      router.push(url);
                     }}
                   >
                     <StatusBadge status={statusMap[value]}>{key}</StatusBadge>
@@ -87,17 +119,20 @@ function ContentFilter(): React.JSX.Element {
             <AccordionContent className="p-2">
               {createdAtOptions.map((option) => (
                 <DropdownMenuCheckboxItem
-                  checked={filters.createdAt === option}
+                  checked={
+                    new Date(createdAt ?? '').toDateString() ===
+                    option.value.toDateString()
+                  }
                   className="py-3"
-                  key={option}
+                  key={option.label}
                   onCheckedChange={(checked) => {
-                    setFilters({
-                      ...filters,
-                      createdAt: checked ? option : undefined,
-                    });
+                    const url = checked
+                      ? `${path}?${addQueryParam('createdAt', option.value.toISOString(), searchParams)}`
+                      : `${path}?${removeQueryParam('createdAt', searchParams)}`;
+                    router.push(url);
                   }}
                 >
-                  {option}
+                  {option.label}
                 </DropdownMenuCheckboxItem>
               ))}
             </AccordionContent>

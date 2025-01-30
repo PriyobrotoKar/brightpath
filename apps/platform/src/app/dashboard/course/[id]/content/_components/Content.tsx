@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   flexRender,
@@ -8,7 +9,7 @@ import {
 } from '@tanstack/react-table';
 import { Separator } from '@brightpath/ui/components/separator';
 import { Label } from '@brightpath/ui/components/label';
-import { IconPlus, IconSearch, IconSortDescending } from '@tabler/icons-react';
+import { IconPlus, IconSearch } from '@tabler/icons-react';
 import { Input } from '@brightpath/ui/components/input';
 import { Button } from '@brightpath/ui/components/button';
 import {
@@ -22,9 +23,15 @@ import {
 import type { Module } from '@brightpath/db';
 import type { VariantProps } from 'class-variance-authority';
 import { format } from 'date-fns';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams, useSearchParams } from 'next/navigation';
 import type { statusVariants } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
+import type { CreateModulePayload } from '@/api/services/module';
+import { createModule, getModulesByCourseId } from '@/api/services/module';
 import ContentFilter from './ContentFilter';
+import type { SortOptions } from './ContentSort';
+import ContentSort from './ContentSort';
 
 const columns: ColumnDef<Omit<Module, 'updatedAt' | 'order'>>[] = [
   {
@@ -38,12 +45,10 @@ const columns: ColumnDef<Omit<Module, 'updatedAt' | 'order'>>[] = [
   {
     header: 'Status',
     accessorKey: 'status',
-    cell: ({ row }) => {
-      const status: Module['status'] = row.getValue('status');
+    cell: ({ getValue }) => {
+      const status = getValue() as Module['status'];
       return (
-        <StatusBadge status={statusMap[status].status}>
-          {row.getValue('status')}
-        </StatusBadge>
+        <StatusBadge status={statusMap[status].status}>{status}</StatusBadge>
       );
     },
   },
@@ -54,8 +59,8 @@ const columns: ColumnDef<Omit<Module, 'updatedAt' | 'order'>>[] = [
   {
     header: 'Created At',
     accessorKey: 'createdAt',
-    cell: ({ row }) => {
-      const date: string = row.getValue('createdAt');
+    cell: ({ getValue }) => {
+      const date = getValue() as string;
       return format(new Date(date), ' dd MMM yyyy');
     },
   },
@@ -70,22 +75,53 @@ const statusMap: Record<
   ARCHIVED: { status: 'rejected' },
 };
 
-function Content({ modules }: { modules: Module[] }): React.JSX.Element {
-  return (
-    <div>
-      <ContentFilters />
-      <ContentTable modules={modules} />
-    </div>
-  );
+interface ContentFilterProps {
+  modules: Module[];
+  sortOptions: SortOptions[];
+  courseId: string;
 }
 
-export default Content;
+function ContentFilters({
+  modules,
+  sortOptions,
+  courseId,
+}: ContentFilterProps): React.JSX.Element {
+  const queryClient = useQueryClient();
 
-function ContentFilters(): React.JSX.Element {
+  const mutation = useMutation({
+    mutationFn: (data: CreateModulePayload) => createModule(data, courseId),
+    onMutate: async (newModule: CreateModulePayload) => {
+      await queryClient.cancelQueries({ queryKey: ['modules'] });
+      const previousModules = queryClient.getQueryData<Module[]>(['modules']);
+      queryClient.setQueryData<Module[]>(['modules'], (old) => {
+        if (!old) return [];
+        return [
+          ...old,
+          {
+            ...newModule,
+            id: Math.random().toString(),
+            status: 'DRAFT',
+            lessonCount: 0,
+            duration: 0,
+            createdAt: new Date(),
+            order: old.length + 1,
+            updatedAt: new Date(),
+            courseId,
+          },
+        ];
+      });
+      return { previousModules };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData<Module[]>(['modules'], context?.previousModules);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['modules'] }),
+  });
+
   return (
     <div className="flex justify-between py-3">
       <div className="flex items-center gap-2">
-        <div className="text-md-semibold">20 items</div>
+        <div className="text-md-semibold">{modules.length} items</div>
         <Separator className="self-stretch" orientation="vertical" />
         <div className="flex items-center">
           <Label>
@@ -99,11 +135,13 @@ function ContentFilters(): React.JSX.Element {
       </div>
       <div className="flex items-center space-x-2">
         <ContentFilter />
-        <Button size="sm" variant="outline">
-          <IconSortDescending />
-          Sort
-        </Button>
-        <Button size="sm">
+        <ContentSort sortOptions={sortOptions} />
+        <Button
+          onClick={() => {
+            mutation.mutate({ name: 'New Module' });
+          }}
+          size="sm"
+        >
           <IconPlus />
           New Module
         </Button>
@@ -113,43 +151,84 @@ function ContentFilters(): React.JSX.Element {
 }
 
 function ContentTable({ modules }: { modules: Module[] }): React.JSX.Element {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const courseId = params.id as string;
+  const queryClient = useQueryClient();
+
+  const { data } = useQuery({
+    queryKey: ['modules'],
+    queryFn: () => getModulesByCourseId(courseId, {
+      status: searchParams.get("status") as string,
+      createdAt: searchParams.get("createdAt") as string,
+    }),
+    initialData: modules,
+  });
+
   const table = useReactTable({
     columns,
-    data: modules,
+    data,
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const sortOptions = table
+    .getFlatHeaders()
+    .map((header) => {
+      return {
+        id: header.id,
+        header: String(header.column.columnDef.header),
+      };
+    })
+    .filter((option) => option.id !== 'status');
+
+
+  useEffect(() => {
+    queryClient.setQueryData(['modules'], modules)
+  }, [modules])
+
   return (
-    <Table>
-      <TableHeader>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
-                {flexRender(
-                  header.column.columnDef.header,
-                  header.getContext(),
-                )}
-              </TableHead>
-            ))}
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {table.getRowModel().rows.map((row) => {
-          return (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => {
-                return (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                );
-              })}
+    <div>
+      <ContentFilters
+        courseId={courseId}
+        modules={modules}
+        sortOptions={sortOptions}
+      />
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+                </TableHead>
+              ))}
             </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => {
+            return (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => {
+                  return (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
+
+export default ContentTable;
