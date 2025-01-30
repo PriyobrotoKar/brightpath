@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  ParseIntPipe,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { Public } from '@/decorators/public.decorator';
 import { Creator } from '@/decorators/role.decorator';

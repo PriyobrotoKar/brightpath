@@ -3,7 +3,6 @@ import {
   IsDateString,
   IsEnum,
   IsOptional,
-  IsString,
   Validate,
   ValidatorConstraint,
   ValidatorConstraintInterface,
