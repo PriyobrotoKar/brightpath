@@ -19,7 +19,7 @@ export const getModulesByCourseId = async (
   let params = {};
   if (filters) {
     Object.keys(filters).forEach((key) => {
-      if (!filters[key as keyof typeof filters]) {
+      if (filters[key as keyof typeof filters]) {
         params = { ...params, [key]: filters[key as keyof typeof filters] };
       }
     });

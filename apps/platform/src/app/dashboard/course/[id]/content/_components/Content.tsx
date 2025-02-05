@@ -24,7 +24,7 @@ import type { Module } from '@brightpath/db';
 import type { VariantProps } from 'class-variance-authority';
 import { format } from 'date-fns';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import type { statusVariants } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
 import type { CreateModulePayload } from '@/api/services/module';
@@ -151,6 +151,7 @@ function ContentFilters({
 }
 
 function ContentTable({ modules }: { modules: Module[] }): React.JSX.Element {
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
   const courseId = params.id as string;
@@ -211,7 +212,14 @@ function ContentTable({ modules }: { modules: Module[] }): React.JSX.Element {
         <TableBody>
           {table.getRowModel().rows.map((row) => {
             return (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                onClick={() => {
+                  router.push(
+                    `/dashboard/course/${courseId}/content/${row.original.id}`,
+                  );
+                }}
+              >
                 {row.getVisibleCells().map((cell) => {
                   return (
                     <TableCell key={cell.id}>

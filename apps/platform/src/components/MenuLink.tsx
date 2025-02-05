@@ -10,11 +10,8 @@ interface MenuProps {
 }
 
 interface MenuLinkProps {
-  link: {
-    name: string;
-    href: string;
-    icon: React.ElementType;
-  };
+  href: string;
+  children: React.ReactNode;
   className?: string;
 }
 
@@ -22,20 +19,24 @@ function Menu({ children, className }: MenuProps): React.JSX.Element {
   return <div className={cn('flex flex-col gap-2', className)}>{children}</div>;
 }
 
-function MenuLink({ link }: MenuLinkProps): React.JSX.Element {
+function MenuLink({
+  href,
+  className,
+  children,
+}: MenuLinkProps): React.JSX.Element {
   const pathname = usePathname();
   return (
     <Link
       className={cn(
         buttonVariants({
-          variant: link.href === pathname ? 'secondary' : 'ghost',
+          variant: href === pathname ? 'secondary' : 'ghost',
         }),
         'justify-start gap-2',
+        className,
       )}
-      href={link.href}
+      href={href}
     >
-      <link.icon />
-      <span>{link.name}</span>
+      {children}
     </Link>
   );
 }

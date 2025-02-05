@@ -52,7 +52,10 @@ function PrimarySidebar(): React.JSX.Element {
       <Search />
       <Menu>
         {links.map((link) => (
-          <MenuLink key={uuid()} link={link} />
+          <MenuLink href={link.href} key={uuid()}>
+            <link.icon />
+            {link.name}
+          </MenuLink>
         ))}
       </Menu>
     </aside>
@@ -195,7 +198,10 @@ function CourseSidebar(): React.JSX.Element {
       <Search />
       <Menu>
         {links.map((link) => (
-          <MenuLink key={uuid()} link={link} />
+          <MenuLink href={link.href} key={uuid()}>
+            <link.icon />
+            {link.name}
+          </MenuLink>
         ))}
       </Menu>
     </aside>
