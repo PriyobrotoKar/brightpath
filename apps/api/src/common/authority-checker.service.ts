@@ -33,4 +33,22 @@ export class AuthorityCheckerService {
 
     return course;
   }
+
+  async checkAuthorityOverModule(moduleId: string, userId: string) {
+    //check if the module exists
+    const module = await this.prisma.module.findUnique({
+      where: {
+        id: moduleId,
+      },
+    });
+
+    if (!module) {
+      throw new NotFoundException(`Module:${moduleId} not found!`);
+    }
+
+    //check if the user is the creator of the course of the module
+    await this.checkAuthorityOverCourse(module.courseId, userId);
+
+    return module;
+  }
 }

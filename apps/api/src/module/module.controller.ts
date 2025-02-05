@@ -5,6 +5,7 @@ import { CurrentUser } from '@/decorators/user.decorator';
 import { type JWTPayload } from '@/auth/types/jwt-payload';
 import { CreateModuleDto } from './dto/create.module';
 import { ModuleFilterDto } from './dto/filter.module';
+import { CreateDocumentDto } from './dto/create.document';
 
 @Controller('module')
 export class ModuleController {
@@ -30,5 +31,23 @@ export class ModuleController {
       filters: { status: queryParams.status, createdAt: queryParams.createdAt },
       sort: queryParams.sort,
     });
+  }
+
+  @Creator()
+  @Post(':moduleId/lesson/document')
+  async createDocument(
+    @Param('moduleId') moduleId: string,
+    @CurrentUser() user: JWTPayload,
+    @Body() dto: CreateDocumentDto,
+  ) {
+    return this.moduleService.createDocument(user, dto, moduleId);
+  }
+
+  @Get(':moduleId/lesson')
+  async getLessons(
+    @Param('moduleId') moduleId: string,
+    @CurrentUser() user: JWTPayload,
+  ) {
+    return this.moduleService.getLessons(user, moduleId);
   }
 }
