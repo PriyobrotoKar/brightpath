@@ -85,8 +85,8 @@ const config = {
       '3xl': [
         '3rem',
         {
-          lineHeight: '3rem',
-          fontWeight: '800',
+          lineHeight: '3.25rem',
+          fontWeight: '700',
         },
       ],
     },

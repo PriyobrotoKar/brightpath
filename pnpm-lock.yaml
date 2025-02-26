@@ -234,6 +234,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.20.6
         version: 8.20.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tiptap/extension-character-count':
+        specifier: ^2.11.5
+        version: 2.11.5(@tiptap/core@2.11.4(@tiptap/pm@2.11.4))(@tiptap/pm@2.11.4)
       '@tiptap/extension-link':
         specifier: ^2.11.5
         version: 2.11.5(@tiptap/core@2.11.4(@tiptap/pm@2.11.4))(@tiptap/pm@2.11.4)
@@ -3003,6 +3006,12 @@ packages:
     resolution: {integrity: sha512-F/A8MDwKjpCWxiIvyrE3bd4JffK62csR5oIqtYqE6XNIDD2cYlOOjM2+biokfwokZbpB2RMvPz1Gk09hJJriaA==}
     peerDependencies:
       '@tiptap/core': ^2.7.0
+
+  '@tiptap/extension-character-count@2.11.5':
+    resolution: {integrity: sha512-Da2VGb7ClmKwXdQdQC2735qylYD8/MQAPA0skPEcHxcDTDuI8ibyIDnMPnczgS/hR5g0TYE2DQp/dkhJXeovkQ==}
+    peerDependencies:
+      '@tiptap/core': ^2.7.0
+      '@tiptap/pm': ^2.7.0
 
   '@tiptap/extension-code-block@2.11.4':
     resolution: {integrity: sha512-N15ifPl/6+0I62/ARfRpqb2CHLDTWszl1OOU9lwMb4pEba1TdI53P+dbK2/JFJieNaaqdFR2pMr5Eae3skD7mQ==}
@@ -11154,6 +11163,11 @@ snapshots:
   '@tiptap/extension-bullet-list@2.11.4(@tiptap/core@2.11.4(@tiptap/pm@2.11.4))':
     dependencies:
       '@tiptap/core': 2.11.4(@tiptap/pm@2.11.4)
+
+  '@tiptap/extension-character-count@2.11.5(@tiptap/core@2.11.4(@tiptap/pm@2.11.4))(@tiptap/pm@2.11.4)':
+    dependencies:
+      '@tiptap/core': 2.11.4(@tiptap/pm@2.11.4)
+      '@tiptap/pm': 2.11.4
 
   '@tiptap/extension-code-block@2.11.4(@tiptap/core@2.11.4(@tiptap/pm@2.11.4))(@tiptap/pm@2.11.4)':
     dependencies:

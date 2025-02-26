@@ -71,7 +71,11 @@
 
 .mdxeditor {
   height: 200px;
-  overflow: scroll;
+  overflow-y: scroll;
+}
+
+.mdxeditor::-webkit-scrollbar {
+  width: 0;
 }
 
 .mdxeditor-root-contenteditable {
