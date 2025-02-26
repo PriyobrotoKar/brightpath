@@ -1,10 +1,19 @@
 import { JWTPayload } from '@/auth/types/jwt-payload';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateModuleDto } from './dto/create.module';
 import { AuthorityCheckerService } from '@/common/authority-checker.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ModuleFilterDto } from './dto/filter.module';
 import { CreateDocumentDto } from './dto/create.document';
+import { Assignment, Document, Video } from '@brightpath/db';
+import { CreateVideoDto } from './dto/create.video';
+import { CreateAssignmentDto } from './dto/create.assignment';
+import { UpdateDocumentDto } from './dto/update.document';
+import { UpdateAssignmentDto } from './dto/update.assignment';
 
 @Injectable()
 export class ModuleService {
@@ -71,6 +80,42 @@ export class ModuleService {
     });
   }
 
+  async getLessonById(user: JWTPayload, moduleId: string, lessonId: string) {
+    //check if the module exists and the user is the creator of that module
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    const [document, video, assignment] = await Promise.all([
+      this.prisma.document.findUnique({ where: { id: lessonId } }),
+      this.prisma.video.findUnique({ where: { id: lessonId } }),
+      this.prisma.assignment.findUnique({ where: { id: lessonId } }),
+    ]);
+
+    const lesson =
+      (document && { ...document, type: 'document' }) ||
+      (video && { ...video, type: 'video' }) ||
+      (assignment && { ...assignment, type: 'assignment' });
+
+    if (!lesson) throw new NotFoundException(`Lesson:${lessonId} not found`);
+
+    return lesson;
+  }
+
+  async getVideoLesson(user: JWTPayload, moduleId: string, videoId: string) {
+    //check if the module exists and the user is the creator of that module
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    //get the video lesson
+    const video = await this.prisma.video.findUnique({
+      where: {
+        id: videoId,
+      },
+    });
+
+    if (!video) throw new NotFoundException(`Video:${videoId} not found`);
+
+    return video;
+  }
+
   async createDocument(
     user: JWTPayload,
     dto: CreateDocumentDto,
@@ -87,6 +132,80 @@ export class ModuleService {
         duration: 0,
         moduleId,
       },
+    });
+  }
+
+  async updateDocument(
+    user: JWTPayload,
+    dto: UpdateDocumentDto,
+    moduleId: string,
+    documentId: string,
+  ) {
+    //check if the module exists and the user is the creator of that module
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    //update the document
+    return await this.prisma.document.update({
+      where: {
+        id: documentId,
+      },
+      data: dto,
+    });
+  }
+
+  async createVideo(user: JWTPayload, dto: CreateVideoDto, moduleId: string) {
+    //check if the module exists and the user is the creator of that module
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    //create the video
+    return await this.prisma.video.create({
+      data: {
+        name: dto.name,
+        duration: 0,
+        source: dto.source,
+        moduleId,
+      },
+    });
+  }
+
+  async createAssignment(
+    user: JWTPayload,
+    dto: CreateAssignmentDto,
+    moduleId: string,
+  ) {
+    //check if the module exists and the user is the creator of that module
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    //create the assignment
+    return await this.prisma.assignment.create({
+      data: {
+        name: dto.name,
+        submissionType: dto.submissionType,
+        moduleId,
+      },
+    });
+  }
+
+  async updateAssignment(
+    user: JWTPayload,
+    dto: UpdateAssignmentDto,
+    moduleId: string,
+    assignmentId: string,
+  ) {
+    //check if the module exists and the user is the creator of that module
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    //validate id the due date is in the past
+    if (dto.dueAt && new Date(dto.dueAt) < new Date()) {
+      throw new BadRequestException('Due date cannot be in the past');
+    }
+
+    //update the assignment
+    return await this.prisma.assignment.update({
+      where: {
+        id: assignmentId,
+      },
+      data: dto,
     });
   }
 
@@ -117,7 +236,18 @@ export class ModuleService {
 
     const lessonPromises = [documents, videos, assignments];
 
-    const lessons = (await Promise.all(lessonPromises)).flat();
+    const types = ['document', 'video', 'assignment'];
+
+    const lessons = (await Promise.all(lessonPromises))
+      .map((lessons, i) =>
+        lessons.map((lesson: Document | Video | Assignment) => ({
+          ...lesson,
+          type: types[i],
+        })),
+      )
+      .flat();
+
+    lessons.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
     return lessons;
   }

@@ -157,5 +157,8 @@ describe('Module Controller Test', () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveLength(1);
     });
+
+    //TODO: Add tests for createDocument
+    //TODO: Add tests for getLessons
   });
 });
