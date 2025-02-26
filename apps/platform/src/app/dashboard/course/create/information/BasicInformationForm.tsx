@@ -310,7 +310,7 @@ export default function BasicInformationForm(): React.JSX.Element {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <MDXEditor
-                    className="border-border max-w-screen-sm rounded-md border"
+                    className="border-border max-w-screen-sm rounded-md border px-3 py-2"
                     contentEditableClassName="prose h-full"
                     markdown=""
                     onChange={(markdown) => {

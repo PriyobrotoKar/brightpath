@@ -1,22 +1,28 @@
+import { getLessonById } from '@/api/services/module';
 import Editor from './_components/Editor';
-
-const lesson = {
-  id: 1,
-  title: 'Lesson 1',
-  content: '',
-  type: 'document',
-};
+import VideoUploader from './_components/VideoUpload';
+import AssignmentCreationForm from './_components/AssignmentCreationForm';
 
 const LessonContent = {
   document: Editor,
+  video: VideoUploader,
+  assignment: AssignmentCreationForm,
 };
 
-export default function LessonPage(): React.JSX.Element {
+export default async function LessonPage({
+  params,
+}: {
+  params: {
+    moduleId: string;
+    lessonId: string;
+  };
+}): Promise<React.JSX.Element> {
+  const lesson = await getLessonById(params.moduleId, params.lessonId);
   const Content = LessonContent[lesson.type as keyof typeof LessonContent];
 
   return (
     <div className="flex-1 pl-4">
-      <Content />
+      <Content lesson={lesson} />
     </div>
   );
 }

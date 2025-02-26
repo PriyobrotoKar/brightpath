@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import React from 'react';
 import Header from '@/app/dashboard/_components/Header';
+import SaveIndicatorProvider from '@/providers/SaveIndicatorProvider';
 import Sidebar from './_components/Sidebar';
 
 export default function ModuleContentLayout({
@@ -15,8 +16,10 @@ export default function ModuleContentLayout({
         title="Content Library"
       />
       <div className="flex h-full pt-4">
-        <Sidebar />
-        {children}
+        <SaveIndicatorProvider>
+          <Sidebar />
+          {children}
+        </SaveIndicatorProvider>
       </div>
     </div>
   );
