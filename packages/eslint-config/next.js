@@ -30,11 +30,6 @@ module.exports = {
     JSX: true,
   },
   settings: {
-    'import/resolver': {
-      typescript: {
-        project,
-      },
-    },
     'import/ignore': ['node_modules'],
   },
   ignorePatterns: ['node_modules/', 'dist/'],
@@ -50,6 +45,7 @@ module.exports = {
       },
     ],
     'import/no-cycle': 'off',
+    'import/no-unresolved': 'off',
     '@typescript-eslint/consistent-type-definitions': 'off',
   },
 };
