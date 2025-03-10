@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { getCourse } from '@/api/services/course';
 import Header from '../../_components/Header';
+import { getCourse } from '@/api/services/course';
 
 export default async function CourseDashboardPage({
   params: { id },

@@ -9,13 +9,13 @@ import type { Assignment, Document, Video } from '@brightpath/db';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from '@brightpath/ui/components/sonner';
 import CharacterCount from '@tiptap/extension-character-count';
+import EditorControls from './EditorControls';
+import AutoSizeTextarea from './AutoSizeTextarea';
 import useDebounce from '@/hooks/useDebounce';
 import { useSaveIndicator } from '@/providers/SaveIndicatorProvider';
 import useLocalAutosave from '@/hooks/useLocalAutosave';
 import type { UpdateDocumentPayload } from '@/api/services/module';
 import { updateDocument } from '@/api/services/module';
-import EditorControls from './EditorControls';
-import AutoSizeTextarea from './AutoSizeTextarea';
 
 const extensions = [
   StarterKit,

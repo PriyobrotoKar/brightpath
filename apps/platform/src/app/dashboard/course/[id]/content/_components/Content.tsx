@@ -25,13 +25,13 @@ import type { VariantProps } from 'class-variance-authority';
 import { format } from 'date-fns';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import ContentFilter from './ContentFilter';
+import type { SortOptions } from './ContentSort';
+import ContentSort from './ContentSort';
 import type { statusVariants } from '@/components/StatusBadge';
 import StatusBadge from '@/components/StatusBadge';
 import type { CreateModulePayload } from '@/api/services/module';
 import { createModule, getModulesByCourseId } from '@/api/services/module';
-import ContentFilter from './ContentFilter';
-import type { SortOptions } from './ContentSort';
-import ContentSort from './ContentSort';
 
 const columns: ColumnDef<Omit<Module, 'updatedAt' | 'order'>>[] = [
   {

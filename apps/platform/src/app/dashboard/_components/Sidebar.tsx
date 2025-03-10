@@ -26,11 +26,11 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { Course } from '@brightpath/db';
+import Search from './Search';
 import Logo from '@/components/Logo';
 import { Menu, MenuLink } from '@/components/MenuLink';
 import { getCoursesForSelf } from '@/api/services/course';
 import { mediaUrl } from '@/lib/utils';
-import Search from './Search';
 
 function PrimarySidebar(): React.JSX.Element {
   const links = [

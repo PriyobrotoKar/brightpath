@@ -27,7 +27,7 @@ import {
   IconLink,
   IconUnderline,
 } from '@tabler/icons-react';
-import type { ChangeEvent, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Input } from '@brightpath/ui/components/input';
 

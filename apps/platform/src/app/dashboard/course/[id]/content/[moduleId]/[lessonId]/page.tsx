@@ -1,7 +1,7 @@
-import { getLessonById } from '@/api/services/module';
 import Editor from './_components/Editor';
 import VideoUploader from './_components/VideoUpload';
 import AssignmentCreationForm from './_components/AssignmentCreationForm';
+import { getLessonById } from '@/api/services/module';
 
 const LessonContent = {
   document: Editor,

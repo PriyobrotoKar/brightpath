@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
-export default function useLocalAutosave(key: string, data: string) {
+export default function useLocalAutosave(
+  key: string,
+  data: string,
+): { autosave: boolean; setAutosave: (value: boolean) => void } {
   const [autosave, setAutosave] = useState(false);
   const dataRef = useRef(data);
 
@@ -13,13 +16,13 @@ export default function useLocalAutosave(key: string, data: string) {
       if (autosave) {
         // Save data to local storage
         localStorage.setItem(key, dataRef.current);
-        console.log('Autosaved:', dataRef.current);
       }
     }, 5000);
 
     return () => {
       clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- key is not a dependency
   }, [autosave]);
 
   return { autosave, setAutosave };

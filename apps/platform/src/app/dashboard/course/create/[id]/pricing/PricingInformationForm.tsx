@@ -23,9 +23,9 @@ import { cn } from '@brightpath/ui/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from '@brightpath/ui/components/sonner';
 import { useMutation } from '@tanstack/react-query';
+import FormInfo from '../../_components/FormInfo';
 import type { CreateCoursePricingPayload } from '@/api/services/course';
 import { createCoursePricing } from '@/api/services/course';
-import FormInfo from '../../_components/FormInfo';
 
 const pricingSchema = z.object({
   model: z.nativeEnum(PaymentPlan),

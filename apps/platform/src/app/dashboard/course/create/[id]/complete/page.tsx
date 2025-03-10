@@ -1,8 +1,8 @@
 import { Button } from '@brightpath/ui/components/button';
 import Link from 'next/link';
+import FormInfo from '../../_components/FormInfo';
 import CourseCard from '@/components/CourseCard';
 import { getCourse } from '@/api/services/course';
-import FormInfo from '../../_components/FormInfo';
 
 export default async function CreationCompletePage({
   params: { id },

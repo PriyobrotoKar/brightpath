@@ -40,7 +40,9 @@ export function useSaveIndicator(lessonId: string | undefined): {
   if (!lessonId) {
     return {
       isSaving: false,
-      setIsSaving: () => {},
+      setIsSaving: () => {
+        return null;
+      },
     };
   }
 

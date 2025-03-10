@@ -1,5 +1,5 @@
-import { getOnboardingStatus } from '@/lib/onboardingStatus';
 import Indicators from './Indicators';
+import { getOnboardingStatus } from '@/lib/onboardingStatus';
 
 async function Steps(): Promise<React.JSX.Element> {
   const status = await getOnboardingStatus();
