@@ -23,6 +23,7 @@
     "@tiptap/pm": "^2.11.4",
     "@tiptap/react": "^2.11.4",
     "@tiptap/starter-kit": "^2.11.4",
+    "axios": "^1.8.1",
     "class-variance-authority": "^0.7.0",
     "date-fns": "^4.1.0",
     "jose": "^5.9.4",
