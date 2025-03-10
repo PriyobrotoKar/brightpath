@@ -14,10 +14,12 @@ import { CompleteMultipartUploadDto } from './dto/complete.multipart-upload';
 @Injectable()
 export class StorageService {
   bucketName: string;
+  tempBucketName: string;
   s3: S3Client;
 
   constructor(private config: ConfigService) {
     this.bucketName = this.config.get('AWS_BUCKET_NAME');
+    this.tempBucketName = this.config.get('AWS_TEMP_BUCKET_NAME');
     this.s3 = new S3Client({
       endpoint: `http://s3.localhost.localstack.cloud:4566`,
       credentials: {
@@ -30,7 +32,7 @@ export class StorageService {
 
   async initializeMultipartUpload(contentType: string) {
     const multipartParams = {
-      Bucket: this.bucketName,
+      Bucket: this.tempBucketName,
       Key: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${contentType.split('/')[1]}`,
     };
 
@@ -68,7 +70,7 @@ export class StorageService {
     const { fileKey, uploadId, parts } = dto;
 
     const signedUrlParams = {
-      Bucket: this.bucketName,
+      Bucket: this.tempBucketName,
       Key: fileKey,
       UploadId: uploadId,
     };
@@ -100,7 +102,7 @@ export class StorageService {
     parts.sort((a, b) => a.PartNumber - b.PartNumber);
 
     const command = new CompleteMultipartUploadCommand({
-      Bucket: this.bucketName,
+      Bucket: this.tempBucketName,
       Key: fileKey,
       UploadId: uploadId,
       MultipartUpload: {
