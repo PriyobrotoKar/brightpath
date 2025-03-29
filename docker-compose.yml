@@ -21,16 +21,6 @@ services:
     volumes:
       - redis:/data
 
-  s3:
-    container_name: "S3"
-    image: gresau/localstack-persist
-    environment:
-      - PERSISTENCE=1
-    ports:
-      - "4566:4566"
-    volumes:
-      - s3:/persisted-data
-
   kafka:
     container_name: "Kafka"
     image: apache/kafka:3.8.0
