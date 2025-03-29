@@ -1,0 +1,20 @@
+{
+  "name": "video-transcoder",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "awslocal logs tail /aws/lambda/brightpath-video-transcoding-consumer --format short --follow",
+    "build": "npx tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "@types/node": "^20.16.5"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ecs": "^3.778.0"
+  }
+}
