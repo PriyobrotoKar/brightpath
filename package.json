@@ -9,6 +9,7 @@
     "dev": "turbo dev",
     "dev:api": "turbo dev --filter=api",
     "dev:platform": "turbo dev --filter=platform",
+    "docker:start": "docker compose -f docker-compose.yml -f apps/api/docker-compose.yml up --build",
     "db:generate": "pnpm run --filter=db db:generate",
     "db:migrate": "pnpm run --filter=db db:migrate",
     "db:studio": "pnpm run --filter=db db:studio",
