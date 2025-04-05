@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "awslocal logs tail /aws/lambda/brightpath-video-transcoding-consumer --format short --follow",
     "build": "npx tsc"
   },
   "keywords": [],
