@@ -212,9 +212,188 @@ resource "aws_lambda_function" "video_transcoding_consumer" {
   }
 }
 
+resource "aws_iam_role" "api_lambda_role" {
+  name = "brightpath-api-lambda-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+
+data "aws_iam_policy_document" "api_lambda_policy_document" {
+  statement {
+    sid    = "AllowCloudWatchLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["arn:aws:logs:*:*:*"]
+  }
+}
+
+resource "aws_iam_policy" "api_lambda_policy" {
+  name   = "api-lambda-policy"
+  policy = data.aws_iam_policy_document.api_lambda_policy_document.json
+}
+
+resource "aws_iam_role_policy_attachment" "api_lambda_policy_attachment" {
+  role       = aws_iam_role.api_lambda_role.name
+  policy_arn = aws_iam_policy.api_lambda_policy.arn
+}
+
 resource "aws_lambda_event_source_mapping" "video_transcoding_consumer_event_source" {
   event_source_arn = aws_sqs_queue.video_transcoding_queue.arn
   function_name    = aws_lambda_function.video_transcoding_consumer.arn
+}
+
+resource "random_id" "lambda_id" {
+  byte_length = 4
+}
+
+resource "aws_lambda_function" "api_lambda" {
+  function_name = "brightpath-api-${random_id.lambda_id.hex}"
+  role          = aws_iam_role.api_lambda_role.arn
+  image_uri     = "767397681312.dkr.ecr.ap-south-1.amazonaws.com/brightpath/api:latest"
+  package_type  = "Image"
+
+  timeout       = 10
+  architectures = ["arm64"]
+
+  environment {
+    variables = var.api_secrets
+  }
+}
+
+
+resource "aws_lambda_permission" "apigateway_invoke" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.api_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.api_gateway.execution_arn}/*"
+}
+
+resource "aws_api_gateway_rest_api" "api_gateway" {
+  name = "brightpath-api-gateway"
+}
+
+resource "aws_iam_role" "api_gateway_role" {
+  name = "brightpath-api-gateway-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "apigateway.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_policy" "api_gateway_policy" {
+  name = "brightpath-api-gateway-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:PutLogEvents",
+        "logs:GetLogEvents",
+        "logs:FilterLogEvents",
+      ],
+      Resource = ["arn:aws:logs:*:*:*"]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "api_gateway_policy_attachment" {
+  role       = aws_iam_role.api_gateway_role.name
+  policy_arn = aws_iam_policy.api_gateway_policy.arn
+}
+
+resource "aws_api_gateway_account" "api_gateway_account" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_role.arn
+}
+
+resource "aws_api_gateway_resource" "api_resource" {
+  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  parent_id   = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  path_part   = "/api/{proxy+}"
+}
+
+resource "aws_api_gateway_method" "api_method" {
+  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  resource_id   = aws_api_gateway_resource.api_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "api_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api_gateway.id
+  resource_id             = aws_api_gateway_resource.api_resource.id
+  http_method             = aws_api_gateway_method.api_method.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.api_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_deployment" "api_deployment" {
+  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.api_resource.id,
+      aws_api_gateway_method.api_method.id,
+      aws_api_gateway_integration.api_integration.id,
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_api_gateway_stage" "api_stage" {
+  stage_name    = "dev"
+  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  deployment_id = aws_api_gateway_deployment.api_deployment.id
+
+  depends_on = [aws_api_gateway_account.api_gateway_account]
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.dev_api_log_group.arn
+    format = jsonencode({
+      requestId    = "$context.requestId",
+      requestTime  = "$context.requestTime",
+      httpMethod   = "$context.httpMethod",
+      resourcePath = "$context.resourcePath",
+      status       = "$context.status"
+      responseBody = "$context.responseBody"
+    })
+  }
+}
+
+resource "aws_cloudwatch_log_group" "dev_api_log_group" {
+  name              = "/aws/api-gateway/brightpath-api"
+  retention_in_days = 7
 }
 
 resource "aws_ecs_cluster" "brightpath_cluster" {
