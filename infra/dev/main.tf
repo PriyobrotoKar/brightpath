@@ -263,7 +263,7 @@ resource "random_id" "lambda_id" {
 resource "aws_lambda_function" "api_lambda" {
   function_name = "brightpath-api-${random_id.lambda_id.hex}"
   role          = aws_iam_role.api_lambda_role.arn
-  image_uri     = "767397681312.dkr.ecr.ap-south-1.amazonaws.com/brightpath/api:latest"
+  image_uri     = "767397681312.dkr.ecr.ap-south-1.amazonaws.com/brightpath/api${var.api_image_tag}"
   package_type  = "Image"
 
   timeout       = 10
@@ -336,7 +336,7 @@ resource "aws_api_gateway_account" "api_gateway_account" {
 resource "aws_api_gateway_resource" "api_resource" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway.id
   parent_id   = aws_api_gateway_rest_api.api_gateway.root_resource_id
-  path_part   = "/api/{proxy+}"
+  path_part   = "{proxy+}"
 }
 
 resource "aws_api_gateway_method" "api_method" {
