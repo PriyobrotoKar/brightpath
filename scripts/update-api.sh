@@ -86,6 +86,6 @@ echo "📋 Extracted image digest: ${SHA_DIGEST}"
 # Run terraform apply with the digest as a variable
 cd ./infra/dev/
 echo "🔄 Running terraform apply with image digest..."
-terraform apply -var="api_image_tag=@${SHA_DIGEST}"
+terraform apply -var="api_image_tag=@${SHA_DIGEST}" -target="aws_lambda_function.api_lambda"
 
 echo "✅ Successfully built, pushed, and deployed image with digest: ${SHA_DIGEST}"
