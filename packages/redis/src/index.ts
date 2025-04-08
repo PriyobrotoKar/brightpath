@@ -14,13 +14,13 @@ const redisConfig: RedisOptions = {
   username: process.env.REDIS_USERNAME,
   password: process.env.REDIS_PASSWORD,
   ...(!!process.env.REDIS_HOST && { tls: {} }),
+  maxRetriesPerRequest: null,
 };
 
 const redisConnection = new ioredis(redisConfig);
 
 redisConnection.on('error', (e) => {
-  console.log(e);
-  console.log('Error in Redis Connection');
+  console.error('Error in Redis Connection', e);
 });
 
 export default redisConnection;
