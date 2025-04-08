@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { QueryTransformPipe } from './common/pipes/queryTransform.pipe';
 
-async function bootstrap() {
+export async function createApp() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: 'http://localhost:3000',
@@ -19,6 +19,12 @@ async function bootstrap() {
     new QueryTransformPipe(),
   );
   app.setGlobalPrefix('api');
+
+  return app;
+}
+
+async function bootstrap() {
+  const app = await createApp();
   await app.listen(8000);
 }
 bootstrap();

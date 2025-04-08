@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ModuleService } from './module.service';
 import { Creator } from '@/decorators/role.decorator';
@@ -18,6 +19,10 @@ import { CreateVideoDto } from './dto/create.video';
 import { CreateAssignmentDto } from './dto/create.assignment';
 import { UpdateDocumentDto } from './dto/update.document';
 import { UpdateAssignmentDto } from './dto/update.assignment';
+import { VideoProgressStatus } from '@brightpath/db';
+import { Public } from '@/decorators/public.decorator';
+import { ApiKeyGuard } from '@/auth/guard/api-key.guard';
+import { UpdateVideoDto } from './dto/update.video';
 
 @Controller('module')
 export class ModuleController {
@@ -109,6 +114,27 @@ export class ModuleController {
       moduleId,
       assignmentId,
     );
+  }
+
+  @Public()
+  @UseGuards(ApiKeyGuard)
+  @Patch('/video/status/:videoId')
+  async updateVideoStatus(
+    @Param('videoId') videoId: string,
+    @Query('status') status: VideoProgressStatus,
+  ) {
+    return this.moduleService.updateVideoStatus(videoId, status);
+  }
+
+  @Creator()
+  @Patch(':moduleId/video/:videoId')
+  async updateVideo(
+    @Param('moduleId') moduleId: string,
+    @Param('videoId') videoId: string,
+    @Body() dto: UpdateVideoDto,
+    @CurrentUser() user: JWTPayload,
+  ) {
+    return this.moduleService.updateVideo(user, dto, moduleId, videoId);
   }
 
   @Get(':moduleId/lesson')

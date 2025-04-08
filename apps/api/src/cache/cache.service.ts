@@ -2,8 +2,6 @@ import redisConnection from '@brightpath/redis';
 import {
   Injectable,
   InternalServerErrorException,
-  Logger,
-  LoggerService,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
@@ -12,13 +10,8 @@ type Entity = 'otp' | 'user' | 'tempEmail' | 'refreshToken';
 
 @Injectable()
 export class CacheService implements OnModuleDestroy, OnModuleInit {
-  private readonly logger: LoggerService;
-  constructor() {
-    this.logger = new Logger(CacheService.name);
-  }
   onModuleInit() {
     redisConnection.on('error', () => {
-      this.logger.error('Error while connecting to redis ');
       throw new InternalServerErrorException("Couldn't connect to redis");
     });
   }

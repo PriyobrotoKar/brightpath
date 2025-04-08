@@ -9,11 +9,17 @@ import { AuthorityCheckerService } from '@/common/authority-checker.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ModuleFilterDto } from './dto/filter.module';
 import { CreateDocumentDto } from './dto/create.document';
-import { Assignment, Document, Video } from '@brightpath/db';
+import {
+  Assignment,
+  Document,
+  Video,
+  VideoProgressStatus,
+} from '@brightpath/db';
 import { CreateVideoDto } from './dto/create.video';
 import { CreateAssignmentDto } from './dto/create.assignment';
 import { UpdateDocumentDto } from './dto/update.document';
 import { UpdateAssignmentDto } from './dto/update.assignment';
+import { UpdateVideoDto } from './dto/update.video';
 
 @Injectable()
 export class ModuleService {
@@ -206,6 +212,51 @@ export class ModuleService {
         id: assignmentId,
       },
       data: dto,
+    });
+  }
+
+  async updateVideo(
+    user: JWTPayload,
+    dto: UpdateVideoDto,
+    moduleId: string,
+    videoId: string,
+  ) {
+    //check if the module exists and the user is the creator of that module
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    //update the video
+    return await this.prisma.video.update({
+      where: {
+        id: videoId,
+      },
+      data: dto,
+    });
+  }
+
+  async updateVideoStatus(videoId: string, status: VideoProgressStatus) {
+    // check if the status is valid
+    if (!Object.values(VideoProgressStatus).includes(status)) {
+      throw new BadRequestException(
+        'Status is not valid. It should be one of the following: NOT_STARTED, IN_QUEUE, PROCESSING, COMPLETED',
+      );
+    }
+
+    //check if the video exists
+    const video = await this.prisma.video.findUnique({
+      where: {
+        id: videoId,
+      },
+    });
+    if (!video) throw new NotFoundException(`Video:${videoId} not found`);
+
+    //update the video status
+    return await this.prisma.video.update({
+      where: {
+        id: videoId,
+      },
+      data: {
+        status,
+      },
     });
   }
 

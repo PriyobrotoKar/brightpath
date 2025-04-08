@@ -20,20 +20,24 @@ export class StorageService {
   constructor(private config: ConfigService) {
     this.bucketName = this.config.get('AWS_BUCKET_NAME');
     this.tempBucketName = this.config.get('AWS_TEMP_BUCKET_NAME');
+    console.log(
+      process.env.AWS_ACCESS_KEY_ID,
+      process.env.AWS_SECRET_ACCESS_KEY,
+    );
+
     this.s3 = new S3Client({
-      endpoint: `http://s3.localhost.localstack.cloud:4566`,
       credentials: {
-        accessKeyId: 'test',
-        secretAccessKey: 'test',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       },
-      region: 'us-east-1',
+      region: 'ap-south-1',
     });
   }
 
-  async initializeMultipartUpload(contentType: string) {
+  async initializeMultipartUpload(contentType: string, key: string) {
     const multipartParams = {
       Bucket: this.tempBucketName,
-      Key: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${contentType.split('/')[1]}`,
+      Key: `${key}.${contentType.split('/')[1]}`,
     };
 
     const command = new CreateMultipartUploadCommand(multipartParams);

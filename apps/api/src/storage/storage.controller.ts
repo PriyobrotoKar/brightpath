@@ -14,9 +14,9 @@ export class StorageController {
 
   @Post('/initializeMultipartUpload')
   async initializeMultipartUpload(
-    @Body() { contentType }: { contentType: string },
+    @Body() { contentType, key }: { contentType: string; key: string },
   ) {
-    return this.storageService.initializeMultipartUpload(contentType);
+    return this.storageService.initializeMultipartUpload(contentType, key);
   }
 
   @Post('/getMultipartSignedUrls')
