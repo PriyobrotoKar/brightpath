@@ -56,9 +56,38 @@ export const handler: SQSHandler = async (event) => {
 
         await ecs.send(command);
         console.log('Task submitted to ECS', task);
+
+        const id = key.split('.')[0];
+        await updateJobStatus(id);
       } catch (error) {
         console.error('Error submitting ECS task', error);
       }
     }
+  }
+};
+
+const updateJobStatus = async (id: string) => {
+  const baseUrl = process.env.BACKEND_URL;
+  try {
+    const response = await fetch(
+      `${baseUrl}/api/module/video/status/${id}?status=PROCESSING`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.API_KEY,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error updating job status: ${response.statusText}`);
+    }
+
+    await response.json();
+    console.log('Job status updated successfully');
+  } catch (error) {
+    console.error('Error updating job status');
+    throw error;
   }
 };
