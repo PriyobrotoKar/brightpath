@@ -51,6 +51,13 @@ enum SubmissionType {
   FORM_SUBMISSION
 }
 
+enum VideoProgressStatus {
+  NOT_STARTED
+  IN_QUEUE
+  PROCESSING
+  COMPLETED
+}
+
 model User {
   id             String  @id @default(cuid())
   email          String  @unique
@@ -126,12 +133,13 @@ model Document {
 }
 
 model Video {
-  id          String  @id @default(cuid())
+  id          String              @id @default(cuid())
   name        String
   description String?
   source      String?
   duration    Int
   thumbnail   String?
+  status      VideoProgressStatus @default(NOT_STARTED)
 
   module   Module @relation(fields: [moduleId], references: [id])
   moduleId String
