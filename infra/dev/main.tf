@@ -208,6 +208,8 @@ resource "aws_lambda_function" "video_transcoding_consumer" {
       ECS_TASK_DEFINITION = aws_ecs_task_definition.video_transcoder_task.arn
       ECS_CONTAINER_NAME  = "brightpath-video-transcoder"
       SUBNETS             = "subnet-0d639d1cb06a3302c,subnet-0439194c6426f11db,subnet-0e2b4103cc9c48e68"
+      BACKEND_URL         = aws_api_gateway_deployment.api_deployment.invoke_url
+      API_KEY             = var.api_secrets["API_KEY"]
     }
   }
 }
