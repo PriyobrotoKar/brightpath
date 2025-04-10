@@ -1,5 +1,4 @@
 import { CacheService } from '@/cache/cache.service';
-import { createEvent } from '@/common/event';
 import { createUser, getUserByEmailOrId } from '@/common/user';
 import { generateJwtTokens, generateOtp } from '@/common/utils';
 import bcrypt from 'bcrypt';
@@ -36,17 +35,17 @@ export class AuthService {
       throw new BadRequestException('Invalid email');
     }
     const user = await this.createUserIfNotExist(email);
-    const otp = await generateOtp(user.email, this.cache);
+    await generateOtp(user.email, this.cache);
 
-    await createEvent({
-      eventType: 'email_verification',
-      recipient: {
-        email,
-      },
-      variables: {
-        otp,
-      },
-    });
+    // await createEvent({
+    //   eventType: 'email_verification',
+    //   recipient: {
+    //     email,
+    //   },
+    //   variables: {
+    //     otp,
+    //   },
+    // });
     return `OTP has been sent to ${email}`;
   }
 

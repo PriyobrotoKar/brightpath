@@ -249,6 +249,19 @@ export class ModuleService {
     });
     if (!video) throw new NotFoundException(`Video:${videoId} not found`);
 
+    //if the status is completed, set the source of video
+    if (status === VideoProgressStatus.COMPLETED) {
+      return await this.prisma.video.update({
+        where: {
+          id: videoId,
+        },
+        data: {
+          status: VideoProgressStatus.COMPLETED,
+          source: `hls/${videoId}/index.m3u8`,
+        },
+      });
+    }
+
     //update the video status
     return await this.prisma.video.update({
       where: {

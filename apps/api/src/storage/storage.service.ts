@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import {
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
+  PutObjectCommand,
   S3Client,
   UploadPartCommand,
 } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
-import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { CreateMultipartSignedUrlDto } from './dto/create.multipart-signed-url';
 import { CompleteMultipartUploadDto } from './dto/complete.multipart-upload';
@@ -20,16 +20,13 @@ export class StorageService {
   constructor(private config: ConfigService) {
     this.bucketName = this.config.get('AWS_BUCKET_NAME');
     this.tempBucketName = this.config.get('AWS_TEMP_BUCKET_NAME');
+
     console.log(
       process.env.AWS_ACCESS_KEY_ID,
       process.env.AWS_SECRET_ACCESS_KEY,
     );
 
     this.s3 = new S3Client({
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
       region: 'ap-south-1',
     });
   }
@@ -50,23 +47,18 @@ export class StorageService {
   }
 
   async getS3SignedUrl(contentType: string) {
-    const { url, fields } = await createPresignedPost(this.s3, {
+    const signedUrlParams = {
       Bucket: this.bucketName,
-      Key: `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${contentType.split('/')[1]}`,
-      Conditions: [
-        ['content-length-range', 0, 6291456],
-        ['starts-with', '$Content-Type', contentType],
-      ],
-      Fields: {
-        acl: 'public-read',
-        'Content-Type': contentType,
-      },
-      Expires: 180,
-    });
+      Key: `public/${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${contentType.split('/')[1]}`,
+      ContentType: contentType,
+    };
+
+    const command = new PutObjectCommand(signedUrlParams);
+    const url = await getSignedUrl(this.s3, command, { expiresIn: 180 });
 
     return {
       url,
-      fields,
+      key: signedUrlParams.Key,
     };
   }
 

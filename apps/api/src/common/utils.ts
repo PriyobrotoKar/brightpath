@@ -43,7 +43,6 @@ export async function generateOtp(email: string, cache: CacheService) {
 
 export function setResponseCookie(res: Response, key: string, value: string) {
   res.cookie(key, value, {
-    domain: 'localhost',
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
     httpOnly: true,
   });
