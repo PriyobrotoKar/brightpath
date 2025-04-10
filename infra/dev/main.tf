@@ -11,7 +11,7 @@ resource "aws_s3_bucket_cors_configuration" "primary_bucket_cors" {
 
   cors_rule {
     allowed_headers = ["*"]
-    allowed_methods = ["GET", "HEAD"]
+    allowed_methods = ["GET", "HEAD", "PUT", "POST"]
     allowed_origins = ["*"]
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
@@ -208,7 +208,7 @@ resource "aws_lambda_function" "video_transcoding_consumer" {
       ECS_TASK_DEFINITION = aws_ecs_task_definition.video_transcoder_task.arn
       ECS_CONTAINER_NAME  = "brightpath-video-transcoder"
       SUBNETS             = "subnet-0d639d1cb06a3302c,subnet-0439194c6426f11db,subnet-0e2b4103cc9c48e68"
-      BACKEND_URL         = aws_api_gateway_deployment.api_deployment.invoke_url
+      BACKEND_URL         = aws_api_gateway_stage.api_stage.invoke_url
       API_KEY             = var.api_secrets["API_KEY"]
     }
   }
@@ -240,6 +240,20 @@ data "aws_iam_policy_document" "api_lambda_policy_document" {
       "logs:PutLogEvents"
     ]
     resources = ["arn:aws:logs:*:*:*"]
+  }
+
+  statement {
+    sid    = "AllowS3Access"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:PutObjectAcl"
+    ]
+    resources = [
+      "${aws_s3_bucket.primary_bucket.arn}/*",
+      "${aws_s3_bucket.temp_bucket.arn}/*"
+    ]
   }
 }
 
