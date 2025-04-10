@@ -81,7 +81,10 @@ async function main() {
 
   await fs.writeFile(path.join(outputDir, 'index.m3u8'), masterPlaylist);
 
-  uploadToS3('master');
+  await uploadToS3('master');
+
+  const id = video.split('.')[0];
+  updateJobStatus(id);
 }
 
 async function uploadToS3(size: Resolutions['size'] | 'master') {
@@ -165,5 +168,31 @@ async function downloadFromS3(key: string): Promise<string> {
     writeStream.on('error', reject);
   });
 }
+
+const updateJobStatus = async (id: string) => {
+  const baseUrl = process.env.BACKEND_URL;
+  try {
+    const response = await fetch(
+      `${baseUrl}/api/module/video/status/${id}?status=COMPLETED`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.API_KEY,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error updating job status: ${response.statusText}`);
+    }
+
+    await response.json();
+    console.log('Job status updated successfully');
+  } catch (error) {
+    console.error('Error updating job status');
+    throw error;
+  }
+};
 
 main();

@@ -46,6 +46,14 @@ export const handler: SQSHandler = async (event) => {
                     name: 'BUCKET',
                     value: bucket,
                   },
+                  {
+                    name: 'BACKEND_URL',
+                    value: process.env.BACKEND_URL,
+                  },
+                  {
+                    name: 'API_KEY',
+                    value: process.env.API_KEY,
+                  },
                 ],
               },
             ],
