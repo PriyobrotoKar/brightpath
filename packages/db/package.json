@@ -16,10 +16,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^5.19.1"
+    "@prisma/client": "^6.6.0"
   },
   "devDependencies": {
-    "prisma": "^5.19.1",
-    "@brightpath/typescript-config": "workspace:*"
+    "@brightpath/typescript-config": "workspace:*",
+    "prisma": "^6.6.0"
   }
 }
