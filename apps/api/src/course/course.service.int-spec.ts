@@ -4,7 +4,7 @@ import request from 'supertest';
 import { NestApplication } from '@nestjs/core';
 import { createUser } from '@/common/user';
 import { PrismaService } from '@/prisma/prisma.service';
-import { User } from '@brightpath/db';
+import { PrismaClient, User } from '@brightpath/db';
 import { generateJwtTokens } from '@/common/utils';
 import { JwtService } from '@nestjs/jwt';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
@@ -14,7 +14,7 @@ import { CacheService } from '@/cache/cache.service';
 
 describe('Course Controller Tests', () => {
   let app: NestApplication;
-  let prisma: PrismaService;
+  let prisma: PrismaClient;
   let jwtService: JwtService;
   let cacheService: CacheService;
 
@@ -30,7 +30,7 @@ describe('Course Controller Tests', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    prisma = moduleRef.get(PrismaService);
+    prisma = moduleRef.get(PrismaService).client;
     jwtService = moduleRef.get(JwtService);
     cacheService = moduleRef.get(CacheService);
 

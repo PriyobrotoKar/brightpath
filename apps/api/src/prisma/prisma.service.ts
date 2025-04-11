@@ -1,12 +1,15 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@brightpath/db';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { prisma } from '@brightpath/db';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit {
+export class PrismaService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
-    await this.$connect();
+    await prisma.$connect();
   }
-  async onModuleDestro() {
-    await this.$disconnect();
+  async onModuleDestroy() {
+    await prisma.$disconnect();
+  }
+  get client() {
+    return prisma;
   }
 }

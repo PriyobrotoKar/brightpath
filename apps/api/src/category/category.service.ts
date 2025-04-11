@@ -2,10 +2,14 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create.category';
 import { createCategoryIfNotExist } from '@/common/category';
+import { PrismaClient } from '@brightpath/db';
 
 @Injectable()
 export class CategoryService {
-  constructor(private prisma: PrismaService) {}
+  private readonly prisma: PrismaClient;
+  constructor(private prismaService: PrismaService) {
+    this.prisma = this.prismaService.client;
+  }
   async getCategories(limit: number, cursor: number, search: string) {
     const categories = await this.prisma.category.findMany({
       take: limit,
@@ -23,7 +27,6 @@ export class CategoryService {
       },
     });
 
-    console.log(categories);
     if (categories.length === 0) {
       return {
         categories: [],

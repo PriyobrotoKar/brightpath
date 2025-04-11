@@ -16,18 +16,22 @@ import { JwtService } from '@nestjs/jwt';
 import { JWTPayload } from './types/jwt-payload';
 import refreshJwtConfig from './config/refresh-jwt.config';
 import type { ConfigType } from '@nestjs/config';
+import { PrismaClient } from '@brightpath/db';
 
 @Injectable()
 export class AuthService {
   private readonly logger: LoggerService;
+  private readonly prisma: PrismaClient;
+
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly prismaService: PrismaService,
     private cache: CacheService,
     private jwt: JwtService,
     @Inject(refreshJwtConfig.KEY)
     private refreshJwtConfiguration: ConfigType<typeof refreshJwtConfig>,
   ) {
     this.logger = new Logger(AuthService.name);
+    this.prisma = this.prismaService.client;
   }
 
   async sendOtp(email: string) {
@@ -151,6 +155,7 @@ export class AuthService {
 
   async logout(user: JWTPayload) {
     await this.cache.deleteCachedValue('refreshToken', user.id);
+    return 'User logged out successfully';
   }
 
   private async updateRefreshToken(userId: string, refresh_token: string) {

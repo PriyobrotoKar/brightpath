@@ -11,10 +11,11 @@ import { createUser } from '@/common/user';
 import { generateJwtTokens } from '@/common/utils';
 import refreshJwtConfig from './config/refresh-jwt.config';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaClient } from '@brightpath/db';
 
 describe('Auth Controller Tests', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: PrismaClient;
   let authService: AuthService;
   let cacheService: CacheService;
   let jwtService: JwtService;
@@ -25,7 +26,7 @@ describe('Auth Controller Tests', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    prisma = moduleRef.get(PrismaService);
+    prisma = moduleRef.get(PrismaService).client;
     authService = moduleRef.get(AuthService);
     cacheService = moduleRef.get(CacheService);
     jwtService = moduleRef.get(JwtService);

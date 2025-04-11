@@ -1,8 +1,8 @@
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaClient } from '@brightpath/db';
 
 export async function createCategoryIfNotExist(
   name: string,
-  prisma: PrismaService,
+  prisma: PrismaClient,
 ) {
   let category = await prisma.category.findUnique({
     where: { name },

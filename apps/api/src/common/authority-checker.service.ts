@@ -1,4 +1,5 @@
 import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaClient } from '@brightpath/db';
 import {
   ForbiddenException,
   Injectable,
@@ -7,7 +8,10 @@ import {
 
 @Injectable()
 export class AuthorityCheckerService {
-  constructor(private prisma: PrismaService) {}
+  private readonly prisma: PrismaClient;
+  constructor(private prismaService: PrismaService) {
+    this.prisma = this.prismaService.client;
+  }
 
   async checkAuthorityOverCourse(courseId: string, userId: string) {
     const course = await this.prisma.course.findUnique({

@@ -21,11 +21,6 @@ export class StorageService {
     this.bucketName = this.config.get('AWS_BUCKET_NAME');
     this.tempBucketName = this.config.get('AWS_TEMP_BUCKET_NAME');
 
-    console.log(
-      process.env.AWS_ACCESS_KEY_ID,
-      process.env.AWS_SECRET_ACCESS_KEY,
-    );
-
     this.s3 = new S3Client({
       region: 'ap-south-1',
     });

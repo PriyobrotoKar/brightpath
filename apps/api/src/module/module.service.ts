@@ -12,6 +12,7 @@ import { CreateDocumentDto } from './dto/create.document';
 import {
   Assignment,
   Document,
+  PrismaClient,
   Video,
   VideoProgressStatus,
 } from '@brightpath/db';
@@ -23,10 +24,13 @@ import { UpdateVideoDto } from './dto/update.video';
 
 @Injectable()
 export class ModuleService {
+  private readonly prisma: PrismaClient;
   constructor(
     private authorityChecker: AuthorityCheckerService,
-    private prisma: PrismaService,
-  ) {}
+    private prismaService: PrismaService,
+  ) {
+    this.prisma = this.prismaService.client;
+  }
 
   async createModule(user: JWTPayload, dto: CreateModuleDto, courseId: string) {
     //check if the course exists and the user is the creator of that course
@@ -233,13 +237,15 @@ export class ModuleService {
     });
   }
 
-  async updateVideoStatus(videoId: string, status: VideoProgressStatus) {
+  async updateVideoStatus(key: string, status: VideoProgressStatus) {
     // check if the status is valid
     if (!Object.values(VideoProgressStatus).includes(status)) {
       throw new BadRequestException(
         'Status is not valid. It should be one of the following: NOT_STARTED, IN_QUEUE, PROCESSING, COMPLETED',
       );
     }
+
+    const videoId = key.split('.')[0];
 
     //check if the video exists
     const video = await this.prisma.video.findUnique({
@@ -257,7 +263,7 @@ export class ModuleService {
         },
         data: {
           status: VideoProgressStatus.COMPLETED,
-          source: `hls/${videoId}/index.m3u8`,
+          source: `hls/${key}/index.m3u8`,
         },
       });
     }

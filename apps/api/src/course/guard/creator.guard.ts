@@ -5,14 +5,18 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { JWTPayload } from '@/auth/types/jwt-payload';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { PrismaClient } from '@brightpath/db';
 
 @Injectable()
 export class CreatorGuard implements CanActivate {
+  private readonly prisma: PrismaClient;
   constructor(
     private reflector: Reflector,
-    private prisma: PrismaService,
+    private prismaService: PrismaService,
     private cache: CacheService,
-  ) {}
+  ) {
+    this.prisma = this.prismaService.client;
+  }
 
   async canActivate(context: ExecutionContext) {
     const isCreator = this.reflector.getAll(IS_CREATOR_KEY, [

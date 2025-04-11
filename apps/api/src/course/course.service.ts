@@ -7,7 +7,7 @@ import {
 import { CreateCourseDto } from './dto/create.course';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreatePricingDto } from './dto/create.pricing';
-import { Prisma } from '@brightpath/db';
+import { Prisma, PrismaClient } from '@brightpath/db';
 import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
 import { createCategoryIfNotExist } from '@/common/category';
@@ -15,10 +15,13 @@ import { AuthorityCheckerService } from '@/common/authority-checker.service';
 
 @Injectable()
 export class CourseService {
+  private readonly prisma: PrismaClient;
   constructor(
-    private prisma: PrismaService,
+    private prismaService: PrismaService,
     private authorityChecker: AuthorityCheckerService,
-  ) {}
+  ) {
+    this.prisma = this.prismaService.client;
+  }
 
   async getCourse(courseId: string) {
     const course = await this.prisma.course.findUnique({

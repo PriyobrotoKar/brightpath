@@ -118,12 +118,12 @@ export class ModuleController {
 
   @Public()
   @UseGuards(ApiKeyGuard)
-  @Patch('/video/status/:videoId')
+  @Patch('/video/status/:key')
   async updateVideoStatus(
-    @Param('videoId') videoId: string,
+    @Param('key') key: string,
     @Query('status') status: VideoProgressStatus,
   ) {
-    return this.moduleService.updateVideoStatus(videoId, status);
+    return this.moduleService.updateVideoStatus(key, status);
   }
 
   @Creator()

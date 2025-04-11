@@ -9,12 +9,12 @@ import request from 'supertest';
 import { createUser, getUserByEmailOrId } from '@/common/user';
 import { generateJwtTokens } from '@/common/utils';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@brightpath/db';
+import { PrismaClient, User } from '@brightpath/db';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
 
 describe('User Controller Tests', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
+  let prisma: PrismaClient;
   let userService: UserService;
   let cacheService: CacheService;
   let jwtService: JwtService;
@@ -29,7 +29,7 @@ describe('User Controller Tests', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    prisma = moduleRef.get(PrismaService);
+    prisma = moduleRef.get(PrismaService).client;
     userService = moduleRef.get(UserService);
     cacheService = moduleRef.get(CacheService);
     jwtService = moduleRef.get(JwtService);

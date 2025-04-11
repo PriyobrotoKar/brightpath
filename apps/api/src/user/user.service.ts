@@ -12,16 +12,19 @@ import { CacheService } from '@/cache/cache.service';
 import { createEvent } from '@/common/event';
 import { getUserByEmailOrId } from '@/common/user';
 import { AuthService } from '@/auth/auth.service';
+import { PrismaClient } from '@brightpath/db';
 
 @Injectable()
 export class UserService {
   private readonly logger: LoggerService;
+  private readonly prisma: PrismaClient;
   constructor(
-    private prisma: PrismaService,
+    private prismaService: PrismaService,
     private cache: CacheService,
     private authService: AuthService,
   ) {
     this.logger = new Logger(UserService.name);
+    this.prisma = this.prismaService.client;
   }
 
   async getSelf({ id }: JWTPayload) {

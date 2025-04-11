@@ -1,10 +1,9 @@
 import { CacheService } from '@/cache/cache.service';
-import { PrismaService } from '@/prisma/prisma.service';
-import { User } from '@brightpath/db';
+import { PrismaClient, User } from '@brightpath/db';
 
 export async function createUser(
   data: Partial<User> & { email: string },
-  prisma: PrismaService,
+  prisma: PrismaClient,
 ) {
   return prisma.user.create({
     data,
@@ -13,7 +12,7 @@ export async function createUser(
 
 export async function getUserByEmailOrId(
   search: string,
-  prisma: PrismaService,
+  prisma: PrismaClient,
   cache: CacheService,
 ): Promise<User | null> {
   const cachedUser = await cache.getCachedValue('user', search);
