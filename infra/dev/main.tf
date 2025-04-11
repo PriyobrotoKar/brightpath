@@ -282,7 +282,7 @@ resource "aws_lambda_function" "api_lambda" {
   image_uri     = "767397681312.dkr.ecr.ap-south-1.amazonaws.com/brightpath/api${var.api_image_tag}"
   package_type  = "Image"
 
-  timeout       = 10
+  timeout       = 20
   architectures = ["arm64"]
 
   environment {
