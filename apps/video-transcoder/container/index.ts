@@ -8,9 +8,10 @@ import {
 } from '@aws-sdk/client-s3';
 import path from 'path';
 
-type Resolutions = {
+type Resolution = {
   size: '1280x720' | '854x480' | '640x360';
   bitrate: '3000k' | '1600k' | '1024k';
+  isUploaded: boolean;
 };
 
 const video = process.env.INPUT_VIDEO;
@@ -29,13 +30,15 @@ async function main() {
 
   const videoPath = await downloadFromS3(video);
 
-  const resolutions: Resolutions[] = [
-    { size: '1280x720', bitrate: '3000k' },
-    { size: '854x480', bitrate: '1600k' },
-    { size: '640x360', bitrate: '1024k' },
+  const resolutions: Resolution[] = [
+    { size: '1280x720', bitrate: '3000k', isUploaded: false },
+    { size: '854x480', bitrate: '1600k', isUploaded: false },
+    { size: '640x360', bitrate: '1024k', isUploaded: false },
   ];
 
-  resolutions.forEach(({ size, bitrate }) => {
+  resolutions.forEach((resolution) => {
+    const { size, bitrate } = resolution;
+
     ffmpeg(videoPath)
       .videoCodec('libx264')
       .audioCodec('aac')
@@ -62,9 +65,15 @@ async function main() {
           `Processing ${size}: ${Math.floor(progress.percent * 100) / 100}% done`,
         );
       })
-      .on('end', () => {
+      .on('end', async () => {
         console.log(`Transcoding finished for ${size}`);
-        uploadToS3(size);
+        await uploadToS3(resolution);
+
+        const hasAllUploaded = resolutions.every((res) => res.isUploaded);
+        if (hasAllUploaded) {
+          await updateJobStatus(video);
+          //TODO: remove the video from temporary S3 bucket
+        }
       })
       .on('error', (err) => {
         console.error(`Error transcoding video: ${err.message}`);
@@ -82,13 +91,10 @@ async function main() {
   await fs.writeFile(path.join(outputDir, 'index.m3u8'), masterPlaylist);
 
   await uploadToS3('master');
-
-  const id = video.split('.')[0];
-  updateJobStatus(id);
 }
 
-async function uploadToS3(size: Resolutions['size'] | 'master') {
-  if (size === 'master') {
+async function uploadToS3(resolution: Resolution | 'master') {
+  if (resolution === 'master') {
     console.log(`Uploading master playlist to S3...`);
 
     const masterPlaylist = await fs.readFile(
@@ -105,6 +111,8 @@ async function uploadToS3(size: Resolutions['size'] | 'master') {
 
     return;
   }
+
+  const { size } = resolution;
 
   console.log(`Uploading ${size} to S3...`);
 
@@ -140,6 +148,8 @@ async function uploadToS3(size: Resolutions['size'] | 'master') {
   promises.push(s3.send(s3PutCommand));
 
   await Promise.all(promises);
+
+  resolution.isUploaded = true;
 }
 
 async function downloadFromS3(key: string): Promise<string> {
@@ -169,11 +179,12 @@ async function downloadFromS3(key: string): Promise<string> {
   });
 }
 
-const updateJobStatus = async (id: string) => {
+const updateJobStatus = async (key: string) => {
   const baseUrl = process.env.BACKEND_URL;
+
   try {
     const response = await fetch(
-      `${baseUrl}/api/module/video/status/${id}?status=COMPLETED`,
+      `${baseUrl}/api/module/video/status/${key}?status=COMPLETED`,
       {
         method: 'PATCH',
         headers: {
