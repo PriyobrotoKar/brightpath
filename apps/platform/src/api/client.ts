@@ -57,7 +57,7 @@ class ApiClient {
 
   post<T>(
     url: string,
-    data: Record<string, unknown>,
+    data?: Record<string, unknown>,
     headers?: Record<string, string>,
   ): Promise<T> {
     return this.request<T>(url, {
@@ -67,11 +67,11 @@ class ApiClient {
         Cookie: cookies().toString(),
         ...headers,
       },
-      body: JSON.stringify(data),
+      ...(data && { body: JSON.stringify(data) }),
     });
   }
 
-  patch<T>(url: string, data: Record<string, unknown>): Promise<T> {
+  patch<T>(url: string, data?: Record<string, unknown>): Promise<T> {
     return this.request<T>(url, {
       method: 'PATCH',
       headers: {
@@ -81,8 +81,19 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  delete<T>(url: string, data?: Record<string, unknown>): Promise<T> {
+    return this.request<T>(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-type': 'application/json',
+        Cookie: cookies().toString(),
+      },
+      body: JSON.stringify(data),
+    });
+  }
 }
 
-const apiClient = new ApiClient('http://localhost:8000/api');
+const apiClient = new ApiClient(`${process.env.NEXT_PUBLIC_API_URL}/api`);
 
 export default apiClient;

@@ -107,16 +107,17 @@ export default function BasicInformationForm(): React.JSX.Element {
 
     const uploadImages: Promise<Response>[] = [];
     for (const [index, uploadUrl] of uploadUrls.entries()) {
-      const formData = new FormData();
-      formData.append('key', uploadUrl.fields.key);
       const file = images.at(index);
-      if (file) {
-        formData.append('file', file);
+
+      if (!file) {
+        toast.error('File not found');
+        return;
       }
+
       uploadImages.push(
         fetch(uploadUrl.url, {
-          method: 'POST',
-          body: formData,
+          method: 'PUT',
+          body: file,
         }),
       );
     }
@@ -132,10 +133,8 @@ export default function BasicInformationForm(): React.JSX.Element {
       // create a new bootcamp
       const newCourse = await createCourse({
         ...data,
-        logo: uploadUrls[0]?.fields.key ?? '',
-        thumbnails: uploadUrls
-          .slice(1)
-          .map((uploadUrl) => uploadUrl.fields.key),
+        logo: uploadUrls[0]?.key ?? '',
+        thumbnails: uploadUrls.slice(1).map((uploadUrl) => uploadUrl.key),
       });
 
       router.push(`/dashboard/course/create/${newCourse.id}/pricing`);

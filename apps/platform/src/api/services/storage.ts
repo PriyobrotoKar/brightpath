@@ -5,7 +5,7 @@ const base = '/storage';
 
 export interface GetUploadUrlResponse {
   url: string;
-  fields: { key: string };
+  key: string;
 }
 
 interface InitializeMultipartUploadResponse {
@@ -41,6 +41,7 @@ export const getUploadUrl = (data: {
 
 export const initializeMultiPartUpload = (data: {
   contentType: string;
+  key: string;
 }): Promise<InitializeMultipartUploadResponse> => {
   return apiClient.post(`${base}/initializeMultipartUpload`, data);
 };
@@ -55,4 +56,8 @@ export const completeMultipartUpload = (
   data: CompleteMultipartPayload,
 ): Promise<string> => {
   return apiClient.post(`${base}/completeMultipartUpload`, data);
+};
+
+export const deleteFile = (data: { key: string }): Promise<string> => {
+  return apiClient.delete(`${base}/deleteObject`, data);
 };

@@ -40,8 +40,8 @@ function PrimarySidebar(): React.JSX.Element {
       icon: IconHomeFilled,
     },
     {
-      name: 'Home',
-      href: '/',
+      name: 'Bootcamps',
+      href: '/dashboard/bootcamps',
       icon: IconHome,
     },
   ];

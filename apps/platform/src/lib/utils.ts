@@ -1,3 +1,4 @@
+import type { VideoProgressStatus } from '@brightpath/db';
 import { type ReadonlyURLSearchParams } from 'next/navigation';
 
 export const mediaUrl = (
@@ -6,7 +7,7 @@ export const mediaUrl = (
   if (!filename) {
     return null;
   }
-  return `https://priyobroto-brightpath.s3.ap-south-1.amazonaws.com/${filename}`;
+  return `https://brightpath-dev.s3.ap-south-1.amazonaws.com/${filename}`;
 };
 
 export const removeQueryParam = (
@@ -28,4 +29,22 @@ export const addQueryParam = (
   params.set(name, value);
 
   return params.toString();
+};
+
+export const getProgressMessage = (
+  status: VideoProgressStatus,
+  progress: number,
+): string => {
+  switch (status) {
+    case 'NOT_STARTED':
+      return `${progress}%`;
+    case 'IN_QUEUE':
+      return 'Processing will begin shortly';
+    case 'PROCESSING':
+      return 'Processing...';
+    case 'COMPLETED':
+      return 'Upload completed';
+    default:
+      return '';
+  }
 };

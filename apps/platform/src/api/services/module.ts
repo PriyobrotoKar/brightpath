@@ -1,5 +1,11 @@
 'use server';
-import type { Assignment, Document, Module, Video } from '@brightpath/db';
+import type {
+  Assignment,
+  Document,
+  Module,
+  Video,
+  VideoProgressStatus,
+} from '@brightpath/db';
 import apiClient from '../client';
 
 const base = '/module';
@@ -24,6 +30,12 @@ export type UpdateAssignmentPayload = {
   description?: string;
   submissionType?: string;
   dueAt?: Date;
+};
+
+export type UpdateVideoPayload = {
+  name?: string;
+  description?: string;
+  status?: VideoProgressStatus;
 };
 
 export const getModulesByCourseId = async (
@@ -106,4 +118,12 @@ export const updateAssignment = async (
     `${base}/${moduleId}/lesson/assignment/${assignmentId}`,
     data,
   );
+};
+
+export const updateVideo = async (
+  moduleId: string,
+  videoId: string,
+  data: UpdateVideoPayload,
+): Promise<Video> => {
+  return apiClient.patch(`${base}/${moduleId}/video/${videoId}`, data);
 };

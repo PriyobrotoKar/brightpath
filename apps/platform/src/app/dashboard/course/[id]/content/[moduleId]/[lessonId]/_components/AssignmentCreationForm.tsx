@@ -78,6 +78,7 @@ export default function AssignmentCreationForm({
     },
     onError: () => {
       toast.error('An error occurred while saving');
+      setIsSaving(false);
     },
     onSuccess: () => {
       setIsSaving(false);

@@ -3,6 +3,7 @@ import { buttonVariants } from '@brightpath/ui/components/button';
 import { cn } from '@brightpath/ui/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 interface MenuProps {
   className?: string;
@@ -15,8 +16,23 @@ interface MenuLinkProps {
   className?: string;
 }
 
+interface MenuContextProps {
+  activeLink: string;
+  setActiveLink: (link: string) => void;
+}
+
+const MenuContext = createContext<MenuContextProps | null>(null);
+
 function Menu({ children, className }: MenuProps): React.JSX.Element {
-  return <div className={cn('flex flex-col gap-2', className)}>{children}</div>;
+  const [activeLink, setActiveLink] = useState<string>('');
+
+  return (
+    <div className={cn('flex flex-col gap-2', className)}>
+      <MenuContext.Provider value={{ activeLink, setActiveLink }}>
+        {children}
+      </MenuContext.Provider>
+    </div>
+  );
 }
 
 function MenuLink({
@@ -25,11 +41,30 @@ function MenuLink({
   children,
 }: MenuLinkProps): React.JSX.Element {
   const pathname = usePathname();
+  const context = useContext(MenuContext);
+
+  useEffect(() => {
+    if (context) {
+      if (
+        pathname.startsWith(href) &&
+        context.activeLink.length <= pathname.length
+      ) {
+        context.setActiveLink(href);
+      }
+    }
+
+    return () => {
+      if (context) {
+        context.setActiveLink('');
+      }
+    };
+  }, [context, href, pathname]);
+
   return (
     <Link
       className={cn(
         buttonVariants({
-          variant: href === pathname ? 'secondary' : 'ghost',
+          variant: context?.activeLink === href ? 'secondary' : 'ghost',
         }),
         'justify-start gap-2',
         className,

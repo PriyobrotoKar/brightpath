@@ -21,7 +21,7 @@ export default async function LessonPage({
   const Content = LessonContent[lesson.type as keyof typeof LessonContent];
 
   return (
-    <div className="flex-1 pl-4">
+    <div className="mx-auto max-w-screen-xl flex-1 pl-4">
       <Content lesson={lesson} />
     </div>
   );

@@ -3,7 +3,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: 'priyobroto-brightpath.s3.ap-south-1.amazonaws.com',
+        hostname: 'brightpath-dev.s3.ap-south-1.amazonaws.com',
       },
     ],
   },
