@@ -54,6 +54,23 @@ resource "aws_s3_bucket_cors_configuration" "temp_bucket_cors" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "temp_bucket_lifecycle" {
+  bucket = aws_s3_bucket.temp_bucket.id
+
+  rule {
+    id     = "DeleteOldObjects"
+    status = "Enabled"
+
+    expiration {
+      days = 1
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 1
+    }
+  }
+}
+
 resource "aws_s3_bucket_notification" "temp_bucket_notification" {
   bucket = aws_s3_bucket.temp_bucket.id
 
