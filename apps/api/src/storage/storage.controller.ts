@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Post } from '@nestjs/common';
 import { StorageService } from './storage.service';
 import { CreateMultipartSignedUrlDto } from './dto/create.multipart-signed-url';
 import { CompleteMultipartUploadDto } from './dto/complete.multipart-upload';
@@ -27,5 +27,10 @@ export class StorageController {
   @Post('/completeMultipartUpload')
   async completeMultipartUpload(@Body() dto: CompleteMultipartUploadDto) {
     return this.storageService.completeMultipartUpload(dto);
+  }
+
+  @Delete('/deleteObject')
+  async deleteFile(@Body() { key }: { key: string }) {
+    return this.storageService.deleteFile(key);
   }
 }

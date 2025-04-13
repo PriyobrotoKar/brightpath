@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
+  DeleteObjectCommand,
   PutObjectCommand,
   S3Client,
   UploadPartCommand,
@@ -104,5 +105,17 @@ export class StorageService {
     await this.s3.send(command);
 
     return 'Upload completed';
+  }
+
+  async deleteFile(key: string) {
+    const params = {
+      Bucket: this.tempBucketName,
+      Key: key,
+    };
+
+    const command = new DeleteObjectCommand(params);
+    await this.s3.send(command);
+
+    return 'File deleted';
   }
 }

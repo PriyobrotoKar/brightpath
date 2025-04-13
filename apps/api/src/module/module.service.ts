@@ -134,6 +134,18 @@ export class ModuleService {
     //check if the module exists and the user is the creator of that module
     await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
 
+    //update the number of lessons in the module
+    await this.prisma.module.update({
+      where: {
+        id: moduleId,
+      },
+      data: {
+        lessonCount: {
+          increment: 1,
+        },
+      },
+    });
+
     //create the document
     return await this.prisma.document.create({
       data: {
@@ -167,6 +179,18 @@ export class ModuleService {
     //check if the module exists and the user is the creator of that module
     await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
 
+    //update the number of lessons in the module
+    await this.prisma.module.update({
+      where: {
+        id: moduleId,
+      },
+      data: {
+        lessonCount: {
+          increment: 1,
+        },
+      },
+    });
+
     //create the video
     return await this.prisma.video.create({
       data: {
@@ -185,6 +209,18 @@ export class ModuleService {
   ) {
     //check if the module exists and the user is the creator of that module
     await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+
+    //update the number of lessons in the module
+    await this.prisma.module.update({
+      where: {
+        id: moduleId,
+      },
+      data: {
+        lessonCount: {
+          increment: 1,
+        },
+      },
+    });
 
     //create the assignment
     return await this.prisma.assignment.create({
