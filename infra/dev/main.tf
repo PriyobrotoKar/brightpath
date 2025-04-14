@@ -217,6 +217,7 @@ resource "aws_lambda_function" "video_transcoding_consumer" {
   source_code_hash = data.archive_file.video_transcoding_consumer_zip.output_base64sha256
 
   runtime = "nodejs18.x"
+  timeout = 30
 
   environment {
     variables = {
