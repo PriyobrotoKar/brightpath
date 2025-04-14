@@ -1,4 +1,4 @@
-import type { Video} from '@brightpath/db';
+import type { Video } from '@brightpath/db';
 import { VideoProgressStatus } from '@brightpath/db';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';

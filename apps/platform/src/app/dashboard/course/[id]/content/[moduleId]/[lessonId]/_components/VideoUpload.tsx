@@ -25,7 +25,7 @@ import { IconUpload, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@brightpath/ui/components/sonner';
 import VideoPlayer from './VideoPlayer';
 import useMultipartUpload from '@/hooks/useMutipartUpload';
@@ -37,7 +37,7 @@ import useDebounce from '@/hooks/useDebounce';
 import { useSaveIndicator } from '@/providers/SaveIndicatorProvider';
 
 const videoFormSchema = z.object({
-  title: z.string().min(2).max(100),
+  name: z.string().min(2).max(100),
   description: z.string(),
 });
 
@@ -234,11 +234,12 @@ interface VideoUploadFormProps {
 
 function VideoUploadForm({ video }: VideoUploadFormProps): React.JSX.Element {
   const { setIsSaving } = useSaveIndicator(video.id);
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof videoFormSchema>>({
     resolver: zodResolver(videoFormSchema),
     defaultValues: {
-      title: video.name,
+      name: video.name,
       description: video.description ?? '',
     },
   });
@@ -252,7 +253,10 @@ function VideoUploadForm({ video }: VideoUploadFormProps): React.JSX.Element {
       toast.error('An error occurred while saving');
       setIsSaving(false);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['lessons', video.moduleId],
+      });
       setIsSaving(false);
     },
   });
@@ -275,7 +279,7 @@ function VideoUploadForm({ video }: VideoUploadFormProps): React.JSX.Element {
     <Form {...form}>
       <form className="flex-1 space-y-3">
         <FormField
-          name="title"
+          name="name"
           render={({ field }) => {
             return (
               <FormItem>
