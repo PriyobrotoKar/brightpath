@@ -12,8 +12,9 @@ export async function middleware(
 ): Promise<NextResponse | undefined> {
   // Attempt to update the session, and return the response if it exists (e.g., session updated successfully).
   const res = await updateSession(request);
+
   if (res) {
-    return res; // Return early if session update was handled.
+    return res;
   }
 
   const session = await getSession();
@@ -58,6 +59,8 @@ export async function middleware(
   ) {
     return NextResponse.redirect(new URL(await getPath(step), request.url));
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
