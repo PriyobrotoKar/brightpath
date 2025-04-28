@@ -78,6 +78,8 @@ resource "aws_s3_bucket_notification" "temp_bucket_notification" {
     queue_arn = aws_sqs_queue.video_transcoding_queue.arn
     events    = ["s3:ObjectCreated:CompleteMultipartUpload"]
   }
+
+  depends_on = [aws_sqs_queue.video_transcoding_queue]
 }
 
 resource "aws_sqs_queue" "video_transcoding_queue" {
