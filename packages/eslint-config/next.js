@@ -47,5 +47,8 @@ module.exports = {
     'import/no-cycle': 'off',
     'import/no-unresolved': 'off',
     '@typescript-eslint/consistent-type-definitions': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/non-nullable-type-assertion-style': 'off',
   },
 };

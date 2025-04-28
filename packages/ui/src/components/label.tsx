@@ -7,7 +7,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@brightpath/ui/lib/utils';
 
 const labelVariants = cva(
-  ' leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+  'text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
 );
 
 const Label = React.forwardRef<
