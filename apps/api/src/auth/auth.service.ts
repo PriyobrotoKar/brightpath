@@ -1,7 +1,6 @@
 import { CacheService } from '@/cache/cache.service';
 import { createUser, getUserByEmailOrId } from '@/common/user';
 import { generateJwtTokens, generateOtp } from '@/common/utils';
-import bcrypt from 'bcrypt';
 import { PrismaService } from '@/prisma/prisma.service';
 import {
   Injectable,
@@ -17,6 +16,7 @@ import { JWTPayload } from './types/jwt-payload';
 import refreshJwtConfig from './config/refresh-jwt.config';
 import type { ConfigType } from '@nestjs/config';
 import { PrismaClient } from '@brightpath/db';
+import argon2 from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -144,7 +144,7 @@ export class AuthService {
     if (!hashedRefreshToken)
       throw new UnauthorizedException('Refresh token not found for this user');
 
-    const refreshTokenMatched = await bcrypt.compare(token, hashedRefreshToken);
+    const refreshTokenMatched = await argon2.verify(hashedRefreshToken, token);
 
     if (!refreshTokenMatched) {
       throw new UnauthorizedException('Invalid Refresh Token');
@@ -159,12 +159,14 @@ export class AuthService {
   }
 
   private async updateRefreshToken(userId: string, refresh_token: string) {
-    const hashedRefreshToken = await bcrypt.hash(refresh_token, 12);
+    const hashedRefreshToken = await argon2.hash(refresh_token);
+
     const expiryInSecs =
       Number(this.refreshJwtConfiguration.expiresIn.toString().slice(0, -1)) *
       24 *
       60 *
       60;
+
     await this.cache.setCache(
       'refreshToken',
       userId,

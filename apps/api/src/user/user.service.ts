@@ -13,6 +13,7 @@ import { createEvent } from '@/common/event';
 import { getUserByEmailOrId } from '@/common/user';
 import { AuthService } from '@/auth/auth.service';
 import { PrismaClient } from '@brightpath/db';
+import { StorageService } from '@/storage/storage.service';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,7 @@ export class UserService {
     private prismaService: PrismaService,
     private cache: CacheService,
     private authService: AuthService,
+    private storage: StorageService,
   ) {
     this.logger = new Logger(UserService.name);
     this.prisma = this.prismaService.client;
@@ -67,6 +69,17 @@ export class UserService {
     }
 
     const oldUser = await getUserByEmailOrId(user.id, this.prisma, this.cache);
+
+    if (data.role && oldUser.isOnboardingFinished) {
+      throw new BadRequestException(
+        'You cannot change your role after onboarding',
+      );
+    }
+
+    if (!data.profilePicture && oldUser.profilePicture) {
+      // if the user removes the profile picture, we need to delete it from the storage
+      await this.storage.deleteFile(oldUser.profilePicture);
+    }
 
     const updatedUser = await this.prisma.user.update({
       where: {

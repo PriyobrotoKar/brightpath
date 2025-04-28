@@ -1,4 +1,11 @@
-import { IsEmail, IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 import { Role } from '@brightpath/db';
 
 export class UpdateUserDto {
@@ -16,7 +23,15 @@ export class UpdateUserDto {
   role?: Role;
 
   @IsString()
-  @IsUrl()
   @IsOptional()
   profilePicture?: string;
+
+  @IsString()
+  @IsOptional()
+  bio?: string;
+
+  @IsArray()
+  @IsUrl({}, { each: true })
+  @IsOptional()
+  links?: string[];
 }
