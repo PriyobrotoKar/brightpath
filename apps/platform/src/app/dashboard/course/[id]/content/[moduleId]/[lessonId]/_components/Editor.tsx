@@ -44,7 +44,7 @@ export default function Editor({
   const { setIsSaving } = useSaveIndicator(document.id);
   const { setAutosave } = useLocalAutosave(document.id, content);
 
-  const mutation = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async (data: UpdateDocumentPayload) => {
       setIsSaving(true);
       return updateDocument(lesson.moduleId, lesson.id, data);
@@ -83,19 +83,19 @@ export default function Editor({
   useEffect(() => {
     if (!editor) return;
 
-    mutation.mutate({
+    mutate({
       content: debouncedContent,
       duration: calculateDuration(),
     });
     setAutosave(false);
-  }, [debouncedContent, editor, mutation, calculateDuration, setAutosave]);
+  }, [debouncedContent, editor, mutate, calculateDuration, setAutosave]);
 
   useEffect(() => {
     if (!editor) return;
-    mutation.mutate({
+    mutate({
       name: debouncedTitle,
     });
-  }, [debouncedTitle, editor, mutation]);
+  }, [debouncedTitle, editor, mutate]);
 
   return (
     <div className="mx-auto flex h-full max-w-[80ch] cursor-text flex-col">

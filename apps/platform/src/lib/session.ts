@@ -11,11 +11,13 @@ import { refreshToken } from '@/api/services/auth';
 
 interface User {
   id: string;
+  name: string | null;
   email: string;
+  image: string | null;
   isOnboardingFinished: boolean;
 }
 
-interface Session extends JWTPayload {
+export interface Session extends JWTPayload {
   user: User;
   accessToken: string;
   refreshToken: string;

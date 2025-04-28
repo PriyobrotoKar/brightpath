@@ -10,6 +10,7 @@ import {
   IconPlus,
   IconSchool,
   IconSelector,
+  IconSettings,
   IconUsers,
 } from '@tabler/icons-react';
 import { v4 as uuid } from 'uuid';
@@ -26,6 +27,7 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { Course } from '@brightpath/db';
+import { Separator } from '@brightpath/ui/components/separator';
 import Search from './Search';
 import Logo from '@/components/Logo';
 import { Menu, MenuLink } from '@/components/MenuLink';
@@ -47,16 +49,21 @@ function PrimarySidebar(): React.JSX.Element {
   ];
 
   return (
-    <aside className="w-64 flex-shrink-0 space-y-5 px-3 py-5">
+    <aside className="flex w-64 flex-shrink-0 flex-col gap-5 px-3 py-5">
       <Logo />
       <Search />
-      <Menu>
+      <Menu className="flex-1">
         {links.map((link) => (
           <MenuLink href={link.href} key={uuid()}>
             <link.icon />
             {link.name}
           </MenuLink>
         ))}
+        <Separator className="mt-auto" />
+        <MenuLink href="/dashboard/settings/basic">
+          <IconSettings />
+          Settings
+        </MenuLink>
       </Menu>
     </aside>
   );
@@ -120,7 +127,7 @@ function CourseSidebar(): React.JSX.Element {
   }
 
   return (
-    <aside className="w-64 flex-shrink-0 space-y-5 px-3 py-5">
+    <aside className="flex w-64 flex-shrink-0 flex-col gap-5 px-3 py-5">
       <Logo />
       <DropdownMenu>
         <DropdownMenuTrigger className="bg-muted flex w-full items-center gap-2 rounded-md border p-2">
@@ -196,7 +203,7 @@ function CourseSidebar(): React.JSX.Element {
         </DropdownMenuContent>
       </DropdownMenu>
       <Search />
-      <Menu>
+      <Menu className="flex-1">
         {links.map((link) => (
           <MenuLink href={link.href} key={uuid()}>
             <link.icon />

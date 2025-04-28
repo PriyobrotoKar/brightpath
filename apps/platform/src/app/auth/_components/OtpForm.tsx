@@ -54,6 +54,8 @@ function OtpForm({ email, scope }: OtpFormProps): React.JSX.Element {
         user: {
           id: data.user.id,
           email: data.user.email,
+          name: data.user.name,
+          image: data.user.profilePicture,
           isOnboardingFinished: data.user.isOnboardingFinished,
         },
         accessToken: data.access_token,
