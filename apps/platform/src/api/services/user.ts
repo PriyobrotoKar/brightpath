@@ -11,3 +11,15 @@ export const getSelf = async (): Promise<User> => {
 export const updateSelf = (data: Partial<User>): Promise<User> => {
   return apiClient.patch(base, data);
 };
+
+export const verifyEmailChange = async (
+  otp: string,
+): Promise<{
+  access_token: string;
+  refresh_token: string;
+  user: User;
+}> => {
+  return apiClient.post(`${base}/validate-email-change`, {
+    otp,
+  });
+};

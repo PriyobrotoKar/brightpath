@@ -41,6 +41,6 @@ export class UserController {
     setResponseCookie(res, 'access_token', access_token);
     setResponseCookie(res, 'refresh_token', refresh_token);
 
-    return updatedUser;
+    return { access_token, refresh_token, user: updatedUser };
   }
 }

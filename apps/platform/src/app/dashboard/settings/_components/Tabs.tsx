@@ -36,7 +36,7 @@ const tabLinks: TabLink[] = [
 function Tabs(): React.JSX.Element {
   const path = usePathname();
   return (
-    <div className="space-x-3 border-b">
+    <div className="space-x-7 border-b">
       {tabLinks.map((link) => {
         const isActive = path === link.href;
         return (
