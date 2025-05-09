@@ -51,6 +51,12 @@ enum SubmissionType {
   FORM_SUBMISSION
 }
 
+enum AccountStatus {
+  ACTIVE
+  DISABLED
+  PENDING_DELETION
+}
+
 enum VideoProgressStatus {
   NOT_STARTED
   IN_QUEUE
@@ -69,9 +75,10 @@ model User {
 
   courses Course[]
 
-  isOnboardingFinished Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  isOnboardingFinished Boolean       @default(false)
+  accountStatus        AccountStatus @default(ACTIVE)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 }
 
 model Course {
