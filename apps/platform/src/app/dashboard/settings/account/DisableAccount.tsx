@@ -1,8 +1,25 @@
 import { Button } from '@brightpath/ui/components/button';
 import { DialogContent, DialogTitle } from '@brightpath/ui/components/dialog';
-import React from 'react';
+import { toast } from '@brightpath/ui/components/sonner';
+import React, { useState } from 'react';
+import { removeSession } from '@/lib/session';
+import { disableSelf } from '@/api/services/user';
 
 function DisableAccount(): React.JSX.Element {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDisableAccount = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      await disableSelf();
+      await removeSession();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <DialogContent className="gap-0 p-0">
       <DialogTitle className="p-5">Are you sure?</DialogTitle>
@@ -24,7 +41,12 @@ function DisableAccount(): React.JSX.Element {
             logging back in.
           </span>
         </p>
-        <Button className="w-full" variant="destructive">
+        <Button
+          className="w-full"
+          isLoading={isLoading}
+          onClick={handleDisableAccount}
+          variant="destructive"
+        >
           I understand, disable this account
         </Button>
       </div>

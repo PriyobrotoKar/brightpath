@@ -2,10 +2,29 @@ import { Button } from '@brightpath/ui/components/button';
 import { DialogContent, DialogTitle } from '@brightpath/ui/components/dialog';
 import { Input } from '@brightpath/ui/components/input';
 import { Label } from '@brightpath/ui/components/label';
-import React from 'react';
+import { toast } from '@brightpath/ui/components/sonner';
+import React, { useState } from 'react';
+import { removeSession } from '@/lib/session';
+import { deleteSelf } from '@/api/services/user';
 
 function DeleteAccount(): React.JSX.Element {
-  const [value, setValue] = React.useState<string>('');
+  const [value, setValue] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDeleteAccount = async (): Promise<void> => {
+    if (value !== 'delete') return;
+
+    setIsLoading(true);
+
+    try {
+      await deleteSelf();
+      await removeSession();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <DialogContent className="gap-0 p-0">
@@ -42,6 +61,8 @@ function DeleteAccount(): React.JSX.Element {
         <Button
           className="w-full"
           disabled={value !== 'delete'}
+          isLoading={isLoading}
+          onClick={handleDeleteAccount}
           variant="destructive"
         >
           I understand, delete this account

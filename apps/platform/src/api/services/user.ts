@@ -23,3 +23,11 @@ export const verifyEmailChange = async (
     otp,
   });
 };
+
+export const disableSelf = async (): Promise<void> => {
+  return apiClient.post(`${base}/disable`);
+};
+
+export const deleteSelf = async (): Promise<void> => {
+  return apiClient.delete(`${base}/delete`);
+};
