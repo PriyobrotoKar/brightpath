@@ -164,4 +164,56 @@ export class UserService {
 
     return { ...updatedUser, ...tokens };
   }
+
+  async disableSelf(currentUser: JWTPayload) {
+    const user = await getUserByEmailOrId(
+      currentUser.id,
+      this.prisma,
+      this.cache,
+    );
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: currentUser.id,
+      },
+      data: {
+        accountStatus: 'DISABLED',
+      },
+    });
+
+    await this.cache.deleteCachedValue('user', user.id);
+    await this.cache.deleteCachedValue('refreshToken', user.id);
+
+    return 'User disabled successfully';
+  }
+
+  async deleteSelf(currentUser: JWTPayload) {
+    const user = await getUserByEmailOrId(
+      currentUser.id,
+      this.prisma,
+      this.cache,
+    );
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: currentUser.id,
+      },
+      data: {
+        accountStatus: 'PENDING_DELETION',
+      },
+    });
+
+    await this.cache.deleteCachedValue('user', user.id);
+    await this.cache.deleteCachedValue('refreshToken', user.id);
+
+    return 'User deleted successfully';
+  }
 }

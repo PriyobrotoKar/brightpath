@@ -39,6 +39,13 @@ export class AuthService {
       throw new BadRequestException('Invalid email');
     }
     const user = await this.createUserIfNotExist(email);
+
+    if (user.accountStatus === 'PENDING_DELETION') {
+      throw new BadRequestException(
+        'Your account has been marked for deletion. Please contact support for assistance.',
+      );
+    }
+
     await generateOtp(user.email, this.cache);
 
     // await createEvent({
@@ -81,6 +88,13 @@ export class AuthService {
     }
 
     await this.cache.deleteCachedValue('otp', email);
+
+    if (user.accountStatus === 'DISABLED') {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { accountStatus: 'ACTIVE' },
+      });
+    }
 
     const tokens = await generateJwtTokens(
       {

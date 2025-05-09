@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Patch,
@@ -12,7 +13,7 @@ import { CurrentUser } from '@/decorators/user.decorator';
 import type { JWTPayload } from '../auth/types/jwt-payload';
 import { UpdateUserDto } from './dto/update.user';
 import type { Response } from 'express';
-import { setResponseCookie } from '@/common/utils';
+import { clearResponseCookie, setResponseCookie } from '@/common/utils';
 
 @Controller('user')
 export class UserController {
@@ -42,5 +43,32 @@ export class UserController {
     setResponseCookie(res, 'refresh_token', refresh_token);
 
     return { access_token, refresh_token, user: updatedUser };
+  }
+
+  @Post('disable')
+  @HttpCode(200)
+  async disableSelf(
+    @CurrentUser() user: JWTPayload,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.userService.disableSelf(user);
+
+    clearResponseCookie(res, 'access_token');
+    clearResponseCookie(res, 'refresh_token');
+
+    return data;
+  }
+
+  @Delete('delete')
+  async deleteSelf(
+    @CurrentUser() user: JWTPayload,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.userService.deleteSelf(user);
+
+    clearResponseCookie(res, 'access_token');
+    clearResponseCookie(res, 'refresh_token');
+
+    return data;
   }
 }

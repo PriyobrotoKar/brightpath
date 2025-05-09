@@ -48,6 +48,12 @@ export function setResponseCookie(res: Response, key: string, value: string) {
   });
 }
 
+export function clearResponseCookie(res: Response, key: string) {
+  res.clearCookie(key, {
+    httpOnly: true,
+  });
+}
+
 export async function generateJwtTokens(
   payload: JWTPayload,
   jwt: JwtService,
