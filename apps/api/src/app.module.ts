@@ -15,6 +15,7 @@ import { CategoryModule } from './category/category.module';
 import { StorageModule } from './storage/storage.module';
 import { ModuleModule } from './module/module.module';
 import { CommonModule } from './common/common.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CommonModule } from './common/common.module';
     CategoryModule,
     StorageModule,
     ModuleModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [
