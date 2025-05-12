@@ -51,6 +51,12 @@ enum SubmissionType {
   FORM_SUBMISSION
 }
 
+enum Plan {
+  BASIC
+  PRO
+  BUSINESS
+}
+
 enum AccountStatus {
   ACTIVE
   DISABLED
@@ -73,12 +79,24 @@ model User {
   bio            String?
   links          String[]
 
-  courses Course[]
+  courses       Course[]
+  accountStatus AccountStatus @default(ACTIVE)
+  subscription  Subscription?
 
-  isOnboardingFinished Boolean       @default(false)
-  accountStatus        AccountStatus @default(ACTIVE)
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  isOnboardingFinished Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Subscription {
+  id   String @id @default(cuid())
+  plan Plan
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Course {
