@@ -6,7 +6,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 
-type Entity = 'otp' | 'user' | 'tempEmail' | 'refreshToken';
+type Entity = 'otp' | 'user' | 'tempEmail' | 'refreshToken' | 'subscription';
 
 @Injectable()
 export class CacheService implements OnModuleDestroy, OnModuleInit {
@@ -29,7 +29,7 @@ export class CacheService implements OnModuleDestroy, OnModuleInit {
     }
   }
 
-  async getCachedValue(entity: Entity, key: string) {
+  async getCachedValue<T>(entity: Entity, key: string): Promise<T | null> {
     const cacheKey = `${entity}:${key}`;
     const value = await redisConnection.get(cacheKey);
     return JSON.parse(value);

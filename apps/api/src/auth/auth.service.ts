@@ -150,7 +150,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found!');
     }
 
-    const hashedRefreshToken = await this.cache.getCachedValue(
+    const hashedRefreshToken = await this.cache.getCachedValue<string>(
       'refreshToken',
       user.id,
     );

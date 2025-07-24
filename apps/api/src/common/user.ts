@@ -15,7 +15,7 @@ export async function getUserByEmailOrId(
   prisma: PrismaClient,
   cache: CacheService,
 ): Promise<User | null> {
-  const cachedUser = await cache.getCachedValue('user', search);
+  const cachedUser = await cache.getCachedValue<User>('user', search);
 
   if (cachedUser) {
     return cachedUser;
