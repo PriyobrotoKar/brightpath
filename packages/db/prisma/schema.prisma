@@ -63,6 +63,13 @@ enum AccountStatus {
   PENDING_DELETION
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  HALTED
+  CANCELLED
+  COMPLETED
+}
+
 enum VideoProgressStatus {
   NOT_STARTED
   IN_QUEUE
@@ -89,8 +96,13 @@ model User {
 }
 
 model Subscription {
-  id   String @id @default(cuid())
-  plan Plan
+  id                 String             @id @default(cuid())
+  plan               Plan
+  status             SubscriptionStatus
+  subscriptionId     String             @unique
+  customerId         String?            @unique
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
