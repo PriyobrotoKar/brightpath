@@ -89,10 +89,23 @@ model User {
   courses       Course[]
   accountStatus AccountStatus @default(ACTIVE)
   subscription  Subscription?
+  merchant      Merchant?
 
   isOnboardingFinished Boolean  @default(false)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+}
+
+model Merchant {
+  id             String   @id @default(cuid())
+  account_id     String   @unique
+  product_id     String   @unique
+
+  creator        User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId      String @unique
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Subscription {
