@@ -19,6 +19,19 @@ enum Role {
   STUDENT
 }
 
+enum MerchantStatus {
+  IN_BANK_VALIDATION
+  BANK_VALIDATION_FAILED
+  IN_BENE_CREATION
+  BENE_CREATION_FAILED
+  IN_KYC_REVIEW
+  ACTION_REQUIRED
+  ACTIVE
+  ON_HOLD
+  BLOCKED
+  DELETED
+}
+
 enum PaymentPlan {
   ONETIME
   FREE
@@ -98,8 +111,7 @@ model User {
 
 model Merchant {
   id             String   @id @default(cuid())
-  account_id     String   @unique
-  product_id     String   @unique
+  status         MerchantStatus @default(IN_BENE_CREATION)
 
   creator        User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId      String @unique

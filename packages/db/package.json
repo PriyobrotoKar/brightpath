@@ -7,6 +7,7 @@
   "scripts": {
     "db:generate": "pnpx prisma generate",
     "db:migrate": "pnpx dotenv-cli -e ../../.env -- pnpx prisma migrate dev",
+    "db:reset": "pnpx dotenv-cli -e ../../.env -- pnpx prisma migrate reset",
     "db:migrate-deploy": "pnpx dotenv-cli -e ../../.env -- pnpx prisma migrate deploy",
     "db:migrate-test": "pnpx dotenv-cli -e ../../.env.test -- pnpx prisma migrate deploy",
     "db:studio": "pnpx dotenv-cli -e ../../.env -- pnpx prisma studio",
