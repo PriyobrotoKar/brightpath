@@ -5,7 +5,9 @@ import cookieParser from 'cookie-parser';
 import { QueryTransformPipe } from './common/pipes/queryTransform.pipe';
 
 export async function createApp() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+  });
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true,

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { SubscriptionsController } from './subscriptions.controller';
 import { ConfigModule } from '@nestjs/config';
-import razorpayConfig from './config/razorpay.config';
+import razorpayConfig from '@/common/config/razorpay.config';
 
 @Module({
   imports: [ConfigModule.forFeature(razorpayConfig)],

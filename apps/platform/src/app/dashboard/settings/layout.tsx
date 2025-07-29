@@ -6,9 +6,9 @@ export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}): React.JSX.Element {
   return (
-    <div className="space-y-3">
+    <div className="flex flex-1 flex-col gap-3">
       <Header
         subtitle="Customize your profile, personal information, preferences and much more."
         title="Settings"
