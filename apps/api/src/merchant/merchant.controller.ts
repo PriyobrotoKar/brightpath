@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   HttpCode,
   Post,
@@ -37,5 +38,15 @@ export class MerchantController {
     @Headers('x-webhook-timestamp') timestamp: string,
   ) {
     return this.merchantService.changeStatus(req.rawBody, signature, timestamp);
+  }
+
+  @Get('status')
+  async getMerchantStatus(@CurrentUser() user: JWTPayload) {
+    return this.merchantService.getMerchantStatus(user);
+  }
+
+  @Get('')
+  async getMerchantDetails(@CurrentUser() user: JWTPayload) {
+    return this.merchantService.getMerchantDetails(user);
   }
 }

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Post,
+  type RawBodyRequest,
+  Req,
+} from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { Creator } from '@/decorators/role.decorator';
 import { Plan } from '@brightpath/db';
@@ -28,12 +36,17 @@ export class SubscriptionsController {
   }
 
   @Public()
-  @Post('callback')
-  async subscriptionCallback(
-    @Body() body: any,
-    @Headers('x-razorpay-signature') signature: string,
+  @Post('status/webhook')
+  async statusCallback(
+    @Req() req: RawBodyRequest<Request>,
+    @Headers('x-webhook-signature') signature: string,
+    @Headers('x-webhook-timestamp') timestamp: string,
   ) {
-    return this.subscriptionsService.subscriptionCallback(body, signature);
+    return this.subscriptionsService.statusCallback(
+      req.rawBody,
+      signature,
+      timestamp,
+    );
   }
 
   @Get('current')

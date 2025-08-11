@@ -1,31 +1,27 @@
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateMerchantDto } from './dto/create.merchant';
 import { JWTPayload } from '@/auth/types/jwt-payload';
 import { PrismaService } from '@/prisma/prisma.service';
 import { MerchantStatus, PrismaClient } from '@brightpath/db';
-import razorpayConfig from '@/common/config/razorpay.config';
-import { type ConfigType } from '@nestjs/config';
-import Razorpay from 'razorpay';
 import { PaymentProcessorService } from '@/common/payment-processor.service';
+import { CacheService } from '@/cache/cache.service';
+import { VendorEntity } from 'cashfree-pg';
 
 @Injectable()
 export class MerchantService {
   private readonly prisma: PrismaClient;
-  private razorpay: Razorpay;
 
   constructor(
-    @Inject(razorpayConfig.KEY)
-    private razorpayConfiguration: ConfigType<typeof razorpayConfig>,
     private paymentProcessor: PaymentProcessorService,
     private prismaService: PrismaService,
+    private cacheService: CacheService,
   ) {
     this.prisma = this.prismaService.client;
-    this.razorpay = new Razorpay(this.razorpayConfiguration);
   }
 
   async createMerchant(dto: CreateMerchantDto, user: JWTPayload) {
@@ -100,6 +96,7 @@ export class MerchantService {
       data: {
         status: vendor.data.status as MerchantStatus,
         creatorId: creator.id,
+        merchantId: vendor.data.vendor_id,
       },
     });
 
@@ -124,6 +121,56 @@ export class MerchantService {
 
     return {
       message: 'Merchant status updated successfully',
+    };
+  }
+
+  async getMerchantStatus(user: JWTPayload) {
+    const merchant = await this.prisma.merchant.findUnique({
+      where: { creatorId: user.id },
+    });
+
+    if (!merchant) {
+      throw new NotFoundException('Merchant not found');
+    }
+
+    return {
+      status: merchant.status,
+    };
+  }
+
+  async getMerchantDetails(user: JWTPayload) {
+    const merchant = await this.prisma.merchant.findUnique({
+      where: { creatorId: user.id },
+    });
+
+    if (!merchant) {
+      throw new NotFoundException('Merchant not found');
+    }
+
+    // first find in cache
+    let cachedMerchantDetails =
+      await this.cacheService.getCachedValue<VendorEntity>(
+        'merchant',
+        merchant.merchantId,
+      );
+
+    if (!cachedMerchantDetails) {
+      const merchantDetails = await this.paymentProcessor.getVendor(
+        merchant.merchantId,
+      );
+
+      cachedMerchantDetails = merchantDetails.data;
+
+      await this.cacheService.setCache(
+        'merchant',
+        merchant.merchantId,
+        cachedMerchantDetails,
+      );
+    }
+
+    return {
+      ...merchant,
+      details: cachedMerchantDetails,
     };
   }
 }

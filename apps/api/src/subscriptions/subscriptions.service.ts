@@ -1,29 +1,17 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { ConfigService, type ConfigType } from '@nestjs/config';
-import Razorpay from 'razorpay';
-import razorpayConfig from './config/razorpay.config';
+import { v4 as uuidv4 } from 'uuid';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Plan, prisma, SubscriptionStatus } from '@brightpath/db';
 import { JWTPayload } from '@/auth/types/jwt-payload';
-import { validateWebhookSignature } from 'razorpay/dist/utils/razorpay-utils';
 import { CacheService } from '@/cache/cache.service';
+import { PaymentProcessorService } from '@/common/payment-processor.service';
 
 @Injectable()
 export class SubscriptionsService {
-  private razorpay: Razorpay;
   private logger: Logger;
   constructor(
-    @Inject(razorpayConfig.KEY)
-    private readonly razorpayConfiguration: ConfigType<typeof razorpayConfig>,
-    private readonly ConfigService: ConfigService,
     private readonly cacheService: CacheService,
+    private readonly paymentProcessor: PaymentProcessorService,
   ) {
-    this.razorpay = new Razorpay(this.razorpayConfiguration);
     this.logger = new Logger(SubscriptionsService.name);
   }
 
@@ -34,6 +22,17 @@ export class SubscriptionsService {
       throw new BadRequestException(
         'Invalid plan selected. Plan must be one of the following: BASIC, PRO, or BUSINESS',
       );
+    }
+
+    const creator = await prisma.user.findUnique({
+      where: {
+        id: currentUser.id,
+      },
+    });
+
+    // check if creator phone number is valid
+    if (!creator.phone) {
+      throw new BadRequestException('Creator phone number is not provided');
     }
 
     // check if the user has an active subscription
@@ -47,34 +46,30 @@ export class SubscriptionsService {
       throw new BadRequestException('User already has an active subscription');
     }
 
-    // fetch all the plans from razorpay
-    const plans = await this.razorpay.plans.all();
-
-    // get the id of the plan
-    const planId = plans.items.find(
-      ({ item }) => item.name === `BRIGHTPATH: ${plan}`,
-    ).id;
-
-    // create a razorpay subscription with this plan
-    const subscription = await this.razorpay.subscriptions.create({
-      plan_id: planId,
-      total_count: 12,
-      customer_notify: 1,
+    // create a subscription with this plan
+    const subscription = await this.paymentProcessor.createSubscription({
+      subscription_id: uuidv4(),
+      plan_details: {
+        plan_id: `BRIGHTPATH_${plan}`,
+      },
+      customer_details: {
+        customer_email: currentUser.email,
+        customer_phone: creator.phone,
+        customer_name: creator.name,
+      },
+      subscription_meta: {
+        notification_channel: ['SMS'],
+      },
+      subscription_first_charge_time: new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        new Date().getDate() + 2,
+      ).toISOString(),
     });
 
-    //create a subscription in the cache with an expiry of 1 hour
-    await this.cacheService.setCache(
-      'subscription',
-      subscription.id,
-      {
-        userId: currentUser.id,
-        plan,
-      },
-      3600,
-    );
-
     return {
-      subscriptionId: subscription.id,
+      subscriptionId: subscription.data.subscription_id,
+      sessionId: subscription.data.subscription_session_id,
     };
   }
 
@@ -100,141 +95,77 @@ export class SubscriptionsService {
       );
     }
 
-    // fetch all the plans from razorpay
-    const plans = await this.razorpay.plans.all();
-
-    // get the id of the plan
-    const planId = plans.items.find(
-      ({ item }) => item.name === `BRIGHTPATH: ${plan}`,
-    ).id;
-
-    if (!planId) {
-      throw new NotFoundException(`Plan ${plan} not found in Razorpay`);
-    }
-
-    // fetch current subscription details
-    const subscriptionDetails = await this.razorpay.subscriptions.fetch(
-      activeSubscription.subscriptionId,
-    );
-
-    if (subscriptionDetails.payment_method === 'upi') {
-      throw new BadRequestException(
-        'UPI payment method is not supported for switching subscriptions. Cancel your current subscription and try again',
-      );
-    }
-
-    // create a razorpay subscription with this plan
-    const subscription = await this.razorpay.subscriptions.update(
+    // create a  subscription with this plan
+    const subscription = await this.paymentProcessor.changeSubscription(
       activeSubscription.subscriptionId,
       {
-        plan_id: planId,
-        total_count: 12,
-        customer_notify: 1,
+        subscription_id: activeSubscription.subscriptionId,
+        action: 'CHANGE_PLAN',
+        action_details: {
+          plan_id: `BRIGHTPATH_${plan}`,
+        },
       },
-    );
-
-    //create a subscription in the cache with an expiry of 1 hour
-    await this.cacheService.setCache(
-      'subscription',
-      subscription.id,
-      {
-        oldSubscriptionId: activeSubscription.subscriptionId,
-        userId: currentUser.id,
-        plan,
-      },
-      3600,
     );
 
     return {
-      subscriptionId: subscription.id,
+      subscriptionId: subscription.data.subscription_id,
+      sessionId: subscription.data.subscription_session_id,
     };
   }
 
-  async subscriptionCallback(body: any, signature: string) {
-    this.logger.log(`Webhook received for ${body.event}`);
+  async statusCallback(rawBody: Buffer, signature: string, timestamp: string) {
+    this.logger.log(`Webhook received for ${rawBody}`);
 
-    // Validate the webhook signature
-    const secret = this.ConfigService.get<string>('RAZORPAY_WEBHOOK_SECRET');
-
-    const isValidWebhook = validateWebhookSignature(
-      JSON.stringify(body),
+    // verify the webhook signature
+    const data = this.paymentProcessor.verifyWebhook(
       signature,
-      secret,
+      rawBody.toString('utf-8'),
+      timestamp,
     );
 
-    if (!isValidWebhook) {
-      this.logger.error('Invalid webhook signature');
-      throw new BadRequestException('Invalid webhook signature');
-    }
+    console.log('data', data);
 
-    const { event } = body;
+    const { plan_details, customer_details, subscription_details } =
+      data.object.data;
 
-    if (event === 'subscription.activated') {
-      const { entity: subscription } = body.payload.subscription;
+    const status = subscription_details.subscription_status;
+    const plan = plan_details.plan_id.split('_')[1];
 
-      const cachedSubscription = await this.cacheService.getCachedValue<{
-        userId: string;
-        plan: Plan;
-      }>('subscription', subscription.id);
-
-      if (!cachedSubscription) {
-        this.logger.error('No cached subscription found');
-        throw new NotFoundException('No cached subscription found');
-      }
-
-      await prisma.subscription.create({
-        data: {
-          userId: cachedSubscription.userId,
-          subscriptionId: subscription.id,
-          plan: cachedSubscription.plan,
-          status: SubscriptionStatus.ACTIVE,
-          customerId: subscription.customer_id,
-          currentPeriodStart: new Date(subscription.current_start),
-          currentPeriodEnd: new Date(subscription.current_end),
+    if (status === 'ACTIVE') {
+      const creator = await prisma.user.findUnique({
+        where: {
+          email: customer_details.customer_email,
         },
       });
 
-      await this.cacheService.deleteCachedValue(
-        'subscription',
-        subscription.id,
-      );
+      await prisma.subscription.upsert({
+        where: {
+          subscriptionId: subscription_details.subscription_id,
+        },
+        update: {
+          plan,
+          currentPeriodStart: new Date(
+            subscription_details.subscription_first_charge_time,
+          ),
+          currentPeriodEnd: new Date(
+            subscription_details.subscription_expiry_time,
+          ),
+        },
+        create: {
+          userId: creator.id,
+          subscriptionId: subscription_details.subscription_id,
+          plan,
+          status: SubscriptionStatus.ACTIVE,
+          currentPeriodStart: new Date(
+            subscription_details.subscription_first_charge_time,
+          ),
+          currentPeriodEnd: new Date(
+            subscription_details.subscription_expiry_time,
+          ),
+        },
+      });
 
       this.logger.log('Subscription activated successfully');
-    }
-
-    if (event === 'subscription.updated') {
-      const { entity: subscription } = body.payload.subscription;
-
-      const cachedSubscription = await this.cacheService.getCachedValue<{
-        oldSubscriptionId: string;
-        userId: string;
-        plan: Plan;
-      }>('subscription', subscription.id);
-
-      if (!cachedSubscription) {
-        this.logger.error('No cached subscription found');
-        throw new NotFoundException('No cached subscription found');
-      }
-
-      await prisma.subscription.update({
-        where: {
-          subscriptionId: cachedSubscription.oldSubscriptionId,
-          userId: cachedSubscription.userId,
-        },
-        data: {
-          subscriptionId: subscription.id,
-          plan: cachedSubscription.plan,
-          currentPeriodStart: new Date(subscription.current_start),
-          currentPeriodEnd: new Date(subscription.current_end),
-        },
-      });
-
-      await this.cacheService.deleteCachedValue(
-        'subscription',
-        subscription.id,
-      );
-
-      this.logger.log('Subscription updated successfully');
     }
 
     return {

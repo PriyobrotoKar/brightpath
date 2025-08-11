@@ -6,7 +6,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 
-type Entity = 'otp' | 'user' | 'tempEmail' | 'refreshToken' | 'subscription';
+type Entity = 'otp' | 'user' | 'tempEmail' | 'refreshToken' | 'merchant';
 
 @Injectable()
 export class CacheService implements OnModuleDestroy, OnModuleInit {
