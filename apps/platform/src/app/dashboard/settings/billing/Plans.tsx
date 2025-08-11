@@ -23,7 +23,7 @@ interface PlanDetail {
 const plans: PlanDetail[] = [
   {
     name: 'Starter Plan',
-    value: Plan.BASIC,
+    value: Plan.STARTER,
     price: 3999,
     description: 'Ideal for new educators, launching their first course',
     features: [
@@ -73,20 +73,22 @@ function Plans({ currentSubscription }: PlansProps): React.JSX.Element {
     setIsLoading(plan);
 
     try {
-      const { subscriptionId } = currentSubscription
+      const { sessionId } = currentSubscription
         ? await switchSubscription(plan)
         : await createSubscription(plan);
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-        subscription_id: subscriptionId,
-      };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any -- have to use it as cashfree is not typed
+      const cashfree = new (window as any).Cashfree({
+        mode: 'sandbox',
+      });
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any -- have to use it as razorpay is not typed
-      const razorpay = new (window as any).Razorpay(options);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- have to use it as cashfree is not typed
+      const result = await cashfree.subscriptionsCheckout({
+        subsSessionId: sessionId,
+        redirectTarget: '_blank',
+      });
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- have to use it as razorpay is not typed
-      razorpay.open();
+      console.log(result.error);
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
@@ -145,7 +147,7 @@ function Plans({ currentSubscription }: PlansProps): React.JSX.Element {
           </div>
         );
       })}
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+      <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" />
     </div>
   );
 }

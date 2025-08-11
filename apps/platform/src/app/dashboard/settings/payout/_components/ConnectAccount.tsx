@@ -1,10 +1,36 @@
-import { Button } from '@brightpath/ui/components/button';
-import { IconLink } from '@tabler/icons-react';
+'use client';
 import Image from 'next/image';
+import type { MerchantStatus } from '@brightpath/db';
+import { cn } from '@brightpath/ui/lib/utils';
+import { buttonVariants } from '@brightpath/ui/components/button';
+import { IconLoader } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import ConnectAccountForm from './ConnectAccountForm';
+import type { Session } from '@/lib/session';
+import { getMerchantDetails } from '@/api/services/merchant';
 
-export default function ConnectAccount(): React.JSX.Element {
+interface ConnectAccountProps {
+  session: Session | null;
+  merchant: {
+    status: MerchantStatus;
+  } | null;
+}
+
+export default function ConnectAccount({
+  session,
+  merchant,
+}: ConnectAccountProps): React.JSX.Element {
+  const { data } = useQuery({
+    queryKey: ['merchant'],
+    queryFn: async () => {
+      return getMerchantDetails();
+    },
+    initialData: merchant,
+    refetchInterval: merchant ? 3000 : undefined,
+  });
+
   return (
-    <div className="space-y-5 text-center">
+    <div className="mx-auto flex h-full w-fit flex-col items-center justify-center gap-5 text-center">
       <Image
         alt="Payout"
         className="mx-auto"
@@ -21,9 +47,19 @@ export default function ConnectAccount(): React.JSX.Element {
         </p>
       </div>
 
-      <Button className="w-fit">
-        <IconLink /> Connect Account
-      </Button>
+      {data?.status ? (
+        <div
+          className={cn(
+            buttonVariants({ variant: 'default' }),
+            'pointer-events-none w-fit',
+          )}
+        >
+          <IconLoader className="animate-spin" />
+          {data.status}
+        </div>
+      ) : (
+        <ConnectAccountForm session={session} />
+      )}
     </div>
   );
 }

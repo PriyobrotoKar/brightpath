@@ -9,6 +9,7 @@ export const createSubscription = async (
   plan: Plan,
 ): Promise<{
   subscriptionId: string;
+  sessionId: string;
 }> => {
   return apiClient.post(base, { plan });
 };
@@ -17,6 +18,7 @@ export const switchSubscription = async (
   plan: Plan,
 ): Promise<{
   subscriptionId: string;
+  sessionId: string;
 }> => {
   return apiClient.post(`${base}/switch`, { plan });
 };
