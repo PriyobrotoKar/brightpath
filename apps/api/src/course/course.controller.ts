@@ -16,6 +16,8 @@ import { CreateCourseDto } from './dto/create.course';
 import { CreatePricingDto } from './dto/create.pricing';
 import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
+import { UpdateCourseDto } from './dto/update.course';
+import { UpdatePricingDto } from './dto/update.pricing';
 
 @Creator()
 @Controller('course')
@@ -38,6 +40,15 @@ export class CourseController {
     return this.courseService.createCourse(user, dto);
   }
 
+  @Patch(':id')
+  updateCourse(
+    @CurrentUser() user: JWTPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateCourseDto,
+  ) {
+    return this.courseService.updateCourse(user, id, dto);
+  }
+
   @Post(':id/pricing')
   createPricing(
     @CurrentUser() user: JWTPayload,
@@ -45,6 +56,25 @@ export class CourseController {
     @Body() dto: CreatePricingDto,
   ) {
     return this.courseService.createPricing(user, id, dto);
+  }
+
+  @Patch(':id/pricing')
+  updatePricing(
+    @CurrentUser() user: JWTPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdatePricingDto,
+  ) {
+    return this.courseService.updateCoursePricing(user, id, dto);
+  }
+
+  @Get(':id/pricing')
+  getCoursePricing(@CurrentUser() user: JWTPayload, @Param('id') id: string) {
+    return this.courseService.getCoursePricing(id, user);
+  }
+
+  @Get(':id/coupons')
+  getCourseCoupons(@CurrentUser() user: JWTPayload, @Param('id') id: string) {
+    return this.courseService.getCourseCoupons(id, user);
   }
 
   @Post(':id/schedule')

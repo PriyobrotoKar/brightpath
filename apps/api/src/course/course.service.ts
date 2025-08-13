@@ -12,6 +12,8 @@ import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
 import { createCategoryIfNotExist } from '@/common/category';
 import { AuthorityCheckerService } from '@/common/authority-checker.service';
+import { UpdateCourseDto } from './dto/update.course';
+import { UpdatePricingDto } from './dto/update.pricing';
 
 @Injectable()
 export class CourseService {
@@ -27,6 +29,9 @@ export class CourseService {
     const course = await this.prisma.course.findUnique({
       where: {
         id: courseId,
+      },
+      include: {
+        category: true,
       },
     });
 
@@ -57,6 +62,26 @@ export class CourseService {
         logo: dto.logo,
         thumbnails: dto.thumbnails,
         creatorId: user.id,
+      },
+    });
+  }
+
+  async updateCourse(user: JWTPayload, courseId: string, dto: UpdateCourseDto) {
+    await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
+
+    const category = await createCategoryIfNotExist(dto.category, this.prisma);
+
+    return await this.prisma.course.update({
+      where: {
+        id: courseId,
+      },
+      data: {
+        name: dto.name,
+        description: dto.description,
+        categoryId: category.id,
+        tags: dto.tags,
+        logo: dto.logo,
+        thumbnails: dto.thumbnails,
       },
     });
   }
@@ -108,6 +133,77 @@ export class CourseService {
     });
 
     return pricing;
+  }
+
+  async updateCoursePricing(
+    user: JWTPayload,
+    courseId: string,
+    dto: UpdatePricingDto,
+  ) {
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseId,
+      user.id,
+    );
+
+    const pricing = await this.prisma.pricing.findUnique({
+      where: {
+        courseId: course.id,
+      },
+    });
+
+    if (!pricing) {
+      throw new NotFoundException('Pricing not found');
+    }
+
+    let updatedData = {
+      paymentPlan: dto.model,
+      price: new Prisma.Decimal(dto.price),
+    };
+
+    updatedData = this.addDiscountToPricing(updatedData, dto);
+
+    updatedData = await this.addCouponToPricing(updatedData, dto);
+
+    const updatedPricing = await this.prisma.pricing.update({
+      where: {
+        id: pricing.id,
+      },
+      data: updatedData,
+    });
+
+    return updatedPricing;
+  }
+
+  async getCoursePricing(courseId: string, user: JWTPayload) {
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseId,
+      user.id,
+    );
+
+    const pricing = await this.prisma.pricing.findUnique({
+      where: {
+        courseId: course.id,
+      },
+    });
+
+    return pricing;
+  }
+
+  async getCourseCoupons(courseId: string, user: JWTPayload) {
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseId,
+      user.id,
+    );
+
+    const coupons = await this.prisma.coupon.findMany({
+      where: {
+        pricing: {
+          courseId: course.id,
+        },
+      },
+    });
+
+    return coupons;
   }
 
   async createSchedule(
@@ -255,10 +351,10 @@ export class CourseService {
     return updatedCourse;
   }
 
-  private addDiscountToPricing(
-    data: Prisma.PricingCreateInput,
-    dto: CreatePricingDto,
-  ) {
+  private addDiscountToPricing<
+    T extends Prisma.PricingCreateInput | Prisma.PricingUpdateInput,
+    K extends CreatePricingDto | UpdatePricingDto,
+  >(data: T, dto: K) {
     if (dto.discount_enabled) {
       if (!dto.discount_type || !dto.discount_value) {
         throw new BadRequestException(
@@ -277,10 +373,10 @@ export class CourseService {
     return data;
   }
 
-  private async addCouponToPricing(
-    data: Prisma.PricingCreateInput,
-    dto: CreatePricingDto,
-  ) {
+  private async addCouponToPricing<
+    T extends Prisma.PricingCreateInput | Prisma.PricingUpdateInput,
+    K extends CreatePricingDto | UpdatePricingDto,
+  >(data: T, dto: K) {
     if (dto.coupon_enabled) {
       if (!dto.coupon_type || !dto.coupon_value || !dto.coupon_code) {
         throw new BadRequestException(
