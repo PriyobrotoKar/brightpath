@@ -1,5 +1,11 @@
 'use server';
-import type { Course, CourseType } from '@brightpath/db';
+import type {
+  Coupon,
+  Course,
+  CourseType,
+  Pricing,
+  Prisma,
+} from '@brightpath/db';
 import apiClient, { ApiError } from '../client';
 
 const base = '/course';
@@ -12,6 +18,8 @@ export type CreateCoursePayload = {
   logo: string;
   tags: string[];
 };
+
+export type UpdateCoursePayload = Partial<CreateCoursePayload>;
 
 export type CreateCoursePricingPayload = {
   model: string;
@@ -37,10 +45,18 @@ export type CreateCourseSchedulePayload = {
   }[];
 };
 
+export type CourseWithCategory = Prisma.CourseGetPayload<{
+  include: {
+    category: true;
+  };
+}>;
+
 export type UpdateEnrollmentSettingsPayload = {
   type: string;
   deadline: Date;
 };
+
+export type UpdateCoursePricingPayload = Partial<CreateCoursePricingPayload>;
 
 export const createCourse = (data: CreateCoursePayload): Promise<Course> => {
   return apiClient.post(base, data);
@@ -60,6 +76,13 @@ export const createCourseSchedule = (
   return apiClient.post(`${base}/${courseId}/schedule`, data);
 };
 
+export const updateCourse = (
+  courseId: string,
+  data: UpdateCoursePayload,
+): Promise<Course> => {
+  return apiClient.patch(`${base}/${courseId}`, data);
+};
+
 export const updateEnrollmentSettings = (
   courseId: string,
   data: UpdateEnrollmentSettingsPayload,
@@ -67,10 +90,18 @@ export const updateEnrollmentSettings = (
   return apiClient.patch(`${base}/${courseId}/enrollment`, data);
 };
 
-export const getCourse = async (courseId: string): Promise<Course | null> => {
+export const updateCoursePricing = (
+  courseId: string,
+  data: UpdateCoursePricingPayload,
+): Promise<Course> => {
+  return apiClient.patch(`${base}/${courseId}/pricing`, data);
+};
+
+export const getCourse = async (
+  courseId: string,
+): Promise<CourseWithCategory | null> => {
   try {
-    const course = await apiClient.get<Course>(`${base}/${courseId}`);
-    return course;
+    return await apiClient.get(`${base}/${courseId}`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return null;
@@ -84,4 +115,34 @@ export const getCourse = async (courseId: string): Promise<Course | null> => {
 
 export const getCoursesForSelf = (): Promise<Course[]> => {
   return apiClient.get(base);
+};
+
+export const getCoursePricing = async (
+  courseId: string,
+): Promise<Pricing | null> => {
+  try {
+    return await apiClient.get(`${base}/${courseId}/pricing`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+
+    // eslint-disable-next-line no-console -- we need to log the error
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getCourseCoupons = async (courseId: string): Promise<Coupon[]> => {
+  try {
+    return await apiClient.get(`${base}/${courseId}/coupons`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return [];
+    }
+
+    // eslint-disable-next-line no-console -- we need to log the error
+    console.error(error);
+    throw error;
+  }
 };

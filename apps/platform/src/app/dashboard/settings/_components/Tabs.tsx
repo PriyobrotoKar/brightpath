@@ -5,35 +5,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 
-interface TabLink {
+export interface TabLink {
   name: string;
   href: string;
 }
 
-const tabLinks: TabLink[] = [
-  {
-    name: 'Basic Info',
-    href: '/dashboard/settings/basic',
-  },
-  {
-    name: 'Account',
-    href: '/dashboard/settings/account',
-  },
-  {
-    name: 'Billing',
-    href: '/dashboard/settings/billing',
-  },
-  {
-    name: 'Payout',
-    href: '/dashboard/settings/payout',
-  },
-  {
-    name: 'Notification',
-    href: '/dashboard/settings/notification',
-  },
-];
+interface TabsProps {
+  tabLinks: TabLink[];
+}
 
-function Tabs(): React.JSX.Element {
+function Tabs({ tabLinks }: TabsProps): React.JSX.Element {
   const path = usePathname();
   return (
     <div className="space-x-7 border-b">

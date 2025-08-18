@@ -2,6 +2,7 @@ import { Button } from '@brightpath/ui/components/button';
 import { IconSchool } from '@tabler/icons-react';
 import Image from 'next/image';
 import type { Course } from '@brightpath/db';
+import { mediaUrl } from '@/lib/utils';
 
 interface CourseCardProps {
   course: Course;
@@ -17,7 +18,7 @@ export default function CourseCard({
           alt="Course Thumbnail"
           className="h-full w-full object-cover"
           height={600}
-          src={`https://priyobroto-brightpath.s3.ap-south-1.amazonaws.com/${course.thumbnails[0]}`}
+          src={mediaUrl(course.thumbnails[0]) ?? ''}
           width={1200}
         />
       </div>

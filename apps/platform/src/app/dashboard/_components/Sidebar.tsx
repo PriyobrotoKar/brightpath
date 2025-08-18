@@ -210,6 +210,11 @@ function CourseSidebar(): React.JSX.Element {
             {link.name}
           </MenuLink>
         ))}
+        <Separator className="mt-auto" />
+        <MenuLink href={`/dashboard/course/${courseId}/settings`}>
+          <IconSettings />
+          Settings
+        </MenuLink>
       </Menu>
     </aside>
   );
