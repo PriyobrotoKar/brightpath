@@ -14,6 +14,7 @@ import { createCategoryIfNotExist } from '@/common/category';
 import { AuthorityCheckerService } from '@/common/authority-checker.service';
 import { UpdateCourseDto } from './dto/update.course';
 import { UpdatePricingDto } from './dto/update.pricing';
+import { UpdateScheduleDto } from './dto/update.schedule';
 
 @Injectable()
 export class CourseService {
@@ -216,6 +217,13 @@ export class CourseService {
       user.id,
     );
 
+    const hasSessions =
+      (await this.prisma.session.count({
+        where: {
+          courseId: course.id,
+        },
+      })) > 0;
+
     if (dto.course_type === 'COHORT' && (!dto.start_date || !dto.end_date)) {
       throw new BadRequestException(
         'Start date and end date are required for cohort courses',
@@ -228,11 +236,9 @@ export class CourseService {
       );
     }
 
-    if (course.Session.length) {
+    if (hasSessions) {
       throw new BadRequestException('Schedule already exist for this course');
     }
-
-    const sessions: Prisma.SessionCreateWithoutCourseInput[] = [];
 
     const currentDate = new Date();
     const start_date = new Date(dto.start_date);
@@ -244,40 +250,10 @@ export class CourseService {
       throw new BadRequestException('End date should be after start date');
     }
 
-    if (dto.sessions.length) {
-      for (const session of dto.sessions) {
-        const start_time = new Date(session.start_time);
-        const end_time = new Date(session.end_time);
-        if (start_time > end_time) {
-          throw new BadRequestException('End time should be after start time');
-        }
-
-        if (session.day_of_week < 0 || session.day_of_week > 6) {
-          throw new BadRequestException('Invalid day of week');
-        }
-
-        if (session.start_time === session.end_time) {
-          throw new BadRequestException(
-            'Start time and end time cannot be same',
-          );
-        }
-
-        const duration =
-          new Date(session.end_time).getTime() -
-          new Date(session.start_time).getTime();
-
-        const endAt =
-          end_time ||
-          new Date(currentDate.setFullYear(currentDate.getFullYear() + 1));
-
-        sessions.push({
-          name: 'Session',
-          startAt: session.start_time,
-          endAt: endAt,
-          duration,
-        });
-      }
-    }
+    const sessions: Prisma.SessionCreateWithoutCourseInput[] = dto.sessions
+      .length
+      ? this.formatSessions(dto.sessions)
+      : [];
 
     const updatedCourse = await this.prisma.course.update({
       where: {
@@ -307,6 +283,77 @@ export class CourseService {
         sessionId: updatedCourse.Session[i].id,
       })),
     });
+
+    return updatedCourse;
+  }
+
+  async updateCourseSchedule(
+    dto: UpdateScheduleDto,
+    courseId: string,
+    user: JWTPayload,
+  ) {
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseId,
+      user.id,
+    );
+
+    //TODO: creator cannot change the course type if the there is atleast one learner enrolled
+    // This will be implemented in a future release
+
+    // if the user is switching course type from live to self-paced, delete all sessions
+    if (course.type === 'COHORT' && dto.course_type === 'RECORDED') {
+      await this.prisma.session.deleteMany({
+        where: {
+          courseId: course.id,
+        },
+      });
+    }
+
+    const updatedCourse = await this.prisma.course.update({
+      where: {
+        id: course.id,
+      },
+      data: {
+        type: dto.course_type,
+        startAt: dto.start_date,
+        endAt: dto.end_date,
+        accessDuration: dto.access_duration,
+      },
+    });
+
+    if (dto.sessions.length && dto.course_type === 'COHORT') {
+      const formattedSessions = this.formatSessions(dto.sessions);
+      const ids = dto.sessions
+        .map((session) => session.id)
+        .filter((session) => session !== undefined);
+
+      // delete previous sessions
+      await this.prisma.session.deleteMany({
+        where: {
+          id: {
+            in: ids,
+          },
+        },
+      });
+
+      // create new sessions
+      const sessions = await this.prisma.session.createManyAndReturn({
+        data: formattedSessions.map((session) => ({
+          ...session,
+          courseId: updatedCourse.id,
+        })),
+      });
+
+      // create recurring details
+      await this.prisma.recurringDetails.createMany({
+        data: dto.sessions.map((session, i) => ({
+          dayOfWeek: session.day_of_week,
+          rrule: 'FREQ=WEEKLY;BYDAY=' + session.day_of_week,
+          endAt: updatedCourse.endAt,
+          sessionId: sessions[i].id,
+        })),
+      });
+    }
 
     return updatedCourse;
   }
@@ -407,5 +454,66 @@ export class CourseService {
     }
 
     return data;
+  }
+
+  async getCourseSchedule(id: string, user: JWTPayload) {
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      id,
+      user.id,
+    );
+
+    const sessions = await this.prisma.session.findMany({
+      where: {
+        courseId: course.id,
+      },
+      include: {
+        RecurringDetails: true,
+      },
+    });
+
+    return {
+      ...course,
+      Session: sessions,
+    };
+  }
+
+  private formatSessions<T extends CreateScheduleDto | UpdateScheduleDto>(
+    sessions: T['sessions'],
+  ) {
+    const currentDate = new Date();
+    const formattedSessions: Prisma.SessionCreateWithoutCourseInput[] = [];
+
+    for (const session of sessions) {
+      const start_time = new Date(session.start_time);
+      const end_time = new Date(session.end_time);
+      if (start_time > end_time) {
+        throw new BadRequestException('End time should be after start time');
+      }
+
+      if (session.day_of_week < 0 || session.day_of_week > 6) {
+        throw new BadRequestException('Invalid day of week');
+      }
+
+      if (session.start_time === session.end_time) {
+        throw new BadRequestException('Start time and end time cannot be same');
+      }
+
+      const duration =
+        new Date(session.end_time).getTime() -
+        new Date(session.start_time).getTime();
+
+      const endAt =
+        end_time ||
+        new Date(currentDate.setFullYear(currentDate.getFullYear() + 1));
+
+      formattedSessions.push({
+        name: 'Session',
+        startAt: session.start_time,
+        endAt: endAt,
+        duration,
+      });
+    }
+
+    return formattedSessions;
   }
 }

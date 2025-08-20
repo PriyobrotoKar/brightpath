@@ -18,9 +18,6 @@ export class AuthorityCheckerService {
       where: {
         id: courseId,
       },
-      include: {
-        Session: true,
-      },
     });
 
     if (!course) {

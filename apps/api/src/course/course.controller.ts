@@ -18,6 +18,7 @@ import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
 import { UpdateCourseDto } from './dto/update.course';
 import { UpdatePricingDto } from './dto/update.pricing';
+import { UpdateScheduleDto } from './dto/update.schedule';
 
 @Creator()
 @Controller('course')
@@ -84,6 +85,20 @@ export class CourseController {
     @Body() dto: CreateScheduleDto,
   ) {
     return this.courseService.createSchedule(user, id, dto);
+  }
+
+  @Patch(':id/schedule')
+  updateSchedule(
+    @CurrentUser() user: JWTPayload,
+    @Param('id') id: string,
+    @Body() dto: UpdateScheduleDto,
+  ) {
+    return this.courseService.updateCourseSchedule(dto, id, user);
+  }
+
+  @Get(':id/schedule')
+  getCourseSchedule(@CurrentUser() user: JWTPayload, @Param('id') id: string) {
+    return this.courseService.getCourseSchedule(id, user);
   }
 
   @Patch(':id/enrollment')
