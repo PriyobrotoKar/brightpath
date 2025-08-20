@@ -15,7 +15,7 @@ export default async function SettingsPage({
   }
 
   return (
-    <div>
+    <div className="flex flex-1 flex-col gap-6">
       <FormInfo
         subtitle="Add some basic details about your bootcamp"
         title="Basic Information"

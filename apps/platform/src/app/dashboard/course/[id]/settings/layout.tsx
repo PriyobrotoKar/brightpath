@@ -22,7 +22,7 @@ export default function CourseSettingsLayout({
     },
     {
       name: 'Schedule',
-      href: `/dashboard/course/${courseId}/settings/schedule `,
+      href: `/dashboard/course/${courseId}/settings/schedule`,
     },
     {
       name: 'Enrollment',

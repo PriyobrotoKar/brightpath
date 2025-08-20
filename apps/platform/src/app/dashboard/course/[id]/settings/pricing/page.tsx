@@ -16,7 +16,7 @@ export default async function PricingPage({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-1 flex-col gap-6">
       <FormInfo subtitle="Set the pricing for your bootcamp" title="Pricing" />
       <PricingForm coupons={coupons} pricing={pricing} />
     </div>

@@ -51,10 +51,30 @@ export type CourseWithCategory = Prisma.CourseGetPayload<{
   };
 }>;
 
+export type CourseWithSession = Prisma.CourseGetPayload<{
+  include: {
+    Session: {
+      include: {
+        RecurringDetails: true;
+      };
+    };
+  };
+}>;
+
 export type UpdateEnrollmentSettingsPayload = {
   type: string;
   deadline: Date;
 };
+
+export type UpdateCourseSchedulePayload =
+  Partial<CreateCourseSchedulePayload> & {
+    sessions: {
+      id?: string;
+      start_time?: Date;
+      end_time?: Date;
+      day_of_week?: number;
+    }[];
+  };
 
 export type UpdateCoursePricingPayload = Partial<CreateCoursePricingPayload>;
 
@@ -95,6 +115,13 @@ export const updateCoursePricing = (
   data: UpdateCoursePricingPayload,
 ): Promise<Course> => {
   return apiClient.patch(`${base}/${courseId}/pricing`, data);
+};
+
+export const updateCourseSchedule = (
+  courseId: string,
+  data: UpdateCourseSchedulePayload,
+): Promise<CourseWithSession> => {
+  return apiClient.patch(`${base}/${courseId}/schedule`, data);
 };
 
 export const getCourse = async (
@@ -139,6 +166,22 @@ export const getCourseCoupons = async (courseId: string): Promise<Coupon[]> => {
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return [];
+    }
+
+    // eslint-disable-next-line no-console -- we need to log the error
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getCourseSchedule = async (
+  courseId: string,
+): Promise<CourseWithSession | null> => {
+  try {
+    return await apiClient.get(`${base}/${courseId}/schedule`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
     }
 
     // eslint-disable-next-line no-console -- we need to log the error
