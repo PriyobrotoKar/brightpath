@@ -48,6 +48,12 @@ enum CourseType {
   RECORDED
 }
 
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  EXPERT
+}
+
 enum AccessType {
   EVERYONE
   INVITE_ONLY
@@ -111,15 +117,15 @@ model User {
 }
 
 model Merchant {
-  id             String   @id @default(cuid())
-  status         MerchantStatus @default(IN_BENE_CREATION)
-  merchantId     String @unique
+  id         String         @id @default(cuid())
+  status     MerchantStatus @default(IN_BENE_CREATION)
+  merchantId String         @unique
 
-  creator        User @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  creatorId      String @unique
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId String @unique
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Subscription {
@@ -138,21 +144,24 @@ model Subscription {
 }
 
 model Course {
-  id                 String     @id @default(cuid())
+  id                 String      @id @default(cuid())
   name               String
+  slug               String      @unique
+  tagline            String?
   description        String?
   tags               String[]
   thumbnails         String[]
   logo               String?
-  isPublished        Boolean    @default(false)
-  type               CourseType @default(RECORDED)
+  isPublished        Boolean     @default(false)
+  type               CourseType  @default(RECORDED)
+  level              CourseLevel
   startAt            DateTime?
   endAt              DateTime?
-  accessType         AccessType @default(EVERYONE)
+  accessType         AccessType  @default(EVERYONE)
   accessDuration     Int?
   enrollmentDeadline DateTime?
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId Int
