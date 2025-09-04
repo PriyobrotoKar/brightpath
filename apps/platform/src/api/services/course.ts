@@ -61,6 +61,15 @@ export type CourseWithSession = Prisma.CourseGetPayload<{
   };
 }>;
 
+export type CourseMetadata = Course['accessDuration'] & {
+  lessonCount: {
+    video: number;
+    document: number;
+    assignment: number;
+    total: number;
+  };
+};
+
 export type UpdateEnrollmentSettingsPayload = {
   type: string;
   deadline: Date;
@@ -94,6 +103,10 @@ export const createCourseSchedule = (
   data: CreateCourseSchedulePayload,
 ): Promise<Course> => {
   return apiClient.post(`${base}/${courseId}/schedule`, data);
+};
+
+export const publishCourse = (courseId: string): Promise<Course> => {
+  return apiClient.post(`${base}/${courseId}/publish`);
 };
 
 export const updateCourse = (
@@ -138,6 +151,12 @@ export const getCourse = async (
     console.error(error);
     throw error;
   }
+};
+
+export const getCourseMetadata = async (
+  courseId: string,
+): Promise<CourseMetadata> => {
+  return apiClient.get(`${base}/${courseId}/metadata`);
 };
 
 export const getCoursesForSelf = (): Promise<Course[]> => {
