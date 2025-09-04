@@ -154,7 +154,10 @@ export class MerchantService {
         merchant.merchantId,
       );
 
-    if (!cachedMerchantDetails) {
+    if (
+      !cachedMerchantDetails ||
+      cachedMerchantDetails.status !== MerchantStatus.ACTIVE
+    ) {
       const merchantDetails = await this.paymentProcessor.getVendor(
         merchant.merchantId,
       );
@@ -165,6 +168,7 @@ export class MerchantService {
         'merchant',
         merchant.merchantId,
         cachedMerchantDetails,
+        24 * 60 * 60, // 1 day
       );
     }
 

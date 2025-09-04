@@ -1,4 +1,11 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { CourseLevel } from '@brightpath/db';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
@@ -11,6 +18,9 @@ export class CreateCourseDto {
 
   @IsString()
   category: string;
+
+  @IsEnum(CourseLevel)
+  level: CourseLevel;
 
   @IsArray()
   @IsString({ each: true })

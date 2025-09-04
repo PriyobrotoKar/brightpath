@@ -38,6 +38,8 @@ describe('Course Controller Tests', () => {
       new ValidationPipe({ transform: true, whitelist: true }),
     );
 
+    await cacheService.deleteAllCachedValues('slug');
+
     await prisma.user.deleteMany();
     [studentTestUser, creatorTestUser1, creatorTestUser2] = await Promise.all([
       createUser({ email: 'johndoe@gmail.com', role: 'STUDENT' }, prisma),
@@ -79,7 +81,7 @@ describe('Course Controller Tests', () => {
       expect(response.status).toBe(403);
     });
 
-    it('should not create a course if name or category is missing', async () => {
+    it('should not create a course if name or category or level is missing', async () => {
       const response = await request(app.getHttpServer())
         .post('/course')
         .set(headers)
@@ -90,6 +92,7 @@ describe('Course Controller Tests', () => {
         'name should not be empty',
         'name must be a string',
         'category must be a string',
+        'level must be one of the following values: BEGINNER, INTERMEDIATE, EXPERT',
       ]);
     });
 
@@ -100,6 +103,7 @@ describe('Course Controller Tests', () => {
         .send({
           name: 'Test Course',
           category: 'Test Category',
+          level: 'BEGINNER',
         });
 
       testCourseId = response.body.id;
@@ -108,7 +112,10 @@ describe('Course Controller Tests', () => {
       expect(response.body).toEqual({
         id: expect.any(String),
         name: 'Test Course',
+        slug: 'test-course',
         description: null,
+        tagline: null,
+        level: 'BEGINNER',
         categoryId: expect.any(Number),
         tags: [],
         logo: null,
@@ -298,6 +305,8 @@ describe('Course Controller Tests', () => {
       await prisma.course.create({
         data: {
           name: 'Test Course 2',
+          level: 'BEGINNER',
+          slug: 'test-course-2',
           category: {
             connectOrCreate: {
               where: {
@@ -580,10 +589,13 @@ describe('Course Controller Tests', () => {
       expect(response.body).toEqual({
         id: expect.any(String),
         name: 'Test Course',
+        slug: 'test-course',
         description: null,
         categoryId: expect.any(Number),
         tags: [],
+        tagline: null,
         logo: null,
+        level: 'BEGINNER',
         thumbnails: [],
         accessType: 'EVERYONE',
         accessDuration: null,
@@ -705,12 +717,15 @@ describe('Course Controller Tests', () => {
       expect(response.body).toEqual({
         id: testCourseId,
         name: 'Test Course',
+        slug: 'test-course',
         description: null,
+        tagline: null,
         categoryId: expect.any(Number),
         tags: [],
         logo: null,
         thumbnails: [],
         accessType: 'INVITE_ONLY',
+        level: 'BEGINNER',
         accessDuration: null,
         enrollmentDeadline: '2025-11-19T18:30:00.263Z',
         endAt: '2025-11-19T18:30:00.263Z',

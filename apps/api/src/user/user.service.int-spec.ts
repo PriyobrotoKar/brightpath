@@ -109,7 +109,10 @@ describe('User Controller Tests', () => {
           email: 'alice@gmail.com',
         });
 
-      const otp = await cacheService.getCachedValue('otp', 'johndoe@gmail.com');
+      const otp = await cacheService.getCachedValue<string>(
+        'otp',
+        'johndoe@gmail.com',
+      );
 
       expect(response.status).toBe(200);
       expect(otp).toBeTruthy();
@@ -161,7 +164,7 @@ describe('User Controller Tests', () => {
       const payload = jwtService.decode(jwtTokens.access_token);
       await userService.updateSelf(payload, { email: 'alice@gmail.com' });
       const otp = await cacheService.getCachedValue('otp', 'johndoe@gmail.com');
-      const tempEmail = await cacheService.getCachedValue(
+      const tempEmail = await cacheService.getCachedValue<string>(
         'tempEmail',
         'johndoe@gmail.com',
       );

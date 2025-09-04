@@ -47,6 +47,7 @@ describe('Module Controller Test', () => {
     testCourse = await courseService.createCourse(validTestUser, {
       name: 'Test Course',
       category: 'Test Category',
+      level: 'BEGINNER',
     });
 
     jwtTokens = {

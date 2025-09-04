@@ -76,7 +76,10 @@ describe('Auth Controller Tests', () => {
         .post('/auth/send-otp')
         .send({ email: 'johndoe@gmail.com' });
 
-      const otp = await cacheService.getCachedValue('otp', 'johndoe@gmail.com');
+      const otp = await cacheService.getCachedValue<string>(
+        'otp',
+        'johndoe@gmail.com',
+      );
       const expiry = await cacheService.getExpiry('otp', 'johndoe@gmail.com');
 
       expect(otp).toBeDefined();
@@ -92,7 +95,7 @@ describe('Auth Controller Tests', () => {
         .post('/auth/send-otp')
         .send({ email: 'johndoe@gmail.com' });
 
-      const newOtp = await cacheService.getCachedValue(
+      const newOtp = await cacheService.getCachedValue<string>(
         'otp',
         'johndoe@gmail.com',
       );

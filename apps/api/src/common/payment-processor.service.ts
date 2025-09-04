@@ -135,7 +135,6 @@ export class PaymentProcessorService {
   }
 
   verifyWebhook(signature: string, rawBody: string, timestamp: string) {
-    console.log({ signature, rawBody, timestamp });
     try {
       return this.cashfree.PGVerifyWebhookSignature(
         signature,

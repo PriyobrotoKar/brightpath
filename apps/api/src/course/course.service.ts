@@ -18,6 +18,8 @@ import { UpdatePricingDto } from './dto/update.pricing';
 import { UpdateScheduleDto } from './dto/update.schedule';
 import { CacheService } from '@/cache/cache.service';
 import { getUserByEmailOrId } from '@/common/user';
+import { slugify } from '@/common/utils';
+import { generateSlug } from 'random-word-slugs';
 
 @Injectable()
 export class CourseService {
@@ -107,11 +109,14 @@ export class CourseService {
 
   async createCourse(user: JWTPayload, dto: CreateCourseDto) {
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
+    const slug = await this.generateSlug(dto.name);
 
     return await this.prisma.course.create({
       data: {
         name: dto.name,
         description: dto.description,
+        slug,
+        level: dto.level,
         categoryId: category.id,
         tags: dto.tags,
         logo: dto.logo,
@@ -122,9 +127,13 @@ export class CourseService {
   }
 
   async updateCourse(user: JWTPayload, courseId: string, dto: UpdateCourseDto) {
-    await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseId,
+      user.id,
+    );
 
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
+    const slug = dto.name ? await this.generateSlug(dto.name) : course.slug;
 
     return await this.prisma.course.update({
       where: {
@@ -133,6 +142,7 @@ export class CourseService {
       data: {
         name: dto.name,
         description: dto.description,
+        slug,
         categoryId: category.id,
         tags: dto.tags,
         logo: dto.logo,
@@ -638,5 +648,52 @@ export class CourseService {
     }
 
     return formattedSessions;
+  }
+
+  private async generateSlug(input: string): Promise<string> {
+    const baseSlug = slugify(input);
+
+    // Check if a course with this slug exists or not
+    const existingSlugs = await this.cacheService.getCachedValue<string[]>(
+      'slug',
+      `course:${baseSlug}`,
+    );
+
+    const slugsSet = new Set(existingSlugs);
+
+    let newSlug = baseSlug;
+
+    // if existingSlugs exists in cache that means at least the slug is used one time
+    // we have to create a new word and check if the slug exists in cached result or not
+    if (existingSlugs) {
+      while (true) {
+        const randomWord = generateSlug(1);
+        if (!slugsSet.has(randomWord)) {
+          newSlug = slugify(`${input} ${randomWord}`);
+
+          // check if the slug is present in the DB due to race-conditions
+          const slugExists = await this.prisma.course.findUnique({
+            where: {
+              slug: newSlug,
+            },
+          });
+
+          if (!slugExists) {
+            slugsSet.add(randomWord);
+            break;
+          }
+        }
+      }
+    }
+
+    // add the random word in the cache for this input
+    await this.cacheService.setCache(
+      'slug',
+      `course:${baseSlug}`,
+      Array.from(slugsSet),
+    );
+
+    // if does not exist, then return the slug
+    return newSlug;
   }
 }

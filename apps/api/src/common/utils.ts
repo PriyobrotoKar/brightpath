@@ -65,3 +65,7 @@ export async function generateJwtTokens(
   ]);
   return { access_token, refresh_token };
 }
+
+export function slugify(text: string) {
+  return text.toLowerCase().replace(/[\W\s]+/g, '-');
+}
