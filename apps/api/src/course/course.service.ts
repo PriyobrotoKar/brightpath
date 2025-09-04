@@ -1,13 +1,14 @@
 import { JWTPayload } from '@/auth/types/jwt-payload';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create.course';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreatePricingDto } from './dto/create.pricing';
-import { Prisma, PrismaClient } from '@brightpath/db';
+import { MerchantStatus, Prisma, PrismaClient } from '@brightpath/db';
 import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
 import { createCategoryIfNotExist } from '@/common/category';
@@ -15,6 +16,8 @@ import { AuthorityCheckerService } from '@/common/authority-checker.service';
 import { UpdateCourseDto } from './dto/update.course';
 import { UpdatePricingDto } from './dto/update.pricing';
 import { UpdateScheduleDto } from './dto/update.schedule';
+import { CacheService } from '@/cache/cache.service';
+import { getUserByEmailOrId } from '@/common/user';
 
 @Injectable()
 export class CourseService {
@@ -22,6 +25,7 @@ export class CourseService {
   constructor(
     private prismaService: PrismaService,
     private authorityChecker: AuthorityCheckerService,
+    private cacheService: CacheService,
   ) {
     this.prisma = this.prismaService.client;
   }
@@ -41,6 +45,56 @@ export class CourseService {
     }
 
     return course;
+  }
+
+  async getCourseMetadata(courseId: string) {
+    const course = await this.prisma.course.findUnique({
+      where: {
+        id: courseId,
+      },
+      select: {
+        accessDuration: true,
+      },
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course:${courseId} not found!`);
+    }
+
+    // Get counts for video, articles and assignments
+    const [videoCount, assignmentCount, documentCount] = await Promise.all([
+      this.prisma.video.count({
+        where: {
+          module: {
+            courseId,
+          },
+        },
+      }),
+      this.prisma.document.count({
+        where: {
+          module: {
+            courseId,
+          },
+        },
+      }),
+      this.prisma.assignment.count({
+        where: {
+          module: {
+            courseId,
+          },
+        },
+      }),
+    ]);
+
+    return {
+      accessDuration: course.accessDuration,
+      lessonCount: {
+        video: videoCount,
+        assignment: assignmentCount,
+        document: documentCount,
+        total: videoCount + assignmentCount + documentCount,
+      },
+    };
   }
 
   async getCoursesForSelf(user: JWTPayload) {
@@ -475,6 +529,75 @@ export class CourseService {
       ...course,
       Session: sessions,
     };
+  }
+
+  async publishCourse(id: string, user: JWTPayload) {
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      id,
+      user.id,
+    );
+
+    //check if the course is already published or not
+    if (course.isPublished) {
+      throw new BadRequestException('Course is already published');
+    }
+
+    // check if the following requirements are met before publishing
+    // check if the course details are filled like title, thumbnail, description, outcomes etc.
+    // check if there are atleast 3 lessons added
+    // check if payout details are added
+    // check if pricing is set
+    // check if personal info is filled
+
+    // perform 3 queries: Get merchant status, profile, modules and pricing
+    const [profile, merchant, videosCount, documentsCount, pricing] =
+      await Promise.all([
+        getUserByEmailOrId(user.id, this.prisma, this.cacheService),
+        this.prisma.merchant.findUnique({
+          where: {
+            creatorId: user.id,
+            status: MerchantStatus.ACTIVE,
+          },
+        }),
+        this.prisma.video.count({
+          where: {
+            module: {
+              courseId: id,
+            },
+          },
+        }),
+        this.prisma.document.count({
+          where: {
+            module: {
+              courseId: id,
+            },
+          },
+        }),
+        this.prisma.pricing.findUnique({
+          where: {
+            courseId: course.id,
+          },
+        }),
+      ]);
+
+    const lessonCount = videosCount + documentsCount;
+    const isProfileInfoProvided =
+      profile.name && profile.bio && profile.phone && profile.profilePicture;
+
+    if (!merchant || lessonCount < 3 || !pricing || !isProfileInfoProvided)
+      throw new ForbiddenException(
+        'Requirements are not met. Please ensure that all the required information is filled.',
+      );
+
+    // Publish course
+    const publishedCourse = await this.prisma.course.update({
+      where: { id },
+      data: {
+        isPublished: true,
+      },
+    });
+
+    return publishedCourse;
   }
 
   private formatSessions<T extends CreateScheduleDto | UpdateScheduleDto>(

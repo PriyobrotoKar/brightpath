@@ -31,6 +31,11 @@ export class CourseController {
     return this.courseService.getCourse(id);
   }
 
+  @Get(':id/metadata')
+  getCourseMetadata(@Param('id') id: string) {
+    return this.courseService.getCourseMetadata(id);
+  }
+
   @Get()
   getCoursesForSelf(@CurrentUser() user: JWTPayload) {
     return this.courseService.getCoursesForSelf(user);
@@ -108,5 +113,10 @@ export class CourseController {
     @Body() dto: UpdateEnrollmentDto,
   ) {
     return this.courseService.updateEnrollmentSettings(user, id, dto);
+  }
+
+  @Post(':id/publish')
+  publishCourse(@Param('id') id: string, @CurrentUser() user: JWTPayload) {
+    return this.courseService.publishCourse(id, user);
   }
 }
