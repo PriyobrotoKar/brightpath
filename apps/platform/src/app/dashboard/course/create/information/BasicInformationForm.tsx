@@ -43,6 +43,14 @@ import { v4 as uuid } from 'uuid';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from '@brightpath/ui/components/sonner';
+import { CourseLevel } from '@brightpath/db';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@brightpath/ui/components/select';
 import type { CategoryResponse } from '@/api/services/category';
 import { getAllCategories } from '@/api/services/category';
 import type { GetUploadUrlResponse } from '@/api/services/storage';
@@ -64,6 +72,7 @@ const BasicInformationSchema = z.object({
   description: z.string().min(1),
   category: z.string().min(1),
   tags: z.array(z.string()).min(1),
+  level: z.nativeEnum(CourseLevel),
 });
 
 export default function BasicInformationForm(): React.JSX.Element {
@@ -79,6 +88,7 @@ export default function BasicInformationForm(): React.JSX.Element {
       description: '',
       category: '',
       tags: [],
+      level: CourseLevel.BEGINNER,
     },
   });
 
@@ -323,6 +333,34 @@ export default function BasicInformationForm(): React.JSX.Element {
                       linkPlugin(),
                     ]}
                   />
+                </FormItem>
+              );
+            }}
+          />
+
+          <FormField
+            name="level"
+            render={({ field }) => {
+              return (
+                <FormItem className="max-w-screen-sm">
+                  <FormLabel>Course Level</FormLabel>
+                  <Select
+                    defaultValue={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a level for the course" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.values(CourseLevel).map((level) => (
+                        <SelectItem key={level} value={level}>
+                          {level.charAt(0) + level.slice(1).toLowerCase()}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormItem>
               );
             }}

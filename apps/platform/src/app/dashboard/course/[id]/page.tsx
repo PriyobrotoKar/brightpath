@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Header from '../../_components/Header';
 import PublishCourse from './_components/PublishCourse';
 import CourseLive from './_components/CourseLive';
-import { getCourse } from '@/api/services/course';
+import { getCourse, getCoursePricing } from '@/api/services/course';
 
 export default async function CourseDashboardPage({
   params: { id },
@@ -10,6 +10,7 @@ export default async function CourseDashboardPage({
   params: { id: string };
 }): Promise<React.JSX.Element> {
   const course = await getCourse(id);
+  const pricing = await getCoursePricing(id);
 
   if (!course) {
     notFound();
@@ -22,8 +23,8 @@ export default async function CourseDashboardPage({
         title={course.name}
       />
       <div className="max-w-80">
-        {course.isPublished ? (
-          <CourseLive course={course} />
+        {course.isPublished && pricing ? (
+          <CourseLive course={course} pricing={pricing} />
         ) : (
           <PublishCourse course={course} />
         )}

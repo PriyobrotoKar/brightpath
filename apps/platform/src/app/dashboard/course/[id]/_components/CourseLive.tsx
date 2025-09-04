@@ -1,4 +1,3 @@
-import type { Course } from '@brightpath/db';
 import { Button } from '@brightpath/ui/components/button';
 import {
   IconExternalLink,
@@ -8,14 +7,19 @@ import {
   IconStarHalfFilled,
 } from '@tabler/icons-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import type { Pricing } from '@brightpath/db';
 import { mediaUrl } from '@/lib/utils';
+import type { CourseWithCategory } from '@/api/services/course';
 
 interface CourseLiveProps {
-  course: Course;
+  course: CourseWithCategory;
+  pricing: Pricing;
 }
 
 export default function CourseLive({
   course,
+  pricing,
 }: CourseLiveProps): React.JSX.Element {
   return (
     <div className="bg-card space-y-5 rounded-md border p-3">
@@ -23,11 +27,13 @@ export default function CourseLive({
         <h2 className="text-lg">Course is Live</h2>
         <LiveIndicator />
       </div>
-      <CourseDetails course={course} />
+      <CourseDetails course={course} pricing={pricing} />
       <div className="flex gap-2">
-        <Button>
-          <IconExternalLink /> Visit Live Page
-        </Button>
+        <Link className="block flex-1" href={`/course/${course.slug}`}>
+          <Button>
+            <IconExternalLink /> Visit Live Page
+          </Button>
+        </Link>
         <Button className="size-10 shrink-0" size="icon" variant="secondary">
           <IconShare />
         </Button>
@@ -46,18 +52,22 @@ function LiveIndicator(): React.JSX.Element {
 }
 
 interface CourseDetailsProps {
-  course: Course;
+  course: CourseWithCategory;
+  pricing: Pricing;
 }
 
-function CourseDetails({ course }: CourseDetailsProps): React.JSX.Element {
+function CourseDetails({
+  course,
+  pricing,
+}: CourseDetailsProps): React.JSX.Element {
   return (
     <article className="space-y-4">
       <div className="h-28 w-full overflow-hidden rounded-lg">
         <Image
-          alt=""
+          alt={course.name}
           className="h-full w-full object-cover"
           height={150}
-          src={mediaUrl(course.thumbnails[1]) ?? ''}
+          src={mediaUrl(course.thumbnails[0]) ?? ''}
           width={300}
         />
       </div>
@@ -67,16 +77,20 @@ function CourseDetails({ course }: CourseDetailsProps): React.JSX.Element {
             <div className="text-background flex size-4 items-center justify-center rounded bg-yellow-500">
               <IconSchool className="size-3" />
             </div>
-            Course
+            {course.type[0] + course.type.slice(1).toLowerCase()}
           </div>
-          <div className="text-muted-foreground">6 Months</div>
+          {course.accessDuration ? (
+            <div className="text-muted-foreground">
+              {Math.floor(course.accessDuration / 30)} Months
+            </div>
+          ) : null}
         </div>
-        <h3 className="text-base-medium">Sigma Web Development</h3>
+        <h3 className="text-base-medium">{course.name}</h3>
         <div className="bg-muted text-muted-foreground w-fit rounded px-2.5 py-1 text-xs">
-          Web Development
+          {course.category.name}
         </div>
         <div className="flex items-end justify-between">
-          <div className="text-lg">₹3999</div>
+          <div className="text-lg">₹{pricing.price.toString()}</div>
           <CourseRatings ratings={4.6} />
         </div>
       </div>

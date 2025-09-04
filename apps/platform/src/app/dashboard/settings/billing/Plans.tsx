@@ -83,12 +83,10 @@ function Plans({ currentSubscription }: PlansProps): React.JSX.Element {
       });
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- have to use it as cashfree is not typed
-      const result = await cashfree.subscriptionsCheckout({
+      await cashfree.subscriptionsCheckout({
         subsSessionId: sessionId,
         redirectTarget: '_blank',
       });
-
-      console.log(result.error);
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
