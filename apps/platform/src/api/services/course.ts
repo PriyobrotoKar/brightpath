@@ -7,6 +7,7 @@ import type {
   Prisma,
 } from '@brightpath/db';
 import apiClient, { ApiError } from '../client';
+import type { LessonType } from '@/lib/utils';
 
 const base = '/course';
 
@@ -61,13 +62,36 @@ export type CourseWithSession = Prisma.CourseGetPayload<{
   };
 }>;
 
-export type CourseMetadata = Course['accessDuration'] & {
+export type CourseMetadata = Prisma.CourseGetPayload<{
+  include: {
+    category: true;
+    creator: true;
+  };
+}> & {
   lessonCount: {
     video: number;
     document: number;
     assignment: number;
     total: number;
   };
+};
+
+export type CourseLessons = {
+  totalLectures: number;
+  totalModules: number;
+  totalDuration: number;
+  modules: {
+    id: string;
+    name: string;
+    duration: number;
+    lessons: {
+      id: string;
+      name: string;
+      createdAt: Date;
+      duration?: number;
+      type: LessonType;
+    }[];
+  }[];
 };
 
 export type UpdateEnrollmentSettingsPayload = {
@@ -153,10 +177,36 @@ export const getCourse = async (
   }
 };
 
+export const getCourseBySlug = async (
+  courseSlug: string,
+): Promise<CourseWithCategory | null> => {
+  try {
+    return await apiClient.get(`${base}/${courseSlug}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+
+    // eslint-disable-next-line no-console -- we need to log the error
+    console.error(error);
+    throw error;
+  }
+};
+
 export const getCourseMetadata = async (
-  courseId: string,
-): Promise<CourseMetadata> => {
-  return apiClient.get(`${base}/${courseId}/metadata`);
+  slug: string,
+): Promise<CourseMetadata | null> => {
+  try {
+    return apiClient.get(`${base}/${slug}/metadata`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+
+    // eslint-disable-next-line no-console -- we need to log the error
+    console.error(error);
+    throw error;
+  }
 };
 
 export const getCoursesForSelf = (): Promise<Course[]> => {
@@ -198,6 +248,22 @@ export const getCourseSchedule = async (
 ): Promise<CourseWithSession | null> => {
   try {
     return await apiClient.get(`${base}/${courseId}/schedule`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+
+    // eslint-disable-next-line no-console -- we need to log the error
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getCourseLessons = async (
+  courseSlug: string,
+): Promise<CourseLessons | null> => {
+  try {
+    return await apiClient.get(`${base}/${courseSlug}/lessons`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return null;

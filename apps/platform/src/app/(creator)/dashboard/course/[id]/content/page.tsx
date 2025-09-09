@@ -1,6 +1,6 @@
 import React from 'react';
+import Header from '../../../_components/Header';
 import ContentTable from './_components/Content';
-import Header from '@/app/dashboard/_components/Header';
 import { getModulesByCourseId } from '@/api/services/module';
 
 export default async function ContentManagementPage({

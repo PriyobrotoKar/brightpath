@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import React from 'react';
 import Sidebar from './_components/Sidebar';
-import Header from '@/app/dashboard/_components/Header';
 import SaveIndicatorProvider from '@/providers/SaveIndicatorProvider';
+import Header from '@/app/(creator)/dashboard/_components/Header';
 
 export default function ModuleContentLayout({
   children,

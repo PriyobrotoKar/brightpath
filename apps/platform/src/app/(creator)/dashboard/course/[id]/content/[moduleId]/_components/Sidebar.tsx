@@ -39,6 +39,7 @@ import StatusBadge from '@/components/StatusBadge';
 import type { CreateLessonPayload } from '@/api/services/module';
 import { createLesson, getAllLessons } from '@/api/services/module';
 import { useSaveIndicator } from '@/providers/SaveIndicatorProvider';
+import { lessonToIconMap } from '@/lib/utils';
 
 const _lessons = [
   {
@@ -57,12 +58,6 @@ const _lessons = [
     type: 'assignment',
   },
 ];
-
-const icons = {
-  document: IconFileDescription,
-  video: IconPlayerPlayFilled,
-  assignment: IconPencil,
-};
 
 export default function Sidebar(): React.JSX.Element {
   const params = useParams();
@@ -94,7 +89,8 @@ export default function Sidebar(): React.JSX.Element {
       </div>
       <Menu className="pr-4 pt-2">
         {data.map((lesson) => {
-          const Icon = icons[lesson.type as keyof typeof icons];
+          const Icon = lessonToIconMap[lesson.type];
+
           return (
             <MenuLink
               href={`/dashboard/course/${courseId}/content/${moduleId}/${lesson.id}`}

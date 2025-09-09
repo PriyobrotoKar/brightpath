@@ -1,16 +1,11 @@
 import { Button } from '@brightpath/ui/components/button';
-import {
-  IconExternalLink,
-  IconSchool,
-  IconShare,
-  IconStarFilled,
-  IconStarHalfFilled,
-} from '@tabler/icons-react';
+import { IconExternalLink, IconSchool, IconShare } from '@tabler/icons-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Pricing } from '@brightpath/db';
 import { mediaUrl } from '@/lib/utils';
 import type { CourseWithCategory } from '@/api/services/course';
+import CourseRatings from '@/components/CourseRatings';
 
 interface CourseLiveProps {
   course: CourseWithCategory;
@@ -95,42 +90,5 @@ function CourseDetails({
         </div>
       </div>
     </article>
-  );
-}
-
-interface CourseRatingsProps {
-  ratings: number;
-}
-
-function CourseRatings({ ratings }: CourseRatingsProps): React.JSX.Element {
-  const FULL_RATING = 5;
-  const decimalValue = (ratings * 10) % 10;
-  const fullStars = Math.floor(ratings) + Number(decimalValue > 7);
-  const hasPartialStar = decimalValue > 2 && decimalValue <= 7;
-  const remainingStars = FULL_RATING - (fullStars + Number(hasPartialStar));
-
-  return (
-    <div className="flex gap-3">
-      <div className="bg-secondary text-md-semibold flex h-9 w-10 items-center justify-center rounded-md border">
-        {ratings}
-      </div>
-      <div className="space-y-1">
-        <div className="flex gap-1 text-yellow-500">
-          {Array.from({ length: fullStars }).map((_, index) => {
-            return <IconStarFilled className="size-4" key={index} />;
-          })}
-          {hasPartialStar ? <IconStarHalfFilled className="size-4" /> : null}
-          {Array.from({ length: remainingStars }).map((_, index) => {
-            return <IconStarFilled className="size-4" key={index} />;
-          })}
-        </div>
-        <div className="space-x-1 text-xs">
-          <Button className="h-fit p-0 text-xs" variant="link">
-            See reviews
-          </Button>
-          <span>(2078)</span>
-        </div>
-      </div>
-    </div>
   );
 }

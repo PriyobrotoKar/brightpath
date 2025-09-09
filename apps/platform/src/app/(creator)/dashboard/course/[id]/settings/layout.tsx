@@ -1,6 +1,6 @@
-import Header from '@/app/dashboard/_components/Header';
-import type { TabLink } from '@/app/dashboard/settings/_components/Tabs';
-import Tabs from '@/app/dashboard/settings/_components/Tabs';
+import Header from '../../../_components/Header';
+import type { TabLink } from '../../../settings/_components/Tabs';
+import Tabs from '../../../settings/_components/Tabs';
 
 export default function CourseSettingsLayout({
   children,
