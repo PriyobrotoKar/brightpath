@@ -19,7 +19,7 @@ export default function Herosection({
   course,
 }: HerosectionProps): React.JSX.Element {
   return (
-    <main className="bg-primary">
+    <main className="bg-[linear-gradient(276deg,#01002D_10.72%,#072B69_30.66%,#001750_50.59%,#092561_68.96%,#01002D_85.38%)]">
       <div className="mx-auto max-w-screen-lg">
         <CourseInfo course={course} />
       </div>

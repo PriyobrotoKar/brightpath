@@ -6,9 +6,9 @@ export default function PublicLayout({
   children: React.ReactNode;
 }): React.JSX.Element {
   return (
-    <div className="">
+    <div className="flex min-h-svh flex-col">
       <Header />
-      <div className="">{children}</div>
+      <div className="flex flex-1 items-stretch">{children}</div>
     </div>
   );
 }

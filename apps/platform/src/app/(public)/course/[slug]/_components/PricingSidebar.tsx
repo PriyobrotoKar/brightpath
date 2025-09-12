@@ -12,6 +12,7 @@ import {
   IconWorld,
 } from '@tabler/icons-react';
 import { Input } from '@brightpath/ui/components/input';
+import Link from 'next/link';
 import type { CourseMetadata } from '@/api/services/course';
 import { getCoursePricing } from '@/api/services/course';
 import { mediaUrl } from '@/lib/utils';
@@ -133,7 +134,9 @@ export default async function PricingSidebar({
           </div>
 
           <div className="flex gap-2">
-            <Button>Buy Now</Button>
+            <Link className="w-full" href={`/checkout/${course.slug}`}>
+              <Button>Buy Now</Button>
+            </Link>
             <Button
               className="size-10 shrink-0"
               size="icon"
