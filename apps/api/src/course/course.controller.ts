@@ -19,6 +19,7 @@ import { UpdateEnrollmentDto } from './dto/update.enrollment';
 import { UpdateCourseDto } from './dto/update.course';
 import { UpdatePricingDto } from './dto/update.pricing';
 import { UpdateScheduleDto } from './dto/update.schedule';
+import { Public } from '@/decorators/public.decorator';
 
 @Creator()
 @Controller('course')
@@ -31,9 +32,9 @@ export class CourseController {
     return this.courseService.getCourse(id);
   }
 
-  @Get(':id/metadata')
-  getCourseMetadata(@Param('id') id: string) {
-    return this.courseService.getCourseMetadata(id);
+  @Get(':slug/metadata')
+  getCourseMetadata(@Param('slug') slug: string) {
+    return this.courseService.getCourseMetadata(slug);
   }
 
   @Get()
@@ -118,5 +119,11 @@ export class CourseController {
   @Post(':id/publish')
   publishCourse(@Param('id') id: string, @CurrentUser() user: JWTPayload) {
     return this.courseService.publishCourse(id, user);
+  }
+
+  @Public()
+  @Get(':slug/lessons')
+  getAllLessonDetails(@Param('slug') slug: string) {
+    return this.courseService.getAllLessonDetails(slug);
   }
 }

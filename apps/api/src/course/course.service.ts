@@ -18,7 +18,7 @@ import { UpdatePricingDto } from './dto/update.pricing';
 import { UpdateScheduleDto } from './dto/update.schedule';
 import { CacheService } from '@/cache/cache.service';
 import { getUserByEmailOrId } from '@/common/user';
-import { slugify } from '@/common/utils';
+import { slugify, sortLessons } from '@/common/utils';
 import { generateSlug } from 'random-word-slugs';
 
 @Injectable()
@@ -32,10 +32,17 @@ export class CourseService {
     this.prisma = this.prismaService.client;
   }
 
-  async getCourse(courseId: string) {
-    const course = await this.prisma.course.findUnique({
+  async getCourse(identifier: string) {
+    const course = await this.prisma.course.findFirst({
       where: {
-        id: courseId,
+        OR: [
+          {
+            id: identifier,
+          },
+          {
+            slug: identifier,
+          },
+        ],
       },
       include: {
         category: true,
@@ -43,53 +50,54 @@ export class CourseService {
     });
 
     if (!course) {
-      throw new NotFoundException(`Course:${courseId} not found!`);
+      throw new NotFoundException(`Course:${course.id} not found!`);
     }
 
     return course;
   }
 
-  async getCourseMetadata(courseId: string) {
+  async getCourseMetadata(slug: string) {
     const course = await this.prisma.course.findUnique({
       where: {
-        id: courseId,
+        slug,
       },
-      select: {
-        accessDuration: true,
+      include: {
+        category: true,
+        creator: true,
       },
     });
 
     if (!course) {
-      throw new NotFoundException(`Course:${courseId} not found!`);
+      throw new NotFoundException(`Course:${slug} not found!`);
     }
 
     // Get counts for video, articles and assignments
-    const [videoCount, assignmentCount, documentCount] = await Promise.all([
+    const [videoCount, documentCount, assignmentCount] = await Promise.all([
       this.prisma.video.count({
         where: {
           module: {
-            courseId,
+            courseId: course.id,
           },
         },
       }),
       this.prisma.document.count({
         where: {
           module: {
-            courseId,
+            courseId: course.id,
           },
         },
       }),
       this.prisma.assignment.count({
         where: {
           module: {
-            courseId,
+            courseId: course.id,
           },
         },
       }),
     ]);
 
     return {
-      accessDuration: course.accessDuration,
+      ...course,
       lessonCount: {
         video: videoCount,
         assignment: assignmentCount,
@@ -133,7 +141,10 @@ export class CourseService {
     );
 
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
-    const slug = dto.name ? await this.generateSlug(dto.name) : course.slug;
+    const slug =
+      dto.name !== course.name
+        ? await this.generateSlug(dto.name)
+        : course.slug;
 
     return await this.prisma.course.update({
       where: {
@@ -608,6 +619,80 @@ export class CourseService {
     });
 
     return publishedCourse;
+  }
+
+  async getAllLessonDetails(slug: string) {
+    const course = await this.prisma.course.findUnique({
+      where: {
+        slug,
+      },
+      select: {
+        Module: {
+          select: {
+            id: true,
+            name: true,
+            Video: {
+              select: {
+                id: true,
+                name: true,
+                duration: true,
+                createdAt: true,
+              },
+            },
+            Document: {
+              select: {
+                id: true,
+                name: true,
+                duration: true,
+                createdAt: true,
+              },
+            },
+            Assignment: {
+              select: {
+                id: true,
+                createdAt: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw new NotFoundException(`Course with slug:${slug} not found`);
+    }
+
+    const structuredModules = course.Module.map((module) => {
+      const sortedLessons = sortLessons([
+        module.Document,
+        module.Video,
+        module.Assignment,
+      ]);
+
+      return {
+        id: module.id,
+        name: module.name,
+        lessons: sortedLessons,
+        duration: sortedLessons.reduce(
+          (acc, lesson) => acc + (lesson.duration ?? 0),
+          0,
+        ),
+      };
+    });
+
+    return {
+      totalLectures: structuredModules.reduce(
+        (acc, module) => acc + module.lessons.length,
+        0,
+      ),
+      totalModules: structuredModules.length,
+      totalDuration: structuredModules.reduce(
+        (acc, module) => acc + module.duration,
+        0,
+      ),
+      modules: structuredModules,
+    };
   }
 
   private formatSessions<T extends CreateScheduleDto | UpdateScheduleDto>(

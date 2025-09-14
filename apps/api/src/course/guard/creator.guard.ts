@@ -6,6 +6,7 @@ import { JWTPayload } from '@/auth/types/jwt-payload';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaClient } from '@brightpath/db';
+import { IS_PUBLIC_KEY } from '@/decorators/public.decorator';
 
 @Injectable()
 export class CreatorGuard implements CanActivate {
@@ -19,6 +20,15 @@ export class CreatorGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
     const isCreator = this.reflector.getAll(IS_CREATOR_KEY, [
       context.getClass(),
       context.getHandler(),

@@ -9,18 +9,13 @@ import { AuthorityCheckerService } from '@/common/authority-checker.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ModuleFilterDto } from './dto/filter.module';
 import { CreateDocumentDto } from './dto/create.document';
-import {
-  Assignment,
-  Document,
-  PrismaClient,
-  Video,
-  VideoProgressStatus,
-} from '@brightpath/db';
+import { PrismaClient, VideoProgressStatus } from '@brightpath/db';
 import { CreateVideoDto } from './dto/create.video';
 import { CreateAssignmentDto } from './dto/create.assignment';
 import { UpdateDocumentDto } from './dto/update.document';
 import { UpdateAssignmentDto } from './dto/update.assignment';
 import { UpdateVideoDto } from './dto/update.video';
+import { sortLessons } from '@/common/utils';
 
 @Injectable()
 export class ModuleService {
@@ -324,12 +319,24 @@ export class ModuleService {
       where: {
         moduleId,
       },
+      select: {
+        id: true,
+        name: true,
+        duration: true,
+        createdAt: true,
+      },
     });
 
     //get the videos of the module
     const videos = this.prisma.video.findMany({
       where: {
         moduleId,
+      },
+      select: {
+        id: true,
+        name: true,
+        duration: true,
+        createdAt: true,
       },
     });
 
@@ -338,23 +345,15 @@ export class ModuleService {
       where: {
         moduleId,
       },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+      },
     });
 
-    const lessonPromises = [documents, videos, assignments];
+    const lessonPromises = await Promise.all([documents, videos, assignments]);
 
-    const types = ['document', 'video', 'assignment'];
-
-    const lessons = (await Promise.all(lessonPromises))
-      .map((lessons, i) =>
-        lessons.map((lesson: Document | Video | Assignment) => ({
-          ...lesson,
-          type: types[i],
-        })),
-      )
-      .flat();
-
-    lessons.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-
-    return lessons;
+    return sortLessons(lessonPromises);
   }
 }

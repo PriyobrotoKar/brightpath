@@ -7,6 +7,7 @@ import { JWTPayload } from '@/auth/types/jwt-payload';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
+import { Assignment, Document, Video, Prisma } from '@brightpath/db';
 
 export const jwtExtractor = (
   req: Request,
@@ -68,4 +69,40 @@ export async function generateJwtTokens(
 
 export function slugify(text: string) {
   return text.toLowerCase().replace(/[\W\s]+/g, '-');
+}
+
+type FilteredDocument = Prisma.DocumentGetPayload<{
+  select: { id: true; name: true; duration: true; createdAt: true };
+}>;
+type FilteredVideo = Prisma.VideoGetPayload<{
+  select: { id: true; name: true; duration: true; createdAt: true };
+}>;
+type FilteredAssignment = Prisma.AssignmentGetPayload<{
+  select: { id: true; name: true; createdAt: true };
+}>;
+
+export function sortLessons(
+  lessonArrays: [FilteredDocument[], FilteredVideo[], FilteredAssignment[]],
+): {
+  id: string;
+  name: string;
+  createdAt: Date;
+  duration?: number;
+}[] {
+  const types = ['document', 'video', 'assignment'];
+
+  const lessons = lessonArrays
+    .map((lessons, i) =>
+      lessons.map(
+        (lesson: FilteredDocument | FilteredVideo | FilteredAssignment) => ({
+          ...lesson,
+          type: types[i],
+        }),
+      ),
+    )
+    .flat();
+
+  lessons.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+  return lessons;
 }
