@@ -8,11 +8,10 @@ import {
   IconPencil,
   IconPlayerPlayFilled,
   IconShare,
-  IconTag,
   IconWorld,
 } from '@tabler/icons-react';
-import { Input } from '@brightpath/ui/components/input';
 import Link from 'next/link';
+import CouponSelector from './CouponSelector';
 import type { CourseMetadata } from '@/api/services/course';
 import { getCoursePricing } from '@/api/services/course';
 import { mediaUrl } from '@/lib/utils';
@@ -151,21 +150,7 @@ export default async function PricingSidebar({
             <span className="leading-none">14 days money-back guarantee</span>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-muted-foreground flex items-center justify-between border border-dashed p-2">
-              <div className="space-y-1">
-                <div className="text-md">
-                  <span className="text-md-semibold">M773FAJ</span> is applied
-                </div>
-                <div className="text-xs">Instructor coupon</div>
-              </div>
-              <IconTag />
-            </div>
-            <div className="flex gap-2">
-              <Input placeholder="Enter Coupon" type="text" />
-              <Button className="w-fit">Apply</Button>
-            </div>
-          </div>
+          <CouponSelector />
         </div>
 
         <div className="space-y-2 py-4">

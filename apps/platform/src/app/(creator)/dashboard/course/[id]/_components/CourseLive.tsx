@@ -66,7 +66,7 @@ function CourseDetails({
           width={300}
         />
       </div>
-      <div className="space-y-3 px-1.5">
+      <div className="space-y-2 px-1.5">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-1">
             <div className="text-background flex size-4 items-center justify-center rounded bg-yellow-500">

@@ -6,46 +6,61 @@ import {
 } from '@tabler/icons-react';
 import Link from 'next/link';
 import InfoForm from './_components/InfoForm';
+import PaymentMethods from './_components/PaymentMethods';
+import OrderSummary from './_components/OrderSummary';
 
-export default function CheckoutPage(): React.JSX.Element {
+export default function CheckoutPage({
+  params,
+}: {
+  params: {
+    slug: string;
+  };
+}): React.JSX.Element {
+  const { slug } = params;
+
   return (
-    <div className="from-background to-card flex w-full items-stretch bg-gradient-to-r from-60% to-40%">
-      <div className="mx-auto flex w-full max-w-[922px] items-stretch">
-        <main className="bg-background flex-[3_3_0%] space-y-10 p-10">
-          <div className="space-y-5">
-            <Button size="sm" variant="ghost">
-              <IconArrowLeft /> Back
-            </Button>
-            <h1 className="text-lg">Checkout</h1>
-
-            <UnauthenticatedWarning />
-
-            <div className="flex items-center justify-between">
-              <h2 className="text-base-medium">Personal Information</h2>
-              <Link href="/auth/login">
-                <Button className="h-fit p-0" size="sm" variant="link">
-                  Login
+    <div className="flex flex-1 items-stretch">
+      <div className="from-background to-card w-full bg-gradient-to-r from-60% to-40%">
+        <div className="mx-auto flex h-full w-full max-w-[922px] items-stretch">
+          <main className="bg-background flex-[3_3_0%] space-y-10 p-10">
+            <div className="space-y-5">
+              <Link href={`/course/${slug}`}>
+                <Button size="sm" variant="ghost">
+                  <IconArrowLeft /> Back
                 </Button>
               </Link>
-            </div>
-            <InfoForm />
-          </div>
+              <h1 className="text-lg">Checkout</h1>
 
-          <div className="space-y-2">
-            <h3 className="flex items-center gap-2 text-sm">
-              <IconLockSquareRoundedFilled className="text-primary" />{' '}
-              <span>Secure Checkout - SSL Encrypted</span>
-            </h3>
-            <p className="text-muted-foreground text-xs">
-              We do not store any payment information in server, payments are
-              processed by world leading payment gatemways and secured by 128
-              bit SSL encryption.
-            </p>
-          </div>
-        </main>
-        <aside className="bg-card flex-[1.5_1.5_0%] border-l p-10">
-          <h2 className="text-lg">Order Summary</h2>
-        </aside>
+              <UnauthenticatedWarning />
+
+              <div className="flex items-center justify-between">
+                <h2 className="text-base-medium">Personal Information</h2>
+                <Link href="/auth/login">
+                  <Button className="h-fit p-0" size="sm" variant="link">
+                    Login
+                  </Button>
+                </Link>
+              </div>
+              <InfoForm />
+            </div>
+
+            <PaymentMethods />
+
+            <div className="space-y-2">
+              <h3 className="flex items-center gap-2 text-sm">
+                <IconLockSquareRoundedFilled className="text-primary" />{' '}
+                <span>Secure Checkout - SSL Encrypted</span>
+              </h3>
+              <p className="text-muted-foreground text-xs leading-normal">
+                We do not store any payment information in server, payments are
+                processed by world leading payment gatemways and secured by 128
+                bit SSL encryption.
+              </p>
+            </div>
+          </main>
+
+          <OrderSummary courseSlug={slug} />
+        </div>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import {
 } from '@brightpath/ui/components/form';
 import { Input } from '@brightpath/ui/components/input';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { createFormControl, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const infoFormSchema = z.object({
@@ -17,14 +17,18 @@ const infoFormSchema = z.object({
   phone: z.string().min(10, { message: 'Phone number is required' }).max(15),
 });
 
+export const orderInfoForm = createFormControl({
+  resolver: zodResolver(infoFormSchema),
+  defaultValues: {
+    email: '',
+    fullname: '',
+    phone: '',
+  },
+});
+
 export default function InfoForm(): React.JSX.Element {
-  const form = useForm<z.infer<typeof infoFormSchema>>({
-    resolver: zodResolver(infoFormSchema),
-    defaultValues: {
-      email: '',
-      fullname: '',
-      phone: '',
-    },
+  const form = useForm({
+    formControl: orderInfoForm.formControl,
   });
 
   return (

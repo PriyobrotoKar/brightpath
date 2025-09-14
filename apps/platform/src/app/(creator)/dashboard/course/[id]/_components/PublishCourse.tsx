@@ -4,6 +4,7 @@ import { MerchantStatus } from '@brightpath/db';
 import { IconCircleCheckFilled } from '@tabler/icons-react';
 import { cn } from '@brightpath/ui/lib/utils';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import PublishCourseButton from './PublishCourseButton';
 import { getSelf } from '@/api/services/user';
 import { getMerchantStatus } from '@/api/services/merchant';
@@ -85,6 +86,8 @@ export default async function PublishCourse({
     getCoursePricing(course.id),
     getCourseMetadata(course.id),
   ]);
+
+  if (!metadata) return notFound();
 
   const data: ChecklistData = {
     course,
