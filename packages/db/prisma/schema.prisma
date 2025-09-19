@@ -96,6 +96,29 @@ enum VideoProgressStatus {
   COMPLETED
 }
 
+enum EnrollmentStatus {
+  ACTIVE
+  DROPPED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+  FAILED
+}
+
+enum Currency {
+  INR
+}
+
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
@@ -110,6 +133,8 @@ model User {
   accountStatus AccountStatus @default(ACTIVE)
   subscription  Subscription?
   merchant      Merchant?
+  enrollments   Enrollment[]
+  orders        Order[]
 
   isOnboardingFinished Boolean  @default(false)
   createdAt            DateTime @default(now())
@@ -169,9 +194,11 @@ model Course {
   creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
 
-  pricing Pricing?
-  Session Session[]
-  Module  Module[]
+  pricing     Pricing?
+  Session     Session[]
+  Module      Module[]
+  enrollments Enrollment[]
+  orders      Order[]
 }
 
 model Module {
@@ -298,6 +325,55 @@ model Coupon {
 
   pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
   pricingId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Enrollment {
+  id     String           @id @default(cuid())
+  status EnrollmentStatus @default(ACTIVE)
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  status        OrderStatus @default(PENDING)
+  amount        Decimal
+  currency      Currency    @default(INR)
+  orderId       String      @unique
+  vendorOrderId String      @unique
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String
+
+  payments Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id       String        @id @default(cuid())
+  status   PaymentStatus @default(PENDING)
+  amount   Decimal
+  currency Currency      @default(INR)
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
