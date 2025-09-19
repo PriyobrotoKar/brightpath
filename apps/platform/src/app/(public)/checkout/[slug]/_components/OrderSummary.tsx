@@ -28,7 +28,7 @@ export default async function OrderSummary({
       <Separator />
       <CouponSelector />
       <PricingSummary discountPercent={33} originalPrice={5999} />
-      <BuyCourseButton />
+      <BuyCourseButton courseSlug={course.slug} />
       <p className="text-muted-foreground text-center text-xs leading-normal">
         By completing your purchase, you agree to these{' '}
         <Link href="/terms-and-policy">

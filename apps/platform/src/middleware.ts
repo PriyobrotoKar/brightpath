@@ -40,8 +40,8 @@ export async function middleware(
     return removeOnboardingStatus(request);
   }
 
-  // If no session exists and the user is trying to access a non-auth page, redirect them to the sign-in page with a callback URL.
-  if (!session && !request.nextUrl.pathname.startsWith('/auth')) {
+  // If no session exists and the user is trying to access dashboard page, redirect them to the sign-in page with a callback URL.
+  if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
     return NextResponse.redirect(
       new URL(
         `/auth/signin?callback_url=${request.nextUrl.pathname}`,
