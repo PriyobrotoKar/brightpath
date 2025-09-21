@@ -347,12 +347,16 @@ model Enrollment {
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  status        OrderStatus @default(PENDING)
-  amount        Decimal
-  currency      Currency    @default(INR)
-  orderId       String      @unique
-  vendorOrderId String      @unique
+  id                 String      @id @default(cuid())
+  status             OrderStatus @default(PENDING)
+  currency           Currency    @default(INR)
+  originalAmount     Decimal
+  totalAmount        Decimal
+  discountType       DiscountType?
+  discountValue      Decimal?
+  taxPercentage      Decimal?
+  orderId            String      @unique
+  vendorOrderId      String      @unique
 
   user   User   @relation(fields: [userId], references: [id])
   userId String
