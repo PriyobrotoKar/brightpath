@@ -42,6 +42,7 @@ function VerifyOtp({ updatedEmail }: VerifyOtpProps): React.JSX.Element {
           image: data.user.profilePicture,
           name: data.user.name,
           isOnboardingFinished: data.user.isOnboardingFinished,
+          role: data.user.role,
         },
       });
     } catch (error) {

@@ -16,13 +16,13 @@ export default function ReadMore({
   limit?: number;
   children: string;
 }): React.JSX.Element {
-  if (type === 'gradient') return <ShowMore limit={limit}>{children}</ShowMore>;
-
   const words = useMemo(() => children.split(' '), [children]);
   const [isExpanded, setIsExpanded] = useState(() => words.length < limit);
 
   const truncatedText =
     words.slice(0, limit).join(' ') + (!isExpanded ? '...' : ' ');
+
+  if (type === 'gradient') return <ShowMore limit={limit}>{children}</ShowMore>;
 
   return (
     <div className="text-md prose [&>p]:inline">

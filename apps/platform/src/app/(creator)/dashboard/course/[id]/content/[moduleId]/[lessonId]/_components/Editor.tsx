@@ -74,7 +74,7 @@ export default function Editor({
 
   const calculateDuration = useCallback((): number => {
     const characterCount =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- storage will not be any
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call -- storage will not be any
       editor?.storage.characterCount.characters() as number;
     const readingSpeed = 200;
     return Math.floor(characterCount / readingSpeed);

@@ -1,4 +1,5 @@
 import { Button } from '@brightpath/ui/components/button';
+import { v4 as uuid } from 'uuid';
 import { cn } from '@brightpath/ui/lib/utils';
 import { IconStarFilled, IconStarHalfFilled } from '@tabler/icons-react';
 
@@ -29,12 +30,12 @@ export default function CourseRatings({
             monochrome && 'text-primary-foreground',
           )}
         >
-          {Array.from({ length: fullStars }).map((_, index) => {
-            return <IconStarFilled className="size-4" key={index} />;
+          {Array.from({ length: fullStars }).map((_) => {
+            return <IconStarFilled className="size-4" key={uuid()} />;
           })}
           {hasPartialStar ? <IconStarHalfFilled className="size-4" /> : null}
-          {Array.from({ length: remainingStars }).map((_, index) => {
-            return <IconStarFilled className="size-4" key={index} />;
+          {Array.from({ length: remainingStars }).map((_) => {
+            return <IconStarFilled className="size-4" key={uuid()} />;
           })}
         </div>
         <div className="space-x-1 text-xs">

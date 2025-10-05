@@ -1,5 +1,5 @@
 'use client';
-import type { Coupon, Pricing } from '@brightpath/db';
+import type { Coupon } from '@brightpath/db';
 import { DiscountType, PaymentPlan } from '@brightpath/db';
 import {
   Form,
@@ -24,7 +24,10 @@ import { cn } from '@brightpath/ui/lib/utils';
 import { toast } from '@brightpath/ui/components/sonner';
 import { useMutation } from '@tanstack/react-query';
 import FormInfo from '../../../create/_components/FormInfo';
-import type { UpdateCoursePricingPayload } from '@/api/services/course';
+import type {
+  CoursePricingResponse,
+  UpdateCoursePricingPayload,
+} from '@/api/services/course';
 import { updateCoursePricing } from '@/api/services/course';
 
 const pricingSchema = z.object({
@@ -40,7 +43,7 @@ const pricingSchema = z.object({
 });
 
 interface PricingFormProps {
-  pricing: Pricing;
+  pricing: CoursePricingResponse;
   coupons: Coupon[];
 }
 
@@ -54,9 +57,10 @@ export default function PricingForm({
     resolver: zodResolver(pricingSchema),
     defaultValues: {
       model: pricing.paymentPlan,
-      price: Number(pricing.price),
+      price: Number(pricing.originalAmount),
       discount_enabled: pricing.discountEnabled,
-      discount_value: pricing.discountValue?.toNumber(),
+      discount_value: Number(pricing.discountValue),
+      discount_type: pricing.discountType ?? undefined,
       coupon_enabled: coupons.length > 0,
       coupon_type: coupons[0]?.discountType,
       coupon_value: coupons[0]?.discountValue.toNumber(),
@@ -91,31 +95,49 @@ export default function PricingForm({
       return;
     }
 
-    if (data.discount_enabled && !data.discount_value) {
-      form.setError(
-        'discount_value',
-        {
-          type: 'manual',
-          message: 'Discount value is required',
-        },
-        {
-          shouldFocus: true,
-        },
-      );
-    }
+    if (data.discount_enabled) {
+      if (!data.discount_value) {
+        form.setError(
+          'discount_value',
+          {
+            type: 'manual',
+            message: 'Discount value is required',
+          },
+          {
+            shouldFocus: true,
+          },
+        );
 
-    if (data.discount_enabled && !data.discount_type) {
-      form.setError(
-        'discount_type',
-        {
-          type: 'manual',
-          message: 'Discount type is required',
-        },
-        {
-          shouldFocus: true,
-        },
-      );
-      return;
+        return;
+      }
+
+      if (!data.discount_type) {
+        form.setError(
+          'discount_type',
+          {
+            type: 'manual',
+            message: 'Discount type is required',
+          },
+          {
+            shouldFocus: true,
+          },
+        );
+        return;
+      }
+
+      if (data.discount_type === 'PERCENTAGE' && data.discount_value > 100) {
+        form.setError(
+          'discount_value',
+          {
+            type: 'manual',
+            message: 'Discount value must be less than or equal to 100',
+          },
+          {
+            shouldFocus: true,
+          },
+        );
+        return;
+      }
     }
 
     if (data.coupon_enabled && !data.coupon_value) {
@@ -335,6 +357,7 @@ export default function PricingForm({
                       <FormControl>
                         <RadioGroup
                           className="flex gap-2"
+                          defaultValue={field.value}
                           onValueChange={field.onChange}
                         >
                           <FormItem className="border-border has-[:checked]:border-primary flex-1 space-y-0 rounded-lg border-2 transition-colors">

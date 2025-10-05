@@ -122,14 +122,21 @@ export default async function PricingSidebar({
         <div className="space-y-4 px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="space-x-2 text-xl">
-              <span>₹{pricing.price.toString()}</span>
-              <span className="text-base-medium text-muted-foreground line-through">
-                ₹5999
-              </span>
+              <span>₹{pricing.totalAmount.toString()}</span>
+              {pricing.discountEnabled ? (
+                <span className="text-base-medium text-muted-foreground line-through">
+                  ₹{pricing.originalAmount.toString()}
+                </span>
+              ) : null}
             </div>
-            <div className="bg-primary/20 text-primary text-md-semibold rounded-md px-2 py-1">
-              33% OFF
-            </div>
+            {pricing.discountEnabled ? (
+              <div className="bg-primary/20 text-primary text-md-semibold rounded-md px-2 py-1">
+                {pricing.discountType === 'PERCENTAGE'
+                  ? `${pricing.discountValue?.toString()}%`
+                  : `${pricing.discountValue?.toString()}`}{' '}
+                OFF
+              </div>
+            ) : null}
           </div>
 
           <div className="flex gap-2">

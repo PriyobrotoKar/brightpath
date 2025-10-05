@@ -20,6 +20,7 @@ import { useAtomValue } from 'jotai';
 import { updateSelf } from '@/api/services/user';
 import { roleAtom } from '@/state';
 import { setOnboardingStatus } from '@/lib/onboardingStatus';
+import { updateSession } from '@/lib/session';
 
 const profileSchema = z.object({
   fullname: z.string().min(1),
@@ -38,8 +39,12 @@ function ProfileForm(): React.JSX.Element {
     onError: (error) => {
       toast.error(error.message);
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await setOnboardingStatus({ step: 5 });
+      await updateSession(undefined, {
+        name: data.name,
+        role: data.role,
+      });
       router.push('/auth/complete');
     },
   });

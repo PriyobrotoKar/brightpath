@@ -12,7 +12,7 @@ export default async function CourseDashboardPage({
   const course = await getCourse(id);
   const pricing = await getCoursePricing(id);
 
-  if (!course) {
+  if (!course || !pricing) {
     notFound();
   }
 
@@ -23,7 +23,7 @@ export default async function CourseDashboardPage({
         title={course.name}
       />
       <div className="max-w-80">
-        {course.isPublished && pricing ? (
+        {course.isPublished ? (
           <CourseLive course={course} pricing={pricing} />
         ) : (
           <PublishCourse course={course} />

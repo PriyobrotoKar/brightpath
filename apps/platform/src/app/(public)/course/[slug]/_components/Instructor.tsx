@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import type { IconProps } from '@tabler/icons-react';
 import {
   IconBrandFacebook,
   IconBrandX,
@@ -20,9 +21,13 @@ interface InstrutorProps {
   instructor: User;
 }
 
-const LinkIcons = [IconBrandFacebook, IconBrandX, IconWorld];
+interface Link {
+  label: string;
+  Icon: React.FC<IconProps>;
+  link: string | undefined;
+}
 
-const getLinks = (links: string[]) => {
+const getLinks = (links: string[]): Link[] => {
   return [
     {
       label: 'facebook',
@@ -44,27 +49,27 @@ const getLinks = (links: string[]) => {
   ];
 };
 
+const stats = [
+  {
+    icon: IconUsers,
+    label: 'Students',
+    value: 3340,
+  },
+  {
+    icon: IconStarFilled,
+    label: 'Rating',
+    value: 3340,
+  },
+  {
+    icon: IconFolder,
+    label: 'Courses',
+    value: 4,
+  },
+];
+
 export default function Instructor({
   instructor,
 }: InstrutorProps): React.JSX.Element {
-  const stats = [
-    {
-      icon: IconUsers,
-      label: 'Students',
-      value: 3340,
-    },
-    {
-      icon: IconStarFilled,
-      label: 'Rating',
-      value: 3340,
-    },
-    {
-      icon: IconFolder,
-      label: 'Courses',
-      value: 4,
-    },
-  ];
-
   return (
     <InfoSection>
       <h2>Instructor</h2>

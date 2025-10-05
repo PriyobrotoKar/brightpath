@@ -23,6 +23,16 @@ export const refreshToken = async (
   });
 };
 
+export const verifyMagicLink = async (
+  code: string,
+): Promise<{
+  access_token: string;
+  refresh_token: string;
+  user: User;
+}> => {
+  return apiClient.post(`${base}/magic/verify`, { code });
+};
+
 export const logout = async (): Promise<void> => {
   return apiClient.post(`${base}/logout`, {});
 };

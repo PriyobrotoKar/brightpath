@@ -54,6 +54,7 @@ export async function middleware(
   // and they haven't completed the onboarding step, redirect them to the appropriate onboarding page.
   if (
     request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/auth/magic') &&
     !request.nextUrl.pathname.startsWith('/auth/signin') &&
     request.nextUrl.pathname !== (await getPath(step))
   ) {

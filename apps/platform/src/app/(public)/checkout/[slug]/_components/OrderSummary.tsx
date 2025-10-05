@@ -5,7 +5,7 @@ import Link from 'next/link';
 import CourseDetails from './CourseDetails';
 import PricingSummary from './PricingSummary';
 import BuyCourseButton from './BuyCourseButton';
-import { getCourseBySlug } from '@/api/services/course';
+import { getCourseBySlug, getCoursePricing } from '@/api/services/course';
 import CouponSelector from '@/app/(public)/course/[slug]/_components/CouponSelector';
 
 interface OrderSummaryProps {
@@ -16,8 +16,9 @@ export default async function OrderSummary({
   courseSlug,
 }: OrderSummaryProps): Promise<React.JSX.Element> {
   const course = await getCourseBySlug(courseSlug);
+  const pricing = course && (await getCoursePricing(course.id));
 
-  if (!course) {
+  if (!course || !pricing) {
     notFound();
   }
 
@@ -27,7 +28,7 @@ export default async function OrderSummary({
       <CourseDetails course={course} />
       <Separator />
       <CouponSelector />
-      <PricingSummary discountPercent={33} originalPrice={5999} />
+      <PricingSummary pricing={pricing} />
       <BuyCourseButton courseSlug={course.slug} />
       <p className="text-muted-foreground text-center text-xs leading-normal">
         By completing your purchase, you agree to these{' '}

@@ -3,6 +3,7 @@ import type {
   Coupon,
   Course,
   CourseType,
+  Currency,
   Pricing,
   Prisma,
 } from '@brightpath/db';
@@ -74,6 +75,13 @@ export type CourseMetadata = Prisma.CourseGetPayload<{
     assignment: number;
     total: number;
   };
+};
+
+export type CoursePricingResponse = Omit<Pricing, 'price'> & {
+  originalAmount: number;
+  discount: number;
+  totalAmount: number;
+  currency: Currency;
 };
 
 export type CourseLessons = {
@@ -215,7 +223,7 @@ export const getCoursesForSelf = (): Promise<Course[]> => {
 
 export const getCoursePricing = async (
   courseId: string,
-): Promise<Pricing | null> => {
+): Promise<CoursePricingResponse | null> => {
   try {
     return await apiClient.get(`${base}/${courseId}/pricing`);
   } catch (error) {

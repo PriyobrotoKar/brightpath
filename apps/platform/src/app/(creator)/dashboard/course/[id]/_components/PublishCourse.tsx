@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Course, Pricing, User } from '@brightpath/db';
+import type { Course, User } from '@brightpath/db';
 import { MerchantStatus } from '@brightpath/db';
 import { IconCircleCheckFilled } from '@tabler/icons-react';
 import { cn } from '@brightpath/ui/lib/utils';
@@ -8,7 +8,10 @@ import { notFound } from 'next/navigation';
 import PublishCourseButton from './PublishCourseButton';
 import { getSelf } from '@/api/services/user';
 import { getMerchantStatus } from '@/api/services/merchant';
-import type { CourseMetadata } from '@/api/services/course';
+import type {
+  CourseMetadata,
+  CoursePricingResponse,
+} from '@/api/services/course';
 import { getCourseMetadata, getCoursePricing } from '@/api/services/course';
 
 type ChecklistData = {
@@ -17,7 +20,7 @@ type ChecklistData = {
   merchantStatus: {
     status: MerchantStatus;
   } | null;
-  pricing: Pricing | null;
+  pricing: CoursePricingResponse | null;
   metadata: CourseMetadata;
 };
 
@@ -84,7 +87,7 @@ export default async function PublishCourse({
     getSelf(),
     getMerchantStatus(),
     getCoursePricing(course.id),
-    getCourseMetadata(course.id),
+    getCourseMetadata(course.slug),
   ]);
 
   if (!metadata) return notFound();

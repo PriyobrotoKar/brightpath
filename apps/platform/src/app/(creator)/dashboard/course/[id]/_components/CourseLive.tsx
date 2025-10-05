@@ -2,14 +2,16 @@ import { Button } from '@brightpath/ui/components/button';
 import { IconExternalLink, IconSchool, IconShare } from '@tabler/icons-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Pricing } from '@brightpath/db';
 import { mediaUrl } from '@/lib/utils';
-import type { CourseWithCategory } from '@/api/services/course';
+import type {
+  CoursePricingResponse,
+  CourseWithCategory,
+} from '@/api/services/course';
 import CourseRatings from '@/components/CourseRatings';
 
 interface CourseLiveProps {
   course: CourseWithCategory;
-  pricing: Pricing;
+  pricing: CoursePricingResponse;
 }
 
 export default function CourseLive({
@@ -48,7 +50,7 @@ function LiveIndicator(): React.JSX.Element {
 
 interface CourseDetailsProps {
   course: CourseWithCategory;
-  pricing: Pricing;
+  pricing: CoursePricingResponse;
 }
 
 function CourseDetails({
@@ -85,7 +87,7 @@ function CourseDetails({
           {course.category.name}
         </div>
         <div className="flex items-end justify-between">
-          <div className="text-lg">₹{pricing.price.toString()}</div>
+          <div className="text-lg">₹{pricing.originalAmount.toString()}</div>
           <CourseRatings ratings={4.6} />
         </div>
       </div>

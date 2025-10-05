@@ -369,6 +369,8 @@ function BankAccountDetailsForm({
       ...prev,
       ...values,
     }));
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Don't need setAccount as deps
   }, [values]);
 
   return (

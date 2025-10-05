@@ -5,6 +5,9 @@ const nextConfig = {
       {
         hostname: 'brightpath-dev.s3.ap-south-1.amazonaws.com',
       },
+      {
+        hostname: 'pbs.twimg.com',
+      },
     ],
   },
 };

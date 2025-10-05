@@ -7,6 +7,7 @@ import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
+import type { Role } from '@brightpath/db';
 import { refreshToken } from '@/api/services/auth';
 
 interface User {
@@ -14,6 +15,7 @@ interface User {
   name: string | null;
   email: string;
   image: string | null;
+  role: Role | null;
   isOnboardingFinished: boolean;
 }
 
