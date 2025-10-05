@@ -71,7 +71,7 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP');
     }
 
-    const user = await this.prisma.user.findUnique({
+    let user = await this.prisma.user.findUnique({
       where: {
         email,
       },
@@ -89,8 +89,11 @@ export class AuthService {
 
     await this.cache.deleteCachedValue('otp', email);
 
-    if (user.accountStatus === 'DISABLED') {
-      await this.prisma.user.update({
+    if (
+      user.accountStatus === 'DISABLED' ||
+      user.accountStatus === 'UNVERIFIED'
+    ) {
+      user = await this.prisma.user.update({
         where: { id: user.id },
         data: { accountStatus: 'ACTIVE' },
       });
@@ -100,6 +103,7 @@ export class AuthService {
       {
         id: user.id,
         email: user.email,
+        role: user.role,
       },
       this.jwt,
       this.refreshJwtConfiguration,
@@ -121,6 +125,50 @@ export class AuthService {
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
+  }
+
+  async verifyMagicLink(code: string) {
+    const userId = await this.cache.getCachedValue<string>('magicCode', code);
+
+    if (!userId) {
+      throw new UnauthorizedException('Invalid magic link');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid magic link');
+    }
+
+    if (
+      user.accountStatus === 'DISABLED' ||
+      user.accountStatus === 'UNVERIFIED'
+    ) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { accountStatus: 'ACTIVE' },
+      });
+    }
+
+    const tokens = await generateJwtTokens(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      this.jwt,
+      this.refreshJwtConfiguration,
+    );
+
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    this.logger.log(`User: ${user.id} has been successfully logged in`);
+
+    return { ...user, ...tokens };
   }
 
   private async createUserIfNotExist(email: string) {

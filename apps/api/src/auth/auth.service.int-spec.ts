@@ -11,7 +11,7 @@ import { createUser } from '@/common/user';
 import { generateJwtTokens } from '@/common/utils';
 import refreshJwtConfig from './config/refresh-jwt.config';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaClient } from '@brightpath/db';
+import { PrismaClient, Role } from '@brightpath/db';
 
 describe('Auth Controller Tests', () => {
   let app: INestApplication;
@@ -198,7 +198,7 @@ describe('Auth Controller Tests', () => {
 
   describe('/refresh-token', () => {
     it('should throw error if no user is found', async () => {
-      const testUser = { id: '1', email: 'test@gmail.com' };
+      const testUser = { id: '1', email: 'test@gmail.com', role: Role.CREATOR };
       const jwtTokens = await generateJwtTokens(
         testUser,
         jwtService,
@@ -240,7 +240,7 @@ describe('Auth Controller Tests', () => {
         },
       });
       const jwtTokens = await generateJwtTokens(
-        { id: testUser.id, email: testUser.email },
+        { id: testUser.id, email: testUser.email, role: Role.CREATOR },
         jwtService,
         refreshJwtConfig(),
       );

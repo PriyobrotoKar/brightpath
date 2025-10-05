@@ -39,6 +39,20 @@ export class AuthController {
   }
 
   @Public()
+  @Post('/magic/verify')
+  @HttpCode(200)
+  async verifyMagicLink(
+    @Body() { code }: { code: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { access_token, refresh_token, ...user } =
+      await this.authService.verifyMagicLink(code);
+    setResponseCookie(res, 'access_token', access_token);
+    setResponseCookie(res, 'refresh_token', refresh_token);
+    return { access_token, refresh_token, user };
+  }
+
+  @Public()
   @UseGuards(RefreshJwtAuthGuard)
   @Post('/refresh-token')
   @HttpCode(200)

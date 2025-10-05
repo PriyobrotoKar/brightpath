@@ -5,7 +5,7 @@ import { AppModule } from '@/app.module';
 import { NestApplication } from '@nestjs/core';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { Course, PrismaClient, User } from '@brightpath/db';
+import { Course, PrismaClient, Role, User } from '@brightpath/db';
 import { createUser } from '@/common/user';
 import { generateJwtTokens } from '@/common/utils';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
@@ -55,6 +55,7 @@ describe('Module Controller Test', () => {
         {
           id: invalidTestUser.id,
           email: invalidTestUser.email,
+          role: Role.CREATOR,
         },
         jwtService,
         refreshJwtConfig(),
@@ -63,6 +64,7 @@ describe('Module Controller Test', () => {
         {
           id: validTestUser.id,
           email: validTestUser.email,
+          role: Role.CREATOR,
         },
         jwtService,
         refreshJwtConfig(),

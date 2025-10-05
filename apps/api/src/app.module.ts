@@ -17,6 +17,8 @@ import { ModuleModule } from './module/module.module';
 import { CommonModule } from './common/common.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { MerchantModule } from './merchant/merchant.module';
+import { OrderModule } from './order/order.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { MerchantModule } from './merchant/merchant.module';
       isGlobal: true,
       envFilePath: `../../.env${process.env.NODE_ENV ? '.' + process.env.NODE_ENV : ''}`,
     }),
+    ScheduleModule.forRoot(),
     CommonModule,
     AuthModule,
     PrismaModule,
@@ -35,6 +38,7 @@ import { MerchantModule } from './merchant/merchant.module';
     ModuleModule,
     SubscriptionsModule,
     MerchantModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [

@@ -160,6 +160,7 @@ export class UserService {
     const tokens = await this.authService.refreshToken({
       id: updatedUser.id,
       email: updatedUser.email,
+      role: updatedUser.role,
     });
 
     return { ...updatedUser, ...tokens };

@@ -12,7 +12,9 @@ type Entity =
   | 'tempEmail'
   | 'refreshToken'
   | 'merchant'
-  | 'slug';
+  | 'slug'
+  | 'magicCode'
+  | 'orderId';
 
 @Injectable()
 export class CacheService implements OnModuleDestroy, OnModuleInit {

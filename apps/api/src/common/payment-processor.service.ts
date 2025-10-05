@@ -12,6 +12,7 @@ import { type ConfigType } from '@nestjs/config';
 import {
   Cashfree,
   CFEnvironment,
+  CreateOrderRequest,
   CreatePlanRequest,
   CreateSubscriptionPaymentRequest,
   CreateSubscriptionPaymentResponse,
@@ -19,6 +20,7 @@ import {
   CreateVendorRequest,
   CreateVendorResponse,
   ManageSubscriptionRequest,
+  OrderEntity,
   PlanEntity,
   SubscriptionEntity,
   VendorEntity,
@@ -39,6 +41,18 @@ export class PaymentProcessorService {
       this.cashfreeConfiguration.client_id,
       this.cashfreeConfiguration.client_secret,
     );
+  }
+
+  async createOrder(orderDetails: CreateOrderRequest): Promise<{
+    data: OrderEntity;
+    status: number;
+  }> {
+    try {
+      return await this.cashfree.PGCreateOrder(orderDetails);
+    } catch (error: any) {
+      this.logger.error('Error at creating order:', error.response.data);
+      throw new BadRequestException(error.response.data.message);
+    }
   }
 
   async addVendor(vendor: CreateVendorRequest): Promise<{

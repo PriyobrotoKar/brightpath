@@ -27,11 +27,13 @@ import { Public } from '@/decorators/public.decorator';
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
+  @Public()
   @Get(':id')
   getCourse(@Param('id') id: string) {
     return this.courseService.getCourse(id);
   }
 
+  @Public()
   @Get(':slug/metadata')
   getCourseMetadata(@Param('slug') slug: string) {
     return this.courseService.getCourseMetadata(slug);
@@ -74,9 +76,10 @@ export class CourseController {
     return this.courseService.updateCoursePricing(user, id, dto);
   }
 
+  @Public()
   @Get(':id/pricing')
-  getCoursePricing(@CurrentUser() user: JWTPayload, @Param('id') id: string) {
-    return this.courseService.getCoursePricing(id, user);
+  getCoursePricing(@Param('id') id: string) {
+    return this.courseService.getCoursePricing(id);
   }
 
   @Get(':id/coupons')

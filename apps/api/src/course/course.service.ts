@@ -3,12 +3,14 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
+  LoggerService,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create.course';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CreatePricingDto } from './dto/create.pricing';
-import { MerchantStatus, Prisma, PrismaClient } from '@brightpath/db';
+import { Currency, MerchantStatus, Prisma, PrismaClient } from '@brightpath/db';
 import { CreateScheduleDto } from './dto/create.schedule';
 import { UpdateEnrollmentDto } from './dto/update.enrollment';
 import { createCategoryIfNotExist } from '@/common/category';
@@ -20,16 +22,20 @@ import { CacheService } from '@/cache/cache.service';
 import { getUserByEmailOrId } from '@/common/user';
 import { slugify, sortLessons } from '@/common/utils';
 import { generateSlug } from 'random-word-slugs';
+import { calcuateCostVariables } from '@/common/pricing';
 
 @Injectable()
 export class CourseService {
   private readonly prisma: PrismaClient;
+  private readonly logger: LoggerService;
+
   constructor(
     private prismaService: PrismaService,
     private authorityChecker: AuthorityCheckerService,
     private cacheService: CacheService,
   ) {
     this.prisma = this.prismaService.client;
+    this.logger = new Logger(CourseService.name);
   }
 
   async getCourse(identifier: string) {
@@ -50,7 +56,7 @@ export class CourseService {
     });
 
     if (!course) {
-      throw new NotFoundException(`Course:${course.id} not found!`);
+      throw new NotFoundException(`Course:${identifier} not found!`);
     }
 
     return course;
@@ -250,11 +256,8 @@ export class CourseService {
     return updatedPricing;
   }
 
-  async getCoursePricing(courseId: string, user: JWTPayload) {
-    const course = await this.authorityChecker.checkAuthorityOverCourse(
-      courseId,
-      user.id,
-    );
+  async getCoursePricing(courseId: string) {
+    const course = await this.getCourse(courseId);
 
     const pricing = await this.prisma.pricing.findUnique({
       where: {
@@ -262,7 +265,15 @@ export class CourseService {
       },
     });
 
-    return pricing;
+    const costs = calcuateCostVariables(pricing, course.slug, this.logger);
+
+    delete pricing.price;
+
+    return {
+      ...costs,
+      ...pricing,
+      currency: Currency.INR,
+    };
   }
 
   async getCourseCoupons(courseId: string, user: JWTPayload) {
@@ -737,21 +748,47 @@ export class CourseService {
 
   private async generateSlug(input: string): Promise<string> {
     const baseSlug = slugify(input);
+    let existingSlugs: string[] | null = null;
 
-    // Check if a course with this slug exists or not
-    const existingSlugs = await this.cacheService.getCachedValue<string[]>(
+    // Check if slugs already exist in the cache
+    existingSlugs = await this.cacheService.getCachedValue<string[]>(
       'slug',
       `course:${baseSlug}`,
     );
+
+    if (!existingSlugs) {
+      // Get all the slugs that starts with baseSlug
+      const slugs = await this.prisma.course.findMany({
+        where: {
+          slug: {
+            startsWith: baseSlug,
+          },
+        },
+        select: {
+          slug: true,
+        },
+      });
+
+      if (slugs.length !== 0) {
+        existingSlugs = slugs
+          .filter(({ slug }) => slug !== baseSlug)
+          .map(({ slug }) => {
+            const index = slug.lastIndexOf('-');
+            return slug.slice(index + 1);
+          });
+      }
+    }
 
     const slugsSet = new Set(existingSlugs);
 
     let newSlug = baseSlug;
 
-    // if existingSlugs exists in cache that means at least the slug is used one time
+    // if existingSlugs is an Array that means at least the slug is used one time
     // we have to create a new word and check if the slug exists in cached result or not
     if (existingSlugs) {
-      while (true) {
+      const MAX_RETRIES = 10;
+      let retries = 0;
+      while (retries < MAX_RETRIES) {
         const randomWord = generateSlug(1);
         if (!slugsSet.has(randomWord)) {
           newSlug = slugify(`${input} ${randomWord}`);
@@ -768,14 +805,17 @@ export class CourseService {
             break;
           }
         }
+
+        retries++;
       }
     }
 
-    // add the random word in the cache for this input
+    // add the random word in the cache for 1 day
     await this.cacheService.setCache(
       'slug',
       `course:${baseSlug}`,
       Array.from(slugsSet),
+      60 * 60 * 24,
     );
 
     // if does not exist, then return the slug

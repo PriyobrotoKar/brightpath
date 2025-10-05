@@ -7,7 +7,7 @@ import { JWTPayload } from '@/auth/types/jwt-payload';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
-import { Assignment, Document, Video, Prisma } from '@brightpath/db';
+import { Prisma } from '@brightpath/db';
 
 export const jwtExtractor = (
   req: Request,
