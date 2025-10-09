@@ -4,8 +4,12 @@
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "prisma": {
+    "seed": "pnpx ts-node prisma/seed.ts"
+  },
   "scripts": {
     "db:generate": "prisma generate",
+    "db:seed": "pnpx dotenv-cli -e ../../.env -- prisma db seed",
     "db:migrate": "pnpx dotenv-cli -e ../../.env -- prisma migrate dev",
     "db:push": "pnpx dotenv-cli -e ../../.env -- prisma db push",
     "db:reset": "pnpx dotenv-cli -e ../../.env -- prisma migrate reset",

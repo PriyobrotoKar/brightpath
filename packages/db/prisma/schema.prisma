@@ -144,6 +144,9 @@ model User {
 
 model Merchant {
   id         String         @id @default(cuid())
+  name       String
+  logo       String
+  slug       String
   status     MerchantStatus @default(IN_BENE_CREATION)
   merchantId String         @unique
 
