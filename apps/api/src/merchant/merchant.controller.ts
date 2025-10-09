@@ -10,13 +10,13 @@ import {
 } from '@nestjs/common';
 import { MerchantService } from './merchant.service';
 import { CreateMerchantDto } from './dto/create.merchant';
-import { Creator } from '@/decorators/role.decorator';
 import { CurrentUser } from '@/decorators/user.decorator';
 import { type JWTPayload } from '@/auth/types/jwt-payload';
 import { Public } from '@/decorators/public.decorator';
 import { Request } from 'express';
+import { Roles } from '@/decorators/role.decorator';
 
-@Creator()
+@Roles('CREATOR')
 @Controller('merchant')
 export class MerchantController {
   constructor(private readonly merchantService: MerchantService) {}

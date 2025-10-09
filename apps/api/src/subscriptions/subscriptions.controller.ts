@@ -8,13 +8,13 @@ import {
   Req,
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
-import { Creator } from '@/decorators/role.decorator';
 import { Plan } from '@brightpath/db';
 import { CurrentUser } from '@/decorators/user.decorator';
 import { type JWTPayload } from '@/auth/types/jwt-payload';
 import { Public } from '@/decorators/public.decorator';
+import { Roles } from '@/decorators/role.decorator';
 
-@Creator()
+@Roles('CREATOR')
 @Controller('subscriptions')
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}

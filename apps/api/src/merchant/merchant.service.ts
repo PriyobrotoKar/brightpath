@@ -94,6 +94,9 @@ export class MerchantService {
     // create a new merchant in the database
     const merchant = await this.prisma.merchant.create({
       data: {
+        name: '100xDevs',
+        slug: '100xdevs',
+        logo: 'https://pbs.twimg.com/profile_images/1877817218244775936/zYaaUHgY_400x400.jpg',
         status: vendor.data.status as MerchantStatus,
         creatorId: creator.id,
         merchantId: vendor.data.vendor_id,

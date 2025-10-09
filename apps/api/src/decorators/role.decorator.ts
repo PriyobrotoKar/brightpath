@@ -1,4 +1,5 @@
+import { Role } from '@brightpath/db';
 import { SetMetadata } from '@nestjs/common';
 
-export const IS_CREATOR_KEY = 'isCreator';
-export const Creator = () => SetMetadata(IS_CREATOR_KEY, true);
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);

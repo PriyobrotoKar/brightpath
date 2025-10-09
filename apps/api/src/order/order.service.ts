@@ -308,6 +308,18 @@ export class OrderService {
       },
     });
 
+    // Enroll the user into that course
+    await this.prisma.enrollment.create({
+      data: {
+        courseId: order.courseId,
+        userId: order.userId,
+      },
+    });
+
+    this.logger.log(
+      `Enrolled user ${order.userId} into course ${order.courseId}`,
+    );
+
     this.logger.log(
       `Payment successfully processed for order: ${payload.order.order_id}`,
     );

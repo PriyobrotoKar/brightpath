@@ -121,6 +121,33 @@ export class CourseService {
     });
   }
 
+  async getEnrolledCourses(user: JWTPayload, tenantSlug: string) {
+    const enrolledCourses = await this.prisma.course.findMany({
+      where: {
+        creator: {
+          merchant: {
+            slug: tenantSlug,
+          },
+        },
+        enrollments: {
+          some: {
+            userId: user.id,
+          },
+        },
+        isPublished: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        slug: true,
+        category: true,
+      },
+    });
+
+    return enrolledCourses;
+  }
+
   async createCourse(user: JWTPayload, dto: CreateCourseDto) {
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
     const slug = await this.generateSlug(dto.name);

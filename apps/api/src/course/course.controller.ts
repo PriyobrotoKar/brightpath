@@ -1,15 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CourseService } from './course.service';
-import { CreatorGuard } from './guard/creator.guard';
-import { Creator } from '@/decorators/role.decorator';
 import { CurrentUser } from '@/decorators/user.decorator';
 import { type JWTPayload } from '@/auth/types/jwt-payload';
 import { CreateCourseDto } from './dto/create.course';
@@ -20,10 +10,10 @@ import { UpdateCourseDto } from './dto/update.course';
 import { UpdatePricingDto } from './dto/update.pricing';
 import { UpdateScheduleDto } from './dto/update.schedule';
 import { Public } from '@/decorators/public.decorator';
+import { Roles } from '@/decorators/role.decorator';
 
-@Creator()
 @Controller('course')
-@UseGuards(CreatorGuard)
+@Roles('CREATOR')
 export class CourseController {
   constructor(private readonly courseService: CourseService) {}
 
@@ -42,6 +32,15 @@ export class CourseController {
   @Get()
   getCoursesForSelf(@CurrentUser() user: JWTPayload) {
     return this.courseService.getCoursesForSelf(user);
+  }
+
+  @Roles('STUDENT')
+  @Get('enrolled/:tenantSlug')
+  getEnrolledCourses(
+    @CurrentUser() user: JWTPayload,
+    @Param('tenantSlug') tenantSlug: string,
+  ) {
+    return this.courseService.getEnrolledCourses(user, tenantSlug);
   }
 
   @Post()

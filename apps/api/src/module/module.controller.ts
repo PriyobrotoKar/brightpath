@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ModuleService } from './module.service';
-import { Creator } from '@/decorators/role.decorator';
 import { CurrentUser } from '@/decorators/user.decorator';
 import { type JWTPayload } from '@/auth/types/jwt-payload';
 import { CreateModuleDto } from './dto/create.module';
@@ -23,12 +22,13 @@ import { VideoProgressStatus } from '@brightpath/db';
 import { Public } from '@/decorators/public.decorator';
 import { ApiKeyGuard } from '@/auth/guard/api-key.guard';
 import { UpdateVideoDto } from './dto/update.video';
+import { Roles } from '@/decorators/role.decorator';
 
 @Controller('module')
 export class ModuleController {
   constructor(private readonly moduleService: ModuleService) {}
 
-  @Creator()
+  @Roles('CREATOR')
   @Post(':courseId')
   async createModule(
     @CurrentUser() user: JWTPayload,
@@ -50,7 +50,7 @@ export class ModuleController {
     });
   }
 
-  @Creator()
+  @Roles('CREATOR')
   @Post(':moduleId/lesson/document')
   async createDocument(
     @Param('moduleId') moduleId: string,
@@ -60,7 +60,7 @@ export class ModuleController {
     return this.moduleService.createDocument(user, dto, moduleId);
   }
 
-  @Creator()
+  @Roles('CREATOR')
   @Patch(':moduleId/lesson/document/:id')
   async updateDocument(
     @Param('moduleId') moduleId: string,
@@ -80,7 +80,7 @@ export class ModuleController {
     return this.moduleService.getVideoLesson(user, moduleId, videoId);
   }
 
-  @Creator()
+  @Roles('CREATOR')
   @Post(':moduleId/lesson/video')
   async createVideo(
     @Param('moduleId') moduleId: string,
@@ -90,7 +90,7 @@ export class ModuleController {
     return this.moduleService.createVideo(user, dto, moduleId);
   }
 
-  @Creator()
+  @Roles('CREATOR')
   @Post(':moduleId/lesson/assignment')
   async createAssignment(
     @Param('moduleId') moduleId: string,
@@ -100,7 +100,7 @@ export class ModuleController {
     return this.moduleService.createAssignment(user, dto, moduleId);
   }
 
-  @Creator()
+  @Roles('CREATOR')
   @Patch(':moduleId/lesson/assignment/:id')
   async updateAssignment(
     @Param('moduleId') moduleId: string,
@@ -126,7 +126,7 @@ export class ModuleController {
     return this.moduleService.updateVideoStatus(key, status);
   }
 
-  @Creator()
+  @Roles('CREATOR')
   @Patch(':moduleId/video/:videoId')
   async updateVideo(
     @Param('moduleId') moduleId: string,
