@@ -107,6 +107,16 @@ export type UpdateEnrollmentSettingsPayload = {
   deadline: Date;
 };
 
+export type EnrolledCourse = Prisma.CourseGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    type: true;
+    slug: true;
+    category: true;
+  };
+}>;
+
 export type UpdateCourseSchedulePayload =
   Partial<CreateCourseSchedulePayload> & {
     sessions: {
@@ -199,6 +209,12 @@ export const getCourseBySlug = async (
     console.error(error);
     throw error;
   }
+};
+
+export const getEnrolledCourses = async (
+  tenantSlug: string,
+): Promise<EnrolledCourse[]> => {
+  return apiClient.get(`${base}/enrolled/${tenantSlug}`);
 };
 
 export const getCourseMetadata = async (

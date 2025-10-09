@@ -69,7 +69,7 @@ function PrimarySidebar(): React.JSX.Element {
   );
 }
 
-function CourseSidebar(): React.JSX.Element {
+export function CourseSidebar(): React.JSX.Element {
   const path = usePathname();
   const router = useRouter();
   const params = useParams();
