@@ -136,6 +136,8 @@ model User {
   merchant      Merchant?
   enrollments   Enrollment[]
   orders        Order[]
+  videosWatched Video[]
+  docsRead      Document[]
 
   isOnboardingFinished Boolean  @default(false)
   createdAt            DateTime @default(now())
@@ -233,6 +235,8 @@ model Document {
   module   Module @relation(fields: [moduleId], references: [id])
   moduleId String
 
+  completedBy User[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -248,6 +252,8 @@ model Video {
 
   module   Module @relation(fields: [moduleId], references: [id])
   moduleId String
+
+  completedBy User[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
