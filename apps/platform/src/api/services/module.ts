@@ -38,14 +38,21 @@ export type UpdateVideoPayload = {
   status?: VideoProgressStatus;
 };
 
-export const getModulesByCourseId = async (
-  courseId: string,
+export type ModuleWithProgress = Module & {
+  lessonCount: number;
+  completedLessonsCount?: number;
+  totalDuration: number;
+  lastWatchedLesson: Video | Document;
+};
+
+export const getModulesByCourseSlug = async (
+  courseSlug: string,
   filters?: {
     status?: string | null;
     createdAt?: string | null;
     sort?: string;
   },
-): Promise<Module[]> => {
+): Promise<ModuleWithProgress[]> => {
   let params = {};
   if (filters) {
     Object.keys(filters).forEach((key) => {
@@ -55,7 +62,7 @@ export const getModulesByCourseId = async (
     });
   }
 
-  return apiClient.get(`${base}/${courseId}`, params);
+  return apiClient.get(`${base}/${courseSlug}`, params);
 };
 
 export const createModule = async (
