@@ -118,6 +118,7 @@ export function ModuleProgressCircle({
     <div className="text-muted-foreground flex items-center gap-2">
       <CircularProgress
         completedSteps={completedLessonsCount}
+        gap=""
         totalSteps={totalLessonsCount}
       />
       <div>
@@ -148,21 +149,24 @@ export function ModuleCardDuration({
   );
 }
 
-function CircularProgress({
+export function CircularProgress({
   totalSteps,
   completedSteps,
+  gap = '5',
+  height = 28,
+  width = 28,
   ...props
 }: React.SVGProps<SVGSVGElement> & {
+  gap?: string;
   totalSteps: number;
   completedSteps: number;
 }): React.JSX.Element {
-  const radius = '12';
+  const radius = Number(width) / 2 - 2;
 
   const generateStrokeDasharray = (): {
     trackStrokeDasharray: string;
     progressStrokeDasharray: string;
   } => {
-    const gap = '5';
     const stepLength = (Number(radius) * 2 * 3.1415) / totalSteps - Number(gap);
 
     const dashArraySegment = `${stepLength} ${gap} `;
@@ -179,11 +183,11 @@ function CircularProgress({
 
   return (
     <div className="h-fit w-fit -rotate-90">
-      <svg {...props} height={28} width={28}>
+      <svg {...props} height={height} width={width}>
         <circle
           className="stroke-muted-foreground/40"
-          cx={14}
-          cy={14}
+          cx={Number(width) / 2}
+          cy={Number(width) / 2}
           fill="transparent"
           r={radius}
           strokeDasharray={generateStrokeDasharray().trackStrokeDasharray}
@@ -192,8 +196,8 @@ function CircularProgress({
         />
         <circle
           className="stroke-primary"
-          cx={14}
-          cy={14}
+          cx={Number(width) / 2}
+          cy={Number(width) / 2}
           fill="transparent"
           r={radius}
           strokeDasharray={generateStrokeDasharray().progressStrokeDasharray}

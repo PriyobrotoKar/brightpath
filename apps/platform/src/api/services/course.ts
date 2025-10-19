@@ -97,6 +97,7 @@ export type CourseLessons = {
       name: string;
       createdAt: Date;
       duration?: number;
+      isCompleted?: boolean;
       type: LessonType;
     }[];
   }[];

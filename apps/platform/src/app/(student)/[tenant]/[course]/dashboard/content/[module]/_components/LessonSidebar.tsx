@@ -1,4 +1,17 @@
-import { getAllLessons } from '@/api/services/module';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@brightpath/ui/components/accordion';
+import { IconChevronLeft } from '@tabler/icons-react';
+import { Button } from '@brightpath/ui/components/button';
+import { cn } from '@brightpath/ui/lib/utils';
+import {
+  CircularProgress,
+  ModuleProgressCircle,
+} from '../../_components/ModuleCard';
+import { getCourseLessons } from '@/api/services/course';
 import { Menu, MenuLink } from '@/components/MenuLink';
 
 interface LessonSidebarProps {
@@ -11,25 +24,73 @@ export default async function LessonSidebar({
   moduleId,
   tenant,
   course,
-}: LessonSidebarProps): Promise<React.JSX.Element> {
-  const lessons = await getAllLessons(moduleId);
+}: LessonSidebarProps): Promise<React.JSX.Element | null> {
+  const courseLessons = await getCourseLessons(course);
+
+  if (!courseLessons) return null;
+
+  const { modules } = courseLessons;
 
   return (
-    <aside className="bg-card">
-      <div>All Modules</div>
+    <aside className="bg-card w-72 rounded-lg border">
+      <div className="flex items-center border-b p-3">
+        <Button className="h-8" size="sm" variant="ghost">
+          <IconChevronLeft /> All Modules
+        </Button>
+      </div>
       <div>
-        <Menu>
-          {lessons.map((lesson) => {
+        <Accordion type="multiple">
+          {modules.map((module, i) => {
+            const completedLessonsCount = module.lessons.filter(
+              (lesson) => lesson.isCompleted,
+            ).length;
+
             return (
-              <MenuLink
-                href={`/${tenant}/${course}/dashboard/content/${moduleId}/${lesson.id}`}
-                key={lesson.id}
-              >
-                {lesson.name}
-              </MenuLink>
+              <AccordionItem key={module.id} value="item-1">
+                <AccordionTrigger className="text-md p-4">
+                  <span className="flex items-center gap-2">
+                    <div className="relative">
+                      <CircularProgress
+                        completedSteps={completedLessonsCount}
+                        gap="5.01"
+                        height={24}
+                        totalSteps={module.lessons.length}
+                        width={24}
+                      />
+                      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs">
+                        {i + 1}
+                      </span>
+                    </div>
+                    <span
+                      className={cn(
+                        '',
+                        moduleId === module.id && 'text-primary',
+                      )}
+                    >
+                      {module.name}
+                    </span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="px-4">
+                  <Menu>
+                    {module.lessons.map((lesson) => {
+                      return (
+                        <MenuLink
+                          href={`/${tenant}/${course}/dashboard/content/${module.id}/${lesson.id}`}
+                          key={lesson.id}
+                        >
+                          <span className="max-w-full overflow-hidden text-ellipsis">
+                            {lesson.name}
+                          </span>
+                        </MenuLink>
+                      );
+                    })}
+                  </Menu>
+                </AccordionContent>
+              </AccordionItem>
             );
           })}
-        </Menu>
+        </Accordion>
       </div>
     </aside>
   );
