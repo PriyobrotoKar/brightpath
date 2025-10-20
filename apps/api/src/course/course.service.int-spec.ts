@@ -21,7 +21,10 @@ describe('Course Controller Tests', () => {
   let studentTestUser: User;
   let creatorTestUser1: User;
   let creatorTestUser2: User;
-  let testCourseId: string;
+  let testCourse: {
+    id: string;
+    slug: string;
+  };
   let headers: Record<string, string>;
 
   beforeAll(async () => {
@@ -106,7 +109,10 @@ describe('Course Controller Tests', () => {
           level: 'BEGINNER',
         });
 
-      testCourseId = response.body.id;
+      testCourse = {
+        id: response.body.id,
+        slug: response.body.slug,
+      };
 
       expect(response.status).toBe(201);
       expect(response.body).toEqual({
@@ -170,7 +176,7 @@ describe('Course Controller Tests', () => {
       const headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
 
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'FREE',
@@ -185,13 +191,13 @@ describe('Course Controller Tests', () => {
     it('should throw error if pricing already exists for the course', async () => {
       await prisma.pricing.create({
         data: {
-          courseId: testCourseId,
+          courseId: testCourse.id,
           paymentPlan: 'FREE',
           price: 0,
         },
       });
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'FREE',
@@ -205,7 +211,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if price is not provided for paid courses', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'ONETIME',
@@ -217,7 +223,7 @@ describe('Course Controller Tests', () => {
 
     it('should create a new pricing for free course', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'FREE',
@@ -231,7 +237,7 @@ describe('Course Controller Tests', () => {
         discountEnabled: false,
         discountType: null,
         discountValue: null,
-        courseId: testCourseId,
+        courseId: testCourse.id,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
@@ -239,7 +245,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if discount value is not provided', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'ONETIME',
@@ -256,7 +262,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if coupon value is not provided', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'ONETIME',
@@ -273,7 +279,7 @@ describe('Course Controller Tests', () => {
 
     it('should create a new pricing for paid course', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'ONETIME',
@@ -295,7 +301,7 @@ describe('Course Controller Tests', () => {
         discountEnabled: true,
         discountType: 'PERCENTAGE',
         discountValue: '10',
-        courseId: testCourseId,
+        courseId: testCourse.id,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
@@ -339,7 +345,7 @@ describe('Course Controller Tests', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/pricing`)
+        .post(`/course/${testCourse.slug}/pricing`)
         .set(headers)
         .send({
           model: 'ONETIME',
@@ -384,7 +390,7 @@ describe('Course Controller Tests', () => {
       const headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
 
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'RECORDED',
@@ -398,7 +404,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if start and end dates are not provided for cohort courses', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'COHORT',
@@ -412,7 +418,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if self paced course has sessions', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'RECORDED',
@@ -434,7 +440,7 @@ describe('Course Controller Tests', () => {
     it('should throw error if schedule already exists for the course', async () => {
       await prisma.session.create({
         data: {
-          courseId: testCourseId,
+          courseId: testCourse.id,
           name: 'session',
           startAt: '2024-11-19T18:30:00.000Z',
           endAt: '2024-11-19T20:30:00.000Z',
@@ -442,7 +448,7 @@ describe('Course Controller Tests', () => {
         },
       });
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'RECORDED',
@@ -456,7 +462,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if start date of a session is in the past', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'COHORT',
@@ -477,7 +483,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if end date is before start date', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'COHORT',
@@ -498,7 +504,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if end time is before start time', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'COHORT',
@@ -519,7 +525,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if day of week is invalid', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'COHORT',
@@ -540,7 +546,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if start time and end time are same', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'COHORT',
@@ -563,7 +569,7 @@ describe('Course Controller Tests', () => {
 
     it('should create a new schedule for cohort course', async () => {
       const response = await request(app.getHttpServer())
-        .post(`/course/${testCourseId}/schedule`)
+        .post(`/course/${testCourse.slug}/schedule`)
         .set(headers)
         .send({
           course_type: 'COHORT',
@@ -610,7 +616,7 @@ describe('Course Controller Tests', () => {
             name: 'Session',
             startAt: '2024-11-19T20:30:00.263Z',
             endAt: '2024-11-19T22:30:00.263Z',
-            courseId: testCourseId,
+            courseId: testCourse.id,
             createdAt: expect.any(String),
             updatedAt: expect.any(String),
             description: null,
@@ -644,7 +650,7 @@ describe('Course Controller Tests', () => {
       const headers = { Authorization: `Bearer ${jwtTokens.access_token}` };
 
       const response = await request(app.getHttpServer())
-        .patch(`/course/${testCourseId}/enrollment`)
+        .patch(`/course/${testCourse.slug}/enrollment`)
         .set(headers)
         .send({});
 
@@ -656,7 +662,7 @@ describe('Course Controller Tests', () => {
 
     it('should throw error if deadline is not within course start and end date', async () => {
       const response = await request(app.getHttpServer())
-        .patch(`/course/${testCourseId}/enrollment`)
+        .patch(`/course/${testCourse.slug}/enrollment`)
         .set(headers)
         .send({
           type: 'EVERYONE',
@@ -672,7 +678,7 @@ describe('Course Controller Tests', () => {
     it('should throw error if course dates are not set', async () => {
       await prisma.course.update({
         where: {
-          id: testCourseId,
+          id: testCourse.id,
         },
         data: {
           startAt: null,
@@ -681,7 +687,7 @@ describe('Course Controller Tests', () => {
       });
 
       const response = await request(app.getHttpServer())
-        .patch(`/course/${testCourseId}/enrollment`)
+        .patch(`/course/${testCourse.slug}/enrollment`)
         .set(headers)
         .send({
           type: 'EVERYONE',
@@ -695,7 +701,7 @@ describe('Course Controller Tests', () => {
 
       await prisma.course.update({
         where: {
-          id: testCourseId,
+          id: testCourse.id,
         },
         data: {
           startAt: '2024-11-19T18:30:00.263Z',
@@ -706,7 +712,7 @@ describe('Course Controller Tests', () => {
 
     it('should update enrollment settings', async () => {
       const response = await request(app.getHttpServer())
-        .patch(`/course/${testCourseId}/enrollment`)
+        .patch(`/course/${testCourse.slug}/enrollment`)
         .set(headers)
         .send({
           type: 'INVITE_ONLY',
@@ -715,7 +721,7 @@ describe('Course Controller Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        id: testCourseId,
+        id: testCourse.id,
         name: 'Test Course',
         slug: 'test-course',
         description: null,

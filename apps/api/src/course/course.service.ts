@@ -167,10 +167,14 @@ export class CourseService {
     });
   }
 
-  async updateCourse(user: JWTPayload, courseId: string, dto: UpdateCourseDto) {
+  async updateCourse(
+    user: JWTPayload,
+    courseSlug: string,
+    dto: UpdateCourseDto,
+  ) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
-      courseId,
-      user.id,
+      courseSlug,
+      user,
     );
 
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
@@ -181,7 +185,7 @@ export class CourseService {
 
     return await this.prisma.course.update({
       where: {
-        id: courseId,
+        id: course.id,
       },
       data: {
         name: dto.name,
@@ -197,15 +201,18 @@ export class CourseService {
 
   async createPricing(
     user: JWTPayload,
-    courseId: string,
+    courseSlug: string,
     dto: CreatePricingDto,
   ) {
-    await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseSlug,
+      user,
+    );
     let data: Prisma.PricingCreateInput | null = null;
 
     const isPricingAlreadyExist = await this.prisma.pricing.findUnique({
       where: {
-        courseId,
+        courseId: course.id,
       },
     });
 
@@ -218,7 +225,7 @@ export class CourseService {
         data: {
           paymentPlan: 'FREE',
           price: new Prisma.Decimal(0),
-          courseId,
+          courseId: course.id,
         },
       });
     }
@@ -230,7 +237,7 @@ export class CourseService {
     data = {
       paymentPlan: dto.model,
       price: new Prisma.Decimal(dto.price),
-      course: { connect: { id: courseId } },
+      course: { connect: { id: course.id } },
     };
 
     data = this.addDiscountToPricing(data, dto);
@@ -251,7 +258,7 @@ export class CourseService {
   ) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
       courseId,
-      user.id,
+      user,
     );
 
     const pricing = await this.prisma.pricing.findUnique({
@@ -306,7 +313,7 @@ export class CourseService {
   async getCourseCoupons(courseId: string, user: JWTPayload) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
       courseId,
-      user.id,
+      user,
     );
 
     const coupons = await this.prisma.coupon.findMany({
@@ -322,12 +329,12 @@ export class CourseService {
 
   async createSchedule(
     user: JWTPayload,
-    courseId: string,
+    courseSlug: string,
     dto: CreateScheduleDto,
   ) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
-      courseId,
-      user.id,
+      courseSlug,
+      user,
     );
 
     const hasSessions =
@@ -370,7 +377,7 @@ export class CourseService {
 
     const updatedCourse = await this.prisma.course.update({
       where: {
-        id: courseId,
+        id: course.id,
       },
       data: {
         type: dto.course_type,
@@ -407,7 +414,7 @@ export class CourseService {
   ) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
       courseId,
-      user.id,
+      user,
     );
 
     //TODO: creator cannot change the course type if the there is atleast one learner enrolled
@@ -473,12 +480,12 @@ export class CourseService {
 
   async updateEnrollmentSettings(
     user: JWTPayload,
-    courseId: string,
+    courseSlug: string,
     dto: UpdateEnrollmentDto,
   ) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
-      courseId,
-      user.id,
+      courseSlug,
+      user,
     );
 
     if (dto.deadline) {
@@ -500,7 +507,7 @@ export class CourseService {
 
     const updatedCourse = await this.prisma.course.update({
       where: {
-        id: courseId,
+        id: course.id,
       },
       data: {
         accessType: dto.type,
@@ -572,7 +579,7 @@ export class CourseService {
   async getCourseSchedule(id: string, user: JWTPayload) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
       id,
-      user.id,
+      user,
     );
 
     const sessions = await this.prisma.session.findMany({
@@ -593,7 +600,7 @@ export class CourseService {
   async publishCourse(id: string, user: JWTPayload) {
     const course = await this.authorityChecker.checkAuthorityOverCourse(
       id,
-      user.id,
+      user,
     );
 
     //check if the course is already published or not
@@ -659,12 +666,13 @@ export class CourseService {
     return publishedCourse;
   }
 
-  async getAllLessonDetails(slug: string) {
+  async getAllLessonDetails(slug: string, currentUser: JWTPayload | null) {
     const course = await this.prisma.course.findUnique({
       where: {
         slug,
       },
       select: {
+        id: true,
         Module: {
           select: {
             id: true,
@@ -675,6 +683,11 @@ export class CourseService {
                 name: true,
                 duration: true,
                 createdAt: true,
+                completedBy: {
+                  where: {
+                    id: currentUser?.id ?? '',
+                  },
+                },
               },
             },
             Document: {
@@ -683,6 +696,11 @@ export class CourseService {
                 name: true,
                 duration: true,
                 createdAt: true,
+                completedBy: {
+                  where: {
+                    id: currentUser?.id ?? '',
+                  },
+                },
               },
             },
             Assignment: {
@@ -701,12 +719,39 @@ export class CourseService {
       throw new NotFoundException(`Course with slug:${slug} not found`);
     }
 
+    let isEnrolled = false;
+
+    if (currentUser && currentUser.role === 'STUDENT') {
+      isEnrolled = !!(await this.prisma.enrollment.findUnique({
+        where: {
+          userId_courseId: {
+            userId: currentUser.id,
+            courseId: course.id,
+          },
+        },
+      }));
+    }
+
     const structuredModules = course.Module.map((module) => {
-      const sortedLessons = sortLessons([
+      let sortedLessons = sortLessons([
         module.Document,
         module.Video,
         module.Assignment,
       ]);
+
+      if (isEnrolled) {
+        sortedLessons = sortedLessons.map(({ completedBy, ...lesson }) => {
+          return {
+            ...lesson,
+            isCompleted: completedBy?.length > 0,
+          };
+        });
+      } else {
+        sortedLessons = sortedLessons.map((lesson) => {
+          delete lesson.completedBy;
+          return lesson;
+        });
+      }
 
       return {
         id: module.id,

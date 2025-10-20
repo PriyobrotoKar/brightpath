@@ -99,7 +99,7 @@ describe('Module Controller Test', () => {
         Authorization: `Bearer ${jwtTokens.invalidTestUser.access_token}`,
       };
       const response = await request(app.getHttpServer())
-        .post(`/module/${testCourse.id}`)
+        .post(`/module/${testCourse.slug}`)
         .set(headers);
 
       expect(response.status).toBe(403);
@@ -113,7 +113,7 @@ describe('Module Controller Test', () => {
         Authorization: `Bearer ${jwtTokens.validTestUser.access_token}`,
       };
       const response = await request(app.getHttpServer())
-        .post(`/module/${testCourse.id}`)
+        .post(`/module/${testCourse.slug}`)
         .set(headers)
         .send({
           name: 'Test Module',
@@ -139,7 +139,7 @@ describe('Module Controller Test', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .get(`/module/${testCourse.id}`)
+        .get(`/module/${testCourse.slug}`)
         .set(headers);
 
       expect(response.status).toBe(403);
@@ -154,7 +154,7 @@ describe('Module Controller Test', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .get(`/module/${testCourse.id}`)
+        .get(`/module/${testCourse.slug}`)
         .set(headers);
 
       expect(response.status).toBe(200);

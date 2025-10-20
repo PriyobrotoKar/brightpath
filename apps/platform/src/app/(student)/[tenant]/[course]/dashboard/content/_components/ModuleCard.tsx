@@ -118,7 +118,6 @@ export function ModuleProgressCircle({
     <div className="text-muted-foreground flex items-center gap-2">
       <CircularProgress
         completedSteps={completedLessonsCount}
-        gap=""
         totalSteps={totalLessonsCount}
       />
       <div>

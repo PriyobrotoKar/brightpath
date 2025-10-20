@@ -1,3 +1,4 @@
+import { JWTPayload } from '@/auth/types/jwt-payload';
 import { PrismaService } from '@/prisma/prisma.service';
 import { PrismaClient } from '@brightpath/db';
 import {
@@ -13,33 +14,50 @@ export class AuthorityCheckerService {
     this.prisma = this.prismaService.client;
   }
 
-  async checkAuthorityOverCourse(courseId: string, userId: string) {
+  async checkAuthorityOverCourse(courseSlug: string, user: JWTPayload) {
     const course = await this.prisma.course.findUnique({
       where: {
-        id: courseId,
+        slug: courseSlug,
+      },
+      include: {
+        enrollments: {
+          where: {
+            userId: user.id,
+          },
+        },
       },
     });
 
     if (!course) {
-      throw new NotFoundException(`Course:${courseId} not found!`);
+      throw new NotFoundException(`Course:${courseSlug} not found!`);
     }
 
-    const hasAuthority = course.creatorId === userId;
+    const hasAuthority =
+      user.role === 'CREATOR'
+        ? course.creatorId === user.id
+        : course.enrollments.length > 0;
 
     if (!hasAuthority) {
       throw new ForbiddenException(
-        `User:${userId} does not have the required permission`,
+        `User:${user.id} does not have the required permission`,
       );
     }
 
     return course;
   }
 
-  async checkAuthorityOverModule(moduleId: string, userId: string) {
+  async checkAuthorityOverModule(moduleId: string, user: JWTPayload) {
     //check if the module exists
     const module = await this.prisma.module.findUnique({
       where: {
         id: moduleId,
+      },
+      include: {
+        course: {
+          select: {
+            slug: true,
+          },
+        },
       },
     });
 
@@ -48,7 +66,7 @@ export class AuthorityCheckerService {
     }
 
     //check if the user is the creator of the course of the module
-    await this.checkAuthorityOverCourse(module.courseId, userId);
+    await this.checkAuthorityOverCourse(module.course.slug, user);
 
     return module;
   }

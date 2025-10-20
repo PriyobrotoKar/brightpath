@@ -4,13 +4,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@brightpath/ui/components/accordion';
-import { IconChevronLeft } from '@tabler/icons-react';
+import { IconCheck, IconChevronLeft } from '@tabler/icons-react';
 import { Button } from '@brightpath/ui/components/button';
 import { cn } from '@brightpath/ui/lib/utils';
-import {
-  CircularProgress,
-  ModuleProgressCircle,
-} from '../../_components/ModuleCard';
+import { CircularProgress } from '../../_components/ModuleCard';
 import { getCourseLessons } from '@/api/services/course';
 import { Menu, MenuLink } from '@/components/MenuLink';
 
@@ -47,7 +44,12 @@ export default async function LessonSidebar({
 
             return (
               <AccordionItem key={module.id} value="item-1">
-                <AccordionTrigger className="text-md p-4">
+                <AccordionTrigger
+                  className={cn(
+                    'text-md text-primary p-4',
+                    moduleId === module.id && 'text-primary',
+                  )}
+                >
                   <span className="flex items-center gap-2">
                     <div className="relative">
                       <CircularProgress
@@ -57,18 +59,11 @@ export default async function LessonSidebar({
                         totalSteps={module.lessons.length}
                         width={24}
                       />
-                      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs">
+                      <span className="text-foreground absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs">
                         {i + 1}
                       </span>
                     </div>
-                    <span
-                      className={cn(
-                        '',
-                        moduleId === module.id && 'text-primary',
-                      )}
-                    >
-                      {module.name}
-                    </span>
+                    <span>{module.name}</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent className="px-4">
@@ -76,12 +71,16 @@ export default async function LessonSidebar({
                     {module.lessons.map((lesson) => {
                       return (
                         <MenuLink
+                          className="justify-between"
                           href={`/${tenant}/${course}/dashboard/content/${module.id}/${lesson.id}`}
                           key={lesson.id}
                         >
                           <span className="max-w-full overflow-hidden text-ellipsis">
                             {lesson.name}
                           </span>
+                          {lesson.isCompleted ? (
+                            <IconCheck className="text-primary" />
+                          ) : null}
                         </MenuLink>
                       );
                     })}

@@ -6,6 +6,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaClient, Role } from '@brightpath/db';
 import { IS_PUBLIC_KEY } from '@/decorators/public.decorator';
+import { IS_OPTIONAL_KEY } from '@/decorators/optional.decorator';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -24,6 +25,11 @@ export class RoleGuard implements CanActivate {
       context.getClass(),
     ]);
 
+    const isOptional = this.reflector.getAllAndOverride<boolean>(
+      IS_OPTIONAL_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
     if (isPublic) {
       return true;
     }
@@ -39,6 +45,8 @@ export class RoleGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const payload = request.user as JWTPayload;
+
+    if (isOptional && !payload) return true;
 
     return requiredRoles.some((role) => payload.role === role);
   }

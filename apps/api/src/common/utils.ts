@@ -7,7 +7,7 @@ import { JWTPayload } from '@/auth/types/jwt-payload';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import refreshJwtConfig from '@/auth/config/refresh-jwt.config';
-import { Prisma } from '@brightpath/db';
+import { User } from '@brightpath/db';
 
 export const jwtExtractor = (
   req: Request,
@@ -71,34 +71,21 @@ export function slugify(text: string) {
   return text.toLowerCase().replace(/[\W\s]+/g, '-');
 }
 
-type FilteredDocument = Prisma.DocumentGetPayload<{
-  select: { id: true; name: true; duration: true; createdAt: true };
-}>;
-type FilteredVideo = Prisma.VideoGetPayload<{
-  select: { id: true; name: true; duration: true; createdAt: true };
-}>;
-type FilteredAssignment = Prisma.AssignmentGetPayload<{
-  select: { id: true; name: true; createdAt: true };
-}>;
-
-export function sortLessons(
-  lessonArrays: [FilteredDocument[], FilteredVideo[], FilteredAssignment[]],
-): {
+export function sortLessons(lessonArrays: any[][]): {
   id: string;
   name: string;
   createdAt: Date;
+  completedBy?: User[] | undefined;
   duration?: number;
 }[] {
   const types = ['document', 'video', 'assignment'];
 
   const lessons = lessonArrays
     .map((lessons, i) =>
-      lessons.map(
-        (lesson: FilteredDocument | FilteredVideo | FilteredAssignment) => ({
-          ...lesson,
-          type: types[i],
-        }),
-      ),
+      lessons.map((lesson: any) => ({
+        ...lesson,
+        type: types[i],
+      })),
     )
     .flat();
 

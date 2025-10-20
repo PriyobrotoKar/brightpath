@@ -11,6 +11,7 @@ import { UpdatePricingDto } from './dto/update.pricing';
 import { UpdateScheduleDto } from './dto/update.schedule';
 import { Public } from '@/decorators/public.decorator';
 import { Roles } from '@/decorators/role.decorator';
+import { Optional } from '@/decorators/optional.decorator';
 
 @Controller('course')
 @Roles('CREATOR')
@@ -123,9 +124,13 @@ export class CourseController {
     return this.courseService.publishCourse(id, user);
   }
 
-  @Public()
+  @Roles('CREATOR', 'STUDENT')
+  @Optional()
   @Get(':slug/lessons')
-  getAllLessonDetails(@Param('slug') slug: string) {
-    return this.courseService.getAllLessonDetails(slug);
+  getAllLessonDetails(
+    @Param('slug') slug: string,
+    @CurrentUser() currentUser: JWTPayload | null,
+  ) {
+    return this.courseService.getAllLessonDetails(slug, currentUser);
   }
 }

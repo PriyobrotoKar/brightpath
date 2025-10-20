@@ -38,13 +38,13 @@ export class ModuleController {
     return this.moduleService.createModule(user, dto, courseId);
   }
 
-  @Get(':courseId')
+  @Get(':courseSlug')
   async getModules(
-    @Param('courseId') courseId: string,
+    @Param('courseSlug') courseSlug: string,
     @Query() queryParams: ModuleFilterDto,
     @CurrentUser() user: JWTPayload,
   ) {
-    return this.moduleService.getModules(user, courseId, {
+    return this.moduleService.getModules(user, courseSlug, {
       filters: { status: queryParams.status, createdAt: queryParams.createdAt },
       sort: queryParams.sort,
     });

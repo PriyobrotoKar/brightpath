@@ -27,14 +27,21 @@ export class ModuleService {
     this.prisma = this.prismaService.client;
   }
 
-  async createModule(user: JWTPayload, dto: CreateModuleDto, courseId: string) {
+  async createModule(
+    user: JWTPayload,
+    dto: CreateModuleDto,
+    courseSlug: string,
+  ) {
     //check if the course exists and the user is the creator of that course
-    await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseSlug,
+      user,
+    );
 
     //calculate the order number of the module
     const lastOrderNumber = await this.prisma.module.count({
       where: {
-        courseId,
+        courseId: course.id,
       },
     });
 
@@ -43,14 +50,14 @@ export class ModuleService {
       data: {
         name: dto.name,
         order: lastOrderNumber,
-        courseId,
+        courseId: course.id,
       },
     });
   }
 
   async getModules(
     user: JWTPayload,
-    courseId: string,
+    courseSlug: string,
     {
       filters: { status, createdAt },
       sort,
@@ -60,7 +67,10 @@ export class ModuleService {
     },
   ) {
     //check if the course exists and the user is the creator of that course
-    await this.authorityChecker.checkAuthorityOverCourse(courseId, user.id);
+    const course = await this.authorityChecker.checkAuthorityOverCourse(
+      courseSlug,
+      user,
+    );
 
     let orderBy: Record<string, 'asc' | 'desc'> = { order: 'asc' };
 
@@ -72,22 +82,79 @@ export class ModuleService {
       };
     }
 
+    // This filter maybe implemented later in future
+    // if (user.role === 'STUDENT') {
+    //   status = 'PUBLISHED';
+    // }
+
     //get the modules of the course
-    return await this.prisma.module.findMany({
+    const modules = await this.prisma.module.findMany({
       where: {
-        courseId,
+        courseId: course.id,
         status,
         createdAt: {
           gte: createdAt ? new Date(createdAt) : undefined,
         },
       },
       orderBy,
+      include: {
+        Video: {
+          select: {
+            id: true,
+            duration: true,
+            completedBy: {
+              where: {
+                id: user.id,
+              },
+            },
+          },
+        },
+        Document: {
+          select: {
+            id: true,
+            duration: true,
+            completedBy: {
+              where: {
+                id: user.id,
+              },
+            },
+          },
+        },
+      },
     });
+
+    // Calculate the total duration of each module
+    const modulesWithDuration = modules.map(
+      ({ Video, Document, ...module }) => {
+        const lessons = [...Video, ...Document];
+        const totalDuration = lessons.reduce(
+          (total, lesson) => total + lesson.duration,
+          0,
+        );
+        const completedLessonsCount = lessons.reduce(
+          (total, lesson) => total + Number(lesson.completedBy.length > 0),
+          0,
+        );
+
+        return {
+          ...module,
+          totalDuration,
+          completedLessonsCount,
+          lastWatchedLesson: lessons[0],
+        };
+      },
+    );
+
+    if (user.role === 'STUDENT') {
+      const lastWatchedLessons = modules.map((module) => module.Video[0]);
+    }
+
+    return modulesWithDuration;
   }
 
   async getLessonById(user: JWTPayload, moduleId: string, lessonId: string) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     const [document, video, assignment] = await Promise.all([
       this.prisma.document.findUnique({ where: { id: lessonId } }),
@@ -107,7 +174,7 @@ export class ModuleService {
 
   async getVideoLesson(user: JWTPayload, moduleId: string, videoId: string) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //get the video lesson
     const video = await this.prisma.video.findUnique({
@@ -127,7 +194,7 @@ export class ModuleService {
     moduleId: string,
   ) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //update the number of lessons in the module
     await this.prisma.module.update({
@@ -159,7 +226,7 @@ export class ModuleService {
     documentId: string,
   ) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //update the document
     return await this.prisma.document.update({
@@ -172,7 +239,7 @@ export class ModuleService {
 
   async createVideo(user: JWTPayload, dto: CreateVideoDto, moduleId: string) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //update the number of lessons in the module
     await this.prisma.module.update({
@@ -203,7 +270,7 @@ export class ModuleService {
     moduleId: string,
   ) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //update the number of lessons in the module
     await this.prisma.module.update({
@@ -234,7 +301,7 @@ export class ModuleService {
     assignmentId: string,
   ) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //validate id the due date is in the past
     if (dto.dueAt && new Date(dto.dueAt) < new Date()) {
@@ -257,7 +324,7 @@ export class ModuleService {
     videoId: string,
   ) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //update the video
     return await this.prisma.video.update({
@@ -312,7 +379,7 @@ export class ModuleService {
 
   async getLessons(user: JWTPayload, moduleId: string) {
     //check if the module exists and the user is the creator of that module
-    await this.authorityChecker.checkAuthorityOverModule(moduleId, user.id);
+    await this.authorityChecker.checkAuthorityOverModule(moduleId, user);
 
     //get the documents of the module
     const documents = this.prisma.document.findMany({
