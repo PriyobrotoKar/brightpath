@@ -145,10 +145,6 @@ export class ModuleService {
       },
     );
 
-    if (user.role === 'STUDENT') {
-      const lastWatchedLessons = modules.map((module) => module.Video[0]);
-    }
-
     return modulesWithDuration;
   }
 
