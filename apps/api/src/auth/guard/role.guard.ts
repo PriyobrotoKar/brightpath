@@ -1,23 +1,14 @@
-import { CacheService } from '@/cache/cache.service';
 import { ROLES_KEY } from '@/decorators/role.decorator';
-import { PrismaService } from '@/prisma/prisma.service';
 import { JWTPayload } from '@/auth/types/jwt-payload';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PrismaClient, Role } from '@brightpath/db';
+import { Role } from '@brightpath/db';
 import { IS_PUBLIC_KEY } from '@/decorators/public.decorator';
 import { IS_OPTIONAL_KEY } from '@/decorators/optional.decorator';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
-  private readonly prisma: PrismaClient;
-  constructor(
-    private reflector: Reflector,
-    private prismaService: PrismaService,
-    private cache: CacheService,
-  ) {
-    this.prisma = this.prismaService.client;
-  }
+  constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [

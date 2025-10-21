@@ -212,7 +212,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid Refresh Token');
     }
 
-    return { id: user.id, email: user.email };
+    return { id: user.id, email: user.email, role: user.role };
   }
 
   async logout(user: JWTPayload) {
