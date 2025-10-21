@@ -27,7 +27,6 @@ import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@brightpath/ui/components/sonner';
-import VideoPlayer from './VideoPlayer';
 import useMultipartUpload from '@/hooks/useMutipartUpload';
 import { getProgressMessage } from '@/lib/utils';
 import type { UpdateVideoPayload } from '@/api/services/module';
@@ -35,6 +34,7 @@ import { updateVideo } from '@/api/services/module';
 import usePollUploadStatus from '@/hooks/usePollUploadStatus';
 import useDebounce from '@/hooks/useDebounce';
 import { useSaveIndicator } from '@/providers/SaveIndicatorProvider';
+import VideoPlayer from '@/components/VideoPlayer';
 
 const videoFormSchema = z.object({
   name: z.string().min(2).max(100),

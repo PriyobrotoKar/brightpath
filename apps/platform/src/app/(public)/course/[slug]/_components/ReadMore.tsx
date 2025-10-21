@@ -11,9 +11,11 @@ export default function ReadMore({
   limit = 30,
   type = 'normal',
   children,
+  className,
 }: {
   type?: 'normal' | 'gradient';
   limit?: number;
+  className?: string;
   children: string;
 }): React.JSX.Element {
   const words = useMemo(() => children.split(' '), [children]);
@@ -25,7 +27,7 @@ export default function ReadMore({
   if (type === 'gradient') return <ShowMore limit={limit}>{children}</ShowMore>;
 
   return (
-    <div className="text-md prose [&>p]:inline">
+    <div className={cn('text-md prose [&>p]:inline', className)}>
       <Markdown>{isExpanded ? children : truncatedText}</Markdown>
       {words.length > limit && (
         <Button

@@ -54,7 +54,7 @@ export default async function LessonSidebar({
                     <div className="relative">
                       <CircularProgress
                         completedSteps={completedLessonsCount}
-                        gap="5.01"
+                        gap="4.01"
                         height={24}
                         totalSteps={module.lessons.length}
                         width={24}

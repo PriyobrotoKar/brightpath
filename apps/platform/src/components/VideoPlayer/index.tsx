@@ -1,4 +1,6 @@
+'use client';
 import React from 'react';
+import type { MediaPlayerProps } from '@vidstack/react';
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
 import {
   defaultLayoutIcons,
@@ -6,13 +8,18 @@ import {
 } from '@vidstack/react/player/layouts/default';
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
+import icons from './icons';
 import { mediaUrl } from '@/lib/utils';
 
 interface VideoPlayerProps {
   source: string;
+  load?: MediaPlayerProps['load'];
 }
 
-function VideoPlayer({ source }: VideoPlayerProps): React.JSX.Element {
+function VideoPlayer({
+  source,
+  load = 'visible',
+}: VideoPlayerProps): React.JSX.Element {
   const videoUrl = mediaUrl(source);
 
   if (!videoUrl) {
@@ -21,9 +28,22 @@ function VideoPlayer({ source }: VideoPlayerProps): React.JSX.Element {
 
   return (
     <div>
-      <MediaPlayer src={videoUrl}>
+      <MediaPlayer
+        aspectRatio="16/9"
+        className="rounded-lg bg-black"
+        load={load}
+        src={videoUrl}
+        style={{
+          '--video-border-radius': 'var(--radius)',
+        }}
+      >
         <MediaProvider />
-        <DefaultVideoLayout icons={defaultLayoutIcons} />
+        <DefaultVideoLayout
+          icons={{
+            ...defaultLayoutIcons,
+            ...icons,
+          }}
+        />
       </MediaPlayer>
     </div>
   );

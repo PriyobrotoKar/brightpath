@@ -45,6 +45,15 @@ export type ModuleWithProgress = Module & {
   lastWatchedLesson: Video | Document;
 };
 
+// export type Lesson = (Document | Video | Assignment) & {
+//   type: CreateLessonPayload['type'];
+// };
+
+export type Lesson =
+  | (Document & { type: 'document' })
+  | (Video & { type: 'video' })
+  | (Assignment & { type: 'assignment' });
+
 export const getModulesByCourseSlug = async (
   courseSlug: string,
   filters?: {
@@ -72,20 +81,14 @@ export const createModule = async (
   return apiClient.post(`${base}/${courseId}`, data);
 };
 
-export const getAllLessons = async (
-  moduleId: string,
-): Promise<
-  ((Document | Video | Assignment) & { type: CreateLessonPayload['type'] })[]
-> => {
+export const getAllLessons = async (moduleId: string): Promise<Lesson[]> => {
   return apiClient.get(`${base}/${moduleId}/lesson`);
 };
 
 export const getLessonById = async (
   moduleId: string,
   lessonId: string,
-): Promise<
-  (Document | Video | Assignment) & { type: CreateLessonPayload['type'] }
-> => {
+): Promise<Lesson> => {
   return apiClient.get(`${base}/${moduleId}/lesson/${lessonId}`);
 };
 

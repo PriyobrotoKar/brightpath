@@ -47,7 +47,7 @@ export function CourseSidebar(): React.JSX.Element | null {
     },
   ];
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ['courses'],
     queryFn: () => getEnrolledCourses(tenant),
   });
@@ -61,10 +61,6 @@ export function CourseSidebar(): React.JSX.Element | null {
     const initialCourse = data.find((c) => c.slug === course);
     setActiveItem(initialCourse);
   }, [data, course]);
-
-  if (isLoading || !data) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <aside className="flex w-64 flex-shrink-0 flex-col gap-5 px-3 py-5">
@@ -86,7 +82,7 @@ export function CourseSidebar(): React.JSX.Element | null {
           <DropdownMenuLabel className="text-muted-foreground">
             Courses
           </DropdownMenuLabel>
-          {data.map((item) => {
+          {data?.map((item) => {
             return (
               <DropdownMenuItem
                 key={item.id}
