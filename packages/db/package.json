@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@brightpath/typescript-config": "workspace:*",
+    "prettier-plugin-prisma": "^5.0.0",
     "prisma": "^6.6.0"
   }
 }

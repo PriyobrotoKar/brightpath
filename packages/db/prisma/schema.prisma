@@ -138,6 +138,8 @@ model User {
   orders        Order[]
   videosWatched Video[]
   docsRead      Document[]
+  comments      Comment[]
+  likedComments Comment[]     @relation("UserLikedComment")
 
   isOnboardingFinished Boolean  @default(false)
   createdAt            DateTime @default(now())
@@ -236,6 +238,7 @@ model Document {
   moduleId String
 
   completedBy User[]
+  comments    Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -254,6 +257,7 @@ model Video {
   moduleId String
 
   completedBy User[]
+  comments    Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -304,6 +308,29 @@ model Category {
   id        Int      @id @default(autoincrement())
   name      String   @unique
   courses   Course[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  content String
+
+  commentBy       User   @relation(fields: [commentByUserId], references: [id], onDelete: Cascade)
+  commentByUserId String
+
+  likedBy User[] @relation("UserLikedComment")
+
+  replies   Comment[] @relation("ParentChildReply")
+  replyTo   Comment?  @relation("ParentChildReply", fields: [replyToId], references: [id], onDelete: Cascade)
+  replyToId String?
+
+  video   Video?  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  videoId String?
+
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
