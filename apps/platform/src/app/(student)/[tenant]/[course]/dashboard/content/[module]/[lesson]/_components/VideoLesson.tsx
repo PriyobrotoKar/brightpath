@@ -3,12 +3,15 @@ import type { Video } from '@brightpath/db';
 import type { Lesson } from '@/api/services/module';
 import VideoPlayer from '@/components/VideoPlayer';
 import ReadMore from '@/app/(public)/course/[slug]/_components/ReadMore';
+import Discussion from '@/components/Discussion';
 
 interface VideoLessonProps {
+  moduleId: string;
   lesson: Lesson;
 }
 
 export default function VideoLesson({
+  moduleId,
   lesson,
 }: VideoLessonProps): React.JSX.Element | null {
   if (lesson.type !== 'video' || !lesson.source) return null;
@@ -17,6 +20,7 @@ export default function VideoLesson({
     <div className="space-y-6">
       <VideoPlayer load="eager" source={lesson.source} />
       <LessonMetadata lesson={lesson} />
+      <Discussion lessonId={lesson.id} moduleId={moduleId} />
     </div>
   );
 }

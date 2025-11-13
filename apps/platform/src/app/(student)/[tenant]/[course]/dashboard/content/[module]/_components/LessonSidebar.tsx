@@ -29,7 +29,7 @@ export default async function LessonSidebar({
   const { modules } = courseLessons;
 
   return (
-    <aside className="bg-card w-72 rounded-lg border">
+    <aside className="bg-card sticky top-0 w-72 rounded-lg border">
       <div className="flex items-center border-b p-3">
         <Button className="h-8" size="sm" variant="ghost">
           <IconChevronLeft /> All Modules
