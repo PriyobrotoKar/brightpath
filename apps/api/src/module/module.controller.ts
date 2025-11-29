@@ -100,6 +100,16 @@ export class ModuleController {
     return this.moduleService.createAssignment(user, dto, moduleId);
   }
 
+  @Roles('STUDENT')
+  @Post(':moduleId/lesson/video/:id/mark-as-complete')
+  async markVideoAsComplete(
+    @Param('moduleId') moduleId: string,
+    @Param('id') videoId: string,
+    @CurrentUser() user: JWTPayload,
+  ) {
+    return this.moduleService.markVideoAsComplete(user, moduleId, videoId);
+  }
+
   @Roles('CREATOR')
   @Patch(':moduleId/lesson/assignment/:id')
   async updateAssignment(

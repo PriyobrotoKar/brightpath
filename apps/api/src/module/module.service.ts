@@ -313,6 +313,31 @@ export class ModuleService {
     });
   }
 
+  async markVideoAsComplete(
+    user: JWTPayload,
+    moduleId: string,
+    lessonId: string,
+  ) {
+    const lesson = await this.getLessonById(user, moduleId, lessonId);
+
+    if (lesson.type !== 'video') {
+      throw new BadRequestException('Lesson is not a video');
+    }
+
+    return await this.prisma.video.update({
+      where: {
+        id: lesson.id,
+      },
+      data: {
+        completedBy: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+    });
+  }
+
   async updateVideo(
     user: JWTPayload,
     dto: UpdateVideoDto,
