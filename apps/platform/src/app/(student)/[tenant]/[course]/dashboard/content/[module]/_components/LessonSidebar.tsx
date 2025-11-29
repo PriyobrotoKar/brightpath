@@ -7,9 +7,11 @@ import {
 import { IconCheck, IconChevronLeft } from '@tabler/icons-react';
 import { Button } from '@brightpath/ui/components/button';
 import { cn } from '@brightpath/ui/lib/utils';
+import Link from 'next/link';
 import { CircularProgress } from '../../_components/ModuleCard';
 import { getCourseLessons } from '@/api/services/course';
 import { Menu, MenuLink } from '@/components/MenuLink';
+import { lessonToIconMap } from '@/lib/utils';
 
 interface LessonSidebarProps {
   moduleId: string;
@@ -31,9 +33,11 @@ export default async function LessonSidebar({
   return (
     <aside className="bg-card sticky top-0 w-72 rounded-lg border">
       <div className="flex items-center border-b p-3">
-        <Button className="h-8" size="sm" variant="ghost">
-          <IconChevronLeft /> All Modules
-        </Button>
+        <Link href={`/${tenant}/${course}/dashboard/content`}>
+          <Button className="h-8" size="sm" variant="ghost">
+            <IconChevronLeft /> All Modules
+          </Button>
+        </Link>
       </div>
       <div>
         <Accordion type="multiple">
@@ -69,12 +73,15 @@ export default async function LessonSidebar({
                 <AccordionContent className="px-4">
                   <Menu>
                     {module.lessons.map((lesson) => {
+                      const LessonIcon = lessonToIconMap[lesson.type];
+
                       return (
                         <MenuLink
                           className="justify-between"
                           href={`/${tenant}/${course}/dashboard/content/${module.id}/${lesson.id}`}
                           key={lesson.id}
                         >
+                          <LessonIcon className="shrink-0" />
                           <span className="max-w-full overflow-hidden text-ellipsis">
                             {lesson.name}
                           </span>

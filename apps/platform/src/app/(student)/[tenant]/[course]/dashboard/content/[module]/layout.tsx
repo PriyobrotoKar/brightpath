@@ -17,7 +17,7 @@ export default function ModuleLayout({
         icon={IconFolder}
         title="Content Library"
       />
-      <PageContainer className="flex grow-0 gap-5 overflow-y-auto">
+      <PageContainer className="flex flex-1 gap-5 overflow-y-auto">
         <LessonSidebar
           course={params.course}
           moduleId={params.module}

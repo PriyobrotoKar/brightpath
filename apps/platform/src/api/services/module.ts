@@ -137,3 +137,12 @@ export const updateVideo = async (
 ): Promise<Video> => {
   return apiClient.patch(`${base}/${moduleId}/video/${videoId}`, data);
 };
+
+export const markVideoAsComplete = async (
+  moduleId: string,
+  videoId: string,
+): Promise<Video> => {
+  return apiClient.post(
+    `${base}/${moduleId}/lesson/video/${videoId}/mark-as-complete`,
+  );
+};

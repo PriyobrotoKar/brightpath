@@ -1,7 +1,7 @@
 import { Button } from '@brightpath/ui/components/button';
-import type { Video } from '@brightpath/db';
+import type { Video as VideoType } from '@brightpath/db';
+import Video from './Video';
 import type { Lesson } from '@/api/services/module';
-import VideoPlayer from '@/components/VideoPlayer';
 import ReadMore from '@/app/(public)/course/[slug]/_components/ReadMore';
 import Discussion from '@/components/Discussion';
 
@@ -17,15 +17,15 @@ export default function VideoLesson({
   if (lesson.type !== 'video' || !lesson.source) return null;
 
   return (
-    <div className="space-y-6">
-      <VideoPlayer load="eager" source={lesson.source} />
+    <div className="space-y-6 pb-1">
+      <Video video={lesson} />
       <LessonMetadata lesson={lesson} />
       <Discussion lessonId={lesson.id} moduleId={moduleId} />
     </div>
   );
 }
 
-function LessonMetadata({ lesson }: { lesson: Video }): React.JSX.Element {
+function LessonMetadata({ lesson }: { lesson: VideoType }): React.JSX.Element {
   return (
     <section className="space-y-4">
       <div className="flex justify-between">
