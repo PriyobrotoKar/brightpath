@@ -48,8 +48,6 @@ export class EnrollmentService {
 
     const totalLessonCount = videoCount + documentCount;
 
-    console.log(limit, page, sort, order);
-
     const enrolledUsers = await this.prisma.enrollment.findMany({
       where: {
         courseId: course.id,
