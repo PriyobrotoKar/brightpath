@@ -6,7 +6,7 @@ export class QueryTransformPipe implements PipeTransform {
       if (metadata.data === 'limit') {
         return isNaN(value) || value === 0 ? 10 : parseInt(value);
       }
-      if (metadata.data === 'cursor') {
+      if (metadata.data === 'page') {
         return isNaN(value) || value === 0 ? 0 : parseInt(value);
       }
     }
