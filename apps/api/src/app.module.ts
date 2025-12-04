@@ -21,6 +21,7 @@ import { OrderModule } from './order/order.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RoleGuard } from './auth/guard/role.guard';
 import { CommentModule } from './comment/comment.module';
+import { EnrollmentModule } from './enrollment/enrollment.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { CommentModule } from './comment/comment.module';
     MerchantModule,
     OrderModule,
     CommentModule,
+    EnrollmentModule,
   ],
   controllers: [AppController],
   providers: [
