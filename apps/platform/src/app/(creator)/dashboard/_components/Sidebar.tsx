@@ -1,4 +1,3 @@
-'use client';
 import {
   IconBrandGoogleAnalytics,
   IconBrandHipchat,
@@ -7,34 +6,18 @@ import {
   IconHome,
   IconHomeFilled,
   IconLayoutDashboard,
-  IconPlus,
-  IconSchool,
-  IconSelector,
   IconSettings,
   IconUsers,
 } from '@tabler/icons-react';
 import { v4 as uuid } from 'uuid';
-import { useParams, usePathname, useRouter } from 'next/navigation';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@brightpath/ui/components/dropdown-menu';
-import Image from 'next/image';
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import type { Course } from '@brightpath/db';
 import { Separator } from '@brightpath/ui/components/separator';
 import Search from './Search';
+import CourseSelector from './CourseSelector';
 import Logo from '@/components/Logo';
 import { Menu, MenuLink } from '@/components/MenuLink';
 import { getCoursesForSelf } from '@/api/services/course';
-import { mediaUrl } from '@/lib/utils';
 
-function PrimarySidebar(): React.JSX.Element {
+export function PrimarySidebar(): React.JSX.Element {
   const links = [
     {
       name: 'Home',
@@ -69,139 +52,52 @@ function PrimarySidebar(): React.JSX.Element {
   );
 }
 
-export function CourseSidebar(): React.JSX.Element {
-  const path = usePathname();
-  const router = useRouter();
-  const params = useParams();
-  const courseId = params.id as string;
+interface CourseSidebarProps {
+  courseSlug: string;
+}
+
+export async function CourseSidebar({
+  courseSlug,
+}: CourseSidebarProps): Promise<React.JSX.Element> {
+  const courses = await getCoursesForSelf();
 
   const links = [
     {
       name: 'Overview',
-      href: `/dashboard/course/${courseId}`,
+      href: `/dashboard/course/${courseSlug}`,
       icon: IconLayoutDashboard,
     },
     {
       name: 'Content Library',
-      href: `/dashboard/course/${courseId}/content`,
+      href: `/dashboard/course/${courseSlug}/content`,
       icon: IconFolder,
     },
     {
       name: 'Schedule & Sessions',
-      href: `/dashboard/course/${courseId}/schedule`,
+      href: `/dashboard/course/${courseSlug}/schedule`,
       icon: IconCalendarTime,
     },
     {
       name: 'Enrollment',
-      href: `/dashboard/course/${courseId}/enrollment`,
+      href: `/dashboard/course/${courseSlug}/enrollment`,
       icon: IconUsers,
     },
     {
       name: 'Engagement & Analytics',
-      href: `/dashboard/course/${courseId}/analytics`,
+      href: `/dashboard/course/${courseSlug}/analytics`,
       icon: IconBrandGoogleAnalytics,
     },
     {
       name: 'Community',
-      href: `/dashboard/course/${courseId}/analytics`,
+      href: `/dashboard/course/${courseSlug}/analytics`,
       icon: IconBrandHipchat,
     },
   ];
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['courses'],
-    queryFn: () => getCoursesForSelf(),
-  });
-  const [activeItem, setActiveItem] = useState<Course>();
-
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-    const initialCourse = data.find((c) => c.id === courseId);
-    setActiveItem(initialCourse);
-  }, [data, courseId]);
-
-  if (isLoading || !data) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <aside className="flex w-64 flex-shrink-0 flex-col gap-5 px-3 py-5">
       <Logo />
-      <DropdownMenu>
-        <DropdownMenuTrigger className="bg-muted flex w-full items-center gap-2 rounded-md border p-2">
-          <div className="bg-background flex size-9 items-center justify-center overflow-hidden rounded-md border">
-            {mediaUrl(activeItem?.logo) ? (
-              <Image
-                alt="Course Logo"
-                height={36}
-                src={mediaUrl(activeItem?.logo) || ''}
-                width={36}
-              />
-            ) : (
-              <IconSchool className="text-muted-foreground" />
-            )}
-          </div>
-          <div className="space-y-1 text-left">
-            <div className="text-md-semibold w-36 overflow-hidden text-ellipsis text-nowrap">
-              {activeItem?.name}
-            </div>
-            <p className="text-muted-foreground text-xs">
-              {activeItem?.type === 'RECORDED' ? 'Course' : 'Cohort'} - 10
-              Learners
-            </p>
-          </div>
-          <IconSelector className="text-muted-foreground" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel className="text-muted-foreground">
-            Courses
-          </DropdownMenuLabel>
-          {data.map((course) => {
-            const logo = mediaUrl(course.logo);
-            return (
-              <DropdownMenuItem
-                key={course.id}
-                onClick={() => {
-                  setActiveItem(course);
-                  router.push(path.replace(courseId, course.id));
-                }}
-              >
-                <div className="flex size-6 items-center justify-center overflow-hidden rounded-sm border">
-                  {logo ? (
-                    <Image
-                      alt="Course Logo"
-                      className="h-full w-full"
-                      height={20}
-                      src={logo}
-                      width={20}
-                    />
-                  ) : (
-                    <IconSchool className="text-muted-foreground" />
-                  )}
-                </div>
-                <div className="text-md w-40 overflow-hidden text-ellipsis text-nowrap">
-                  {course.name}
-                </div>
-              </DropdownMenuItem>
-            );
-          })}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => {
-              router.push('/dashboard/course/create/information');
-            }}
-          >
-            <div className="rounded-sm border p-1">
-              <IconPlus />
-            </div>
-            <div className="text-muted-foreground text-md-semibold">
-              Create Course
-            </div>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <CourseSelector courseSlug={courseSlug} courses={courses} />
       <Search />
       <Menu className="flex-1">
         {links.map((link) => (
@@ -211,24 +107,11 @@ export function CourseSidebar(): React.JSX.Element {
           </MenuLink>
         ))}
         <Separator className="mt-auto" />
-        <MenuLink href={`/dashboard/course/${courseId}/settings`}>
+        <MenuLink href={`/dashboard/course/${courseSlug}/settings`}>
           <IconSettings />
           Settings
         </MenuLink>
       </Menu>
     </aside>
   );
-}
-
-export default function Sidebar(): React.JSX.Element {
-  const path = usePathname();
-  const isCourseDashboard =
-    path.includes('/dashboard/course') &&
-    !path.includes('/dashboard/course/create');
-
-  if (isCourseDashboard) {
-    return <CourseSidebar />;
-  }
-
-  return <PrimarySidebar />;
 }
