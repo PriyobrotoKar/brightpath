@@ -27,6 +27,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@brightpath/ui/components/sonner';
+import LessonComments from './LessonComments';
 import useMultipartUpload from '@/hooks/useMutipartUpload';
 import { getProgressMessage } from '@/lib/utils';
 import type { UpdateVideoPayload } from '@/api/services/module';
@@ -68,7 +69,10 @@ export default function VideoUploader({
       <div className="flex gap-6">
         <VideoUploadForm video={video} />
         {/* Upload Preview */}
-        <VideoPreview source={data?.source ?? video.source} status={status} />
+        <div>
+          <VideoPreview source={data?.source ?? video.source} status={status} />
+          <LessonComments />
+        </div>
       </div>
     </div>
   );
