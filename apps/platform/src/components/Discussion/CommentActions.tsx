@@ -39,7 +39,7 @@ export default function CommentActions({
   return (
     <div className="space-x-4">
       <Button
-        className="px-0"
+        className="gap-1 px-0"
         onClick={() => {
           likeCommentMutation.mutate();
         }}
@@ -51,16 +51,16 @@ export default function CommentActions({
         ) : (
           <IconThumbUp />
         )}
-        {likes > 0 ? likes : 'Likes'}
+        {likes > 0 ? likes : 'Like'}
       </Button>
 
-      <Button className="px-0" size="sm" variant="ghost">
+      <Button className="gap-1 px-0" size="sm" variant="ghost">
         <IconThumbDown /> Dislike
       </Button>
 
       <Button
         className={cn(
-          'px-0',
+          'gap-1 px-0',
           replyingTo?.id === comment.id && 'text-primary hover:text-primary',
         )}
         onClick={() => {

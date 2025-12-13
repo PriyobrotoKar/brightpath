@@ -77,12 +77,11 @@ export default async function LessonSidebar({
 
                       return (
                         <MenuLink
-                          className="justify-between"
                           href={`/${tenant}/${course}/dashboard/content/${module.id}/${lesson.id}`}
                           key={lesson.id}
                         >
                           <LessonIcon className="shrink-0" />
-                          <span className="max-w-full overflow-hidden text-ellipsis">
+                          <span className="max-w-full flex-1 overflow-hidden text-ellipsis">
                             {lesson.name}
                           </span>
                           {lesson.isCompleted ? (

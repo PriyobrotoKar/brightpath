@@ -38,7 +38,7 @@ export default async function ContentLibraryPage({
           ]}
         />
 
-        <div>
+        <div className="space-y-2">
           {modules.map((module) => (
             <ModuleCard key={module.id} orientation="vertical">
               <ModuleCardHeader>

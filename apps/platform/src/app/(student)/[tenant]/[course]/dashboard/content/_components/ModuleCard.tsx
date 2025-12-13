@@ -169,6 +169,14 @@ export function CircularProgress({
     const stepLength = (Number(radius) * 2 * 3.1415) / totalSteps - Number(gap);
 
     const dashArraySegment = `${stepLength} ${gap} `;
+
+    if (totalSteps === 1 || (totalSteps === 1 && completedSteps === 1)) {
+      return {
+        trackStrokeDasharray: '',
+        progressStrokeDasharray: '',
+      };
+    }
+
     const trackStrokeDasharray = dashArraySegment
       .repeat(totalSteps - 1)
       .concat(dashArraySegment.replace(gap, '1000').slice(0, -1));
@@ -193,16 +201,18 @@ export function CircularProgress({
           strokeLinecap="round"
           strokeWidth="3"
         />
-        <circle
-          className="stroke-primary"
-          cx={Number(width) / 2}
-          cy={Number(width) / 2}
-          fill="transparent"
-          r={radius}
-          strokeDasharray={generateStrokeDasharray().progressStrokeDasharray}
-          strokeLinecap="round"
-          strokeWidth="3"
-        />
+        {completedSteps > 0 && (
+          <circle
+            className="stroke-primary"
+            cx={Number(width) / 2}
+            cy={Number(width) / 2}
+            fill="transparent"
+            r={radius}
+            strokeDasharray={generateStrokeDasharray().progressStrokeDasharray}
+            strokeLinecap="round"
+            strokeWidth="3"
+          />
+        )}
       </svg>
     </div>
   );
