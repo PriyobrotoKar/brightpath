@@ -66,7 +66,7 @@ function MenuLink({
         buttonVariants({
           variant: context?.activeLink === href ? 'secondary' : 'ghost',
         }),
-        'w-full justify-start gap-2 transition-colors',
+        'w-full justify-start gap-2 px-3 transition-colors',
         className,
       )}
       href={href}

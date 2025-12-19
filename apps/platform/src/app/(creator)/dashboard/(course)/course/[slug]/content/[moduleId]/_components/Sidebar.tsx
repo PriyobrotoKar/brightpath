@@ -35,29 +35,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from '@brightpath/ui/components/sonner';
 import { Menu, MenuLink } from '@/components/MenuLink';
-import StatusBadge from '@/components/StatusBadge';
 import type { CreateLessonPayload } from '@/api/services/module';
 import { createLesson, getAllLessons } from '@/api/services/module';
 import { useSaveIndicator } from '@/providers/SaveIndicatorProvider';
 import { lessonToIconMap } from '@/lib/utils';
-
-const _lessons = [
-  {
-    id: 1,
-    name: 'Lesson 1',
-    type: 'document',
-  },
-  {
-    id: 2,
-    name: 'Lesson 2',
-    type: 'video',
-  },
-  {
-    id: 3,
-    name: 'Lesson 3',
-    type: 'assignment',
-  },
-];
 
 export default function Sidebar(): React.JSX.Element {
   const params = useParams();
@@ -65,52 +46,20 @@ export default function Sidebar(): React.JSX.Element {
   const moduleId = params.moduleId as string;
   const lessonId = params.lessonId as string;
 
-  const { isSaving } = useSaveIndicator(lessonId);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['lessons', moduleId],
-    queryFn: async () => {
-      return getAllLessons(moduleId);
-    },
-  });
-
-  if (isLoading || !data) {
-    return <div>Loading...</div>;
-  }
-
   return (
-    <div className="h-full w-60 border-r">
-      <div className="flex gap-4 p-2">
-        <h2 className="text-lg">Module 1</h2>
-        <StatusBadge status="pending">DRAFT</StatusBadge>
-      </div>
-      <div className="py-2 pr-4">
+    <div className="bg-card h-full w-64 rounded-lg border">
+      <div className="space-y-2 border-b p-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg">Module 1</h2>
+          {/*<StatusBadge status="pending">DRAFT</StatusBadge>*/}
+        </div>
         <NewLessonDialog courseSlug={courseSlug} moduleId={moduleId} />
       </div>
-      <Menu className="pr-4 pt-2">
-        {data.map((lesson) => {
-          const Icon = lessonToIconMap[lesson.type];
-
-          return (
-            <MenuLink
-              href={`/dashboard/course/${courseSlug}/content/${moduleId}/${lesson.id}`}
-              key={lesson.id}
-            >
-              <Icon className="shrink-0" />
-              <p className="overflow-hidden text-ellipsis">{lesson.name}</p>
-              {lesson.id === lessonId && (
-                <div className="ml-auto">
-                  {isSaving ? (
-                    <IconLoader className="text-muted-foreground animate-spin" />
-                  ) : (
-                    <IconCloudCheck className="animate-out fade-out fill-mode-forwards text-green-500 delay-1000 duration-500" />
-                  )}
-                </div>
-              )}
-            </MenuLink>
-          );
-        })}
-      </Menu>
+      <LessonsList
+        courseSlug={courseSlug}
+        lessonId={lessonId}
+        moduleId={moduleId}
+      />
     </div>
   );
 }
@@ -265,5 +214,57 @@ function NewLessonDialog({
         </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface LessonListProps {
+  lessonId: string;
+  moduleId: string;
+  courseSlug: string;
+}
+
+function LessonsList({
+  lessonId,
+  moduleId,
+  courseSlug,
+}: LessonListProps): React.JSX.Element | null {
+  const { isSaving } = useSaveIndicator(lessonId);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['lessons', moduleId],
+    queryFn: async () => {
+      return getAllLessons(moduleId);
+    },
+  });
+
+  if (isLoading || !data) {
+    return null;
+  }
+
+  return (
+    <Menu className="p-3">
+      {data.map((lesson) => {
+        const Icon = lessonToIconMap[lesson.type];
+
+        return (
+          <MenuLink
+            href={`/dashboard/course/${courseSlug}/content/${moduleId}/${lesson.id}`}
+            key={lesson.id}
+          >
+            <Icon className="shrink-0" />
+            <p className="overflow-hidden text-ellipsis">{lesson.name}</p>
+            {lesson.id === lessonId && (
+              <div className="ml-auto">
+                {isSaving ? (
+                  <IconLoader className="text-muted-foreground animate-spin" />
+                ) : (
+                  <IconCloudCheck className="animate-out fade-out fill-mode-forwards text-green-500 delay-1000 duration-500" />
+                )}
+              </div>
+            )}
+          </MenuLink>
+        );
+      })}
+    </Menu>
   );
 }

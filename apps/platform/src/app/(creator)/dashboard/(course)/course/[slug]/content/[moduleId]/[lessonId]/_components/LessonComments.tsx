@@ -22,10 +22,12 @@ import { mediaUrl } from '@/lib/utils';
 
 interface LessonCommentsProps {
   initialComments: CommentWithReplies[];
+  limit?: number;
 }
 
 export default function LessonComments({
   initialComments,
+  limit = 2,
 }: LessonCommentsProps): React.JSX.Element {
   return (
     <div className="bg-card rounded-lg border px-4 py-2">
@@ -39,11 +41,7 @@ export default function LessonComments({
 
         <Sheet>
           <SheetTrigger asChild>
-            <Button
-              disabled={initialComments.length === 0}
-              size="sm"
-              variant="link"
-            >
+            <Button size="sm" variant="link">
               See All
             </Button>
           </SheetTrigger>
@@ -70,7 +68,7 @@ export default function LessonComments({
 
       {initialComments.length > 0 && (
         <div className="space-y-2 py-2">
-          {initialComments.slice(0, 2).map((comment) => {
+          {initialComments.slice(0, limit).map((comment) => {
             return (
               <div className="flex items-center gap-2" key={comment.id}>
                 <Avatar className="size-6">

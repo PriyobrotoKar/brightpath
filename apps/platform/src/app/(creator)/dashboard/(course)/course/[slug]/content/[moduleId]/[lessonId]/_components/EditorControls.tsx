@@ -107,7 +107,7 @@ export default function EditorControls({
   editor,
 }: EditorProps): React.JSX.Element {
   return (
-    <div className="mx-auto flex w-fit items-center gap-4 rounded-md border px-2 py-2 shadow-md">
+    <div className="mx-auto flex w-fit items-center gap-4 rounded-lg border px-2 py-2 shadow-md">
       <EditorProvider editor={editor}>
         <ElementSelector />
         <AlignmentSelector />
@@ -135,7 +135,7 @@ function ElementSelector(): React.JSX.Element {
         }
       }}
     >
-      <SelectTrigger className="leading-normal">
+      <SelectTrigger className="h-8 leading-normal">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -202,7 +202,7 @@ function AlignmentSelector(): React.JSX.Element {
     <ToggleGroup onValueChange={handleAlignmentChange} type="single">
       {alignOptions.map((option) => {
         return (
-          <ToggleGroupItem key={option.value} value={option.value}>
+          <ToggleGroupItem key={option.value} size="sm" value={option.value}>
             <option.icon />
           </ToggleGroupItem>
         );
@@ -271,7 +271,7 @@ function StyleSelector(): React.JSX.Element {
     >
       {styleOptions.map((option) => {
         return (
-          <ToggleGroupItem key={option.value} value={option.value}>
+          <ToggleGroupItem key={option.value} size="sm" value={option.value}>
             <option.icon />
           </ToggleGroupItem>
         );
@@ -298,7 +298,7 @@ function LinkInput(): React.JSX.Element {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button size="sm" variant="outline">
           <IconLink /> Link
         </Button>
       </PopoverTrigger>
