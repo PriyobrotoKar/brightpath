@@ -11,11 +11,13 @@ import { toast } from '@brightpath/ui/components/sonner';
 import CharacterCount from '@tiptap/extension-character-count';
 import EditorControls from './EditorControls';
 import AutoSizeTextarea from './AutoSizeTextarea';
+import LessonComments from './LessonComments';
 import useDebounce from '@/hooks/useDebounce';
 import { useSaveIndicator } from '@/providers/SaveIndicatorProvider';
 import useLocalAutosave from '@/hooks/useLocalAutosave';
 import type { UpdateDocumentPayload } from '@/api/services/module';
 import { updateDocument } from '@/api/services/module';
+import type { CommentWithReplies } from '@/api/services/comment';
 
 const extensions = [
   StarterKit,
@@ -31,7 +33,9 @@ const extensions = [
 
 export default function Editor({
   lesson,
+  comments,
 }: {
+  comments: CommentWithReplies[];
   lesson: (Document | Video | Assignment) & {
     type: 'document' | 'video' | 'assignment';
   };
@@ -98,16 +102,21 @@ export default function Editor({
   }, [debouncedTitle, editor, mutate]);
 
   return (
-    <div className="mx-auto flex h-full max-w-[80ch] cursor-text flex-col">
-      <AutoSizeTextarea
-        className="text-3xl"
-        onChange={(e) => {
-          setTitle(e.target.value);
-        }}
-        value={title}
-      />
-      <EditorContent className="flex-1" editor={editor} />
-      <EditorControls editor={editor} />
+    <div className="flex h-full gap-4">
+      <div className="mx-auto flex h-full max-w-[80ch] cursor-text flex-col">
+        <AutoSizeTextarea
+          className="text-3xl"
+          onChange={(e) => {
+            setTitle(e.target.value);
+          }}
+          value={title}
+        />
+        <EditorContent className="flex-1" editor={editor} />
+        <EditorControls editor={editor} />
+      </div>
+      <div className="w-60">
+        <LessonComments initialComments={comments} limit={4} />
+      </div>
     </div>
   );
 }

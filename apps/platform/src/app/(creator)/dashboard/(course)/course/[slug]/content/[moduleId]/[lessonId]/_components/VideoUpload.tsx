@@ -1,5 +1,5 @@
 'use client';
-import type { Assignment, Document, Video } from '@brightpath/db';
+import type { Assignment, Comment, Document, Video } from '@brightpath/db';
 import { VideoProgressStatus } from '@brightpath/db';
 import { Button, buttonVariants } from '@brightpath/ui/components/button';
 import {
@@ -13,20 +13,14 @@ import { Input } from '@brightpath/ui/components/input';
 import { Label } from '@brightpath/ui/components/label';
 import { cn } from '@brightpath/ui/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  headingsPlugin,
-  linkPlugin,
-  listsPlugin,
-  markdownShortcutPlugin,
-  MDXEditor,
-  quotePlugin,
-} from '@mdxeditor/editor';
 import { IconUpload, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@brightpath/ui/components/sonner';
+import dynamic from 'next/dynamic';
+import LessonComments from './LessonComments';
 import useMultipartUpload from '@/hooks/useMutipartUpload';
 import { getProgressMessage } from '@/lib/utils';
 import type { UpdateVideoPayload } from '@/api/services/module';
@@ -35,6 +29,12 @@ import usePollUploadStatus from '@/hooks/usePollUploadStatus';
 import useDebounce from '@/hooks/useDebounce';
 import { useSaveIndicator } from '@/providers/SaveIndicatorProvider';
 import VideoPlayer from '@/components/VideoPlayer';
+import type { CommentWithReplies } from '@/api/services/comment';
+
+const EditorComp = dynamic(
+  () => import('@/app/(creator)/dashboard/_components/MarkdownEditor'),
+  { ssr: false },
+);
 
 const videoFormSchema = z.object({
   name: z.string().min(2).max(100),
@@ -43,7 +43,9 @@ const videoFormSchema = z.object({
 
 export default function VideoUploader({
   lesson,
+  comments,
 }: {
+  comments: CommentWithReplies[];
   lesson: (Document | Video | Assignment) & {
     type: 'document' | 'video' | 'assignment';
   };
@@ -68,7 +70,10 @@ export default function VideoUploader({
       <div className="flex gap-6">
         <VideoUploadForm video={video} />
         {/* Upload Preview */}
-        <VideoPreview source={data?.source ?? video.source} status={status} />
+        <div className="space-y-2.5">
+          <VideoPreview source={data?.source ?? video.source} status={status} />
+          <LessonComments initialComments={comments} />
+        </div>
       </div>
     </div>
   );
@@ -300,20 +305,13 @@ function VideoUploadForm({ video }: VideoUploadFormProps): React.JSX.Element {
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <MDXEditor
-                    className="border-border rounded-md border px-3 py-2"
-                    contentEditableClassName="prose h-full focus-visible:outline-none"
-                    markdown={field.value as string}
+                  <EditorComp
+                    className="border-border w-full"
+                    contentEditableClassName="prose rounded-md h-full w-full border px-3 py-2 max-w-none"
+                    markdown={field.value}
                     onChange={(markdown) => {
                       field.onChange(markdown);
                     }}
-                    plugins={[
-                      headingsPlugin(),
-                      markdownShortcutPlugin(),
-                      listsPlugin(),
-                      quotePlugin(),
-                      linkPlugin(),
-                    ]}
                   />
                 </FormControl>
               </FormItem>

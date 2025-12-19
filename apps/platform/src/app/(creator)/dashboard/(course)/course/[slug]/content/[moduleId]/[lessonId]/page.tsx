@@ -2,6 +2,7 @@ import Editor from './_components/Editor';
 import VideoUploader from './_components/VideoUpload';
 import AssignmentCreationForm from './_components/AssignmentCreationForm';
 import { getLessonById } from '@/api/services/module';
+import { getAllComments } from '@/api/services/comment';
 
 const LessonContent = {
   document: Editor,
@@ -18,11 +19,12 @@ export default async function LessonPage({
   };
 }): Promise<React.JSX.Element> {
   const lesson = await getLessonById(params.moduleId, params.lessonId);
+  const comments = await getAllComments(params.moduleId, params.lessonId);
   const Content = LessonContent[lesson.type as keyof typeof LessonContent];
 
   return (
     <div className="mx-auto max-w-screen-xl flex-1 pl-4">
-      <Content lesson={lesson} />
+      <Content comments={comments} lesson={lesson} />
     </div>
   );
 }
