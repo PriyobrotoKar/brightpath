@@ -1,5 +1,5 @@
 'use client';
-import type { Assignment, Comment, Document, Video } from '@brightpath/db';
+import type { Assignment, Document, Video } from '@brightpath/db';
 import { VideoProgressStatus } from '@brightpath/db';
 import { Button, buttonVariants } from '@brightpath/ui/components/button';
 import {
