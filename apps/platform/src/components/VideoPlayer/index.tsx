@@ -45,6 +45,7 @@ function VideoPlayer({
     if (!isCompleted || !onCompleted) return;
 
     onCompleted();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- ignore
   }, [isCompleted]);
 
   if (!videoUrl) {
