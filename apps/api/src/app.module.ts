@@ -22,6 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { RoleGuard } from './auth/guard/role.guard';
 import { CommentModule } from './comment/comment.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { EnrollmentModule } from './enrollment/enrollment.module';
     OrderModule,
     CommentModule,
     EnrollmentModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
