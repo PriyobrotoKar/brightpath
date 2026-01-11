@@ -12,7 +12,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground hover:bg-primary/90  hover:shadow-primary/20 hover:shadow-[inset_0_1px_0px_0_rgba(225,225,225,0.25),0px_4px_15px_0px_rgba(0,0,0,0.15)] ring-primary w-full shadow-[inset_0_1px_0px_0_rgba(225,225,225,0.25),0px_3px_2px_0px_rgba(0,0,0,0.15)] ring-1',
+          'bg-primary text-primary-foreground hover:bg-primary/90  hover:shadow-primary/20 hover:shadow-[inset_0_1px_0px_0_rgba(225,225,225,0.25),0px_4px_15px_0px_rgba(0,0,0,0.15)] ring-primary shadow-[inset_0_1px_0px_0_rgba(225,225,225,0.25),0px_3px_2px_0px_rgba(0,0,0,0.15)] ring-1',
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
         outline:

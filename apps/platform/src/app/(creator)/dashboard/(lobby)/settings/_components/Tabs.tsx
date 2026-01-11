@@ -2,7 +2,7 @@
 import { cn } from '@brightpath/ui/lib/utils';
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 export interface TabLink {
@@ -16,20 +16,28 @@ interface TabsProps {
 
 function Tabs({ tabLinks }: TabsProps): React.JSX.Element {
   const path = usePathname();
+  const searchParams = useSearchParams().toString();
   return (
-    <div className="space-x-7 border-b">
+    <div className="bg-muted w-fit space-x-1 rounded-lg border p-1">
       {tabLinks.map((link) => {
-        const isActive = path === link.href;
+        const isActive = `${path}?${searchParams}` === link.href;
         return (
           <Link
-            className={cn('relative inline-block py-2')}
+            className={cn('relative inline-block px-3 py-1')}
             href={link.href}
             key={link.name}
           >
-            {link.name}
+            <span
+              className={cn(
+                'relative z-10 text-sm transition-colors duration-500',
+                !isActive && 'text-muted-foreground',
+              )}
+            >
+              {link.name}
+            </span>
             {isActive ? (
               <motion.span
-                className="bg-foreground absolute -bottom-0.5 left-0 h-1 w-full rounded-full"
+                className="bg-secondary absolute left-0 top-0 h-full w-full rounded-md"
                 layoutId="indicator"
               />
             ) : null}

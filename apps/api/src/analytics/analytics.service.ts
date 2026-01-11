@@ -162,7 +162,7 @@ export class AnalyticsService {
 
     return dailyIncomes.map((income) => ({
       amount: income._sum.amount,
-      date: income.createdAt,
+      date: income.createdAt.toISOString().split('T')[0],
     }));
   }
 

@@ -89,7 +89,7 @@ export async function CourseSidebar({
     },
     {
       name: 'Community',
-      href: `/dashboard/course/${courseSlug}/analytics`,
+      href: `/dashboard/course/${courseSlug}/community`,
       icon: IconBrandHipchat,
     },
   ];

@@ -9,23 +9,33 @@ import { cn } from '@brightpath/ui/lib/utils';
 import { toggleVariants } from '@brightpath/ui/components/toggle';
 
 const ToggleGroupContext = React.createContext<
-  VariantProps<typeof toggleVariants>
+  VariantProps<typeof toggleVariants> & {
+    spacing?: number;
+  }
 >({
   size: 'default',
   variant: 'default',
+  spacing: 0,
 });
 
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Root> &
-    VariantProps<typeof toggleVariants>
->(({ className, variant, size, children, ...props }, ref) => (
+    VariantProps<typeof toggleVariants> & {
+      spacing?: number;
+    }
+>(({ className, variant, size, spacing = 0, children, ...props }, ref) => (
   <ToggleGroupPrimitive.Root
     ref={ref}
-    className={cn('flex items-center justify-center gap-1', className)}
+    style={
+      {
+        '--gap': spacing,
+      } as React.CSSProperties
+    }
+    className={cn('flex items-center justify-center gap-[--gap]', className)}
     {...props}
   >
-    <ToggleGroupContext.Provider value={{ variant, size }}>
+    <ToggleGroupContext.Provider value={{ variant, size, spacing }}>
       {children}
     </ToggleGroupContext.Provider>
   </ToggleGroupPrimitive.Root>
@@ -43,11 +53,15 @@ const ToggleGroupItem = React.forwardRef<
   return (
     <ToggleGroupPrimitive.Item
       ref={ref}
+      data-slot="toggle-group-item"
+      data-variant={context.variant}
+      data-spacing={context.spacing}
       className={cn(
         toggleVariants({
           variant: context.variant || variant,
           size: context.size || size,
         }),
+        'data-[spacing=0]:rounded-none data-[spacing=0]:data-[variant=outline]:border-l-0 data-[spacing=0]:shadow-none data-[spacing=0]:first:rounded-l-md data-[spacing=0]:data-[variant=outline]:first:border-l data-[spacing=0]:last:rounded-r-md',
         className,
       )}
       {...props}
