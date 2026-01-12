@@ -1,12 +1,4 @@
 import React from 'react';
-import { Button } from '@brightpath/ui/components/button';
-import { IconMoneybag } from '@tabler/icons-react';
-import {
-  DataCard,
-  DataCardContent,
-  DataCardHeader,
-  DataCardTitle,
-} from '@/components/DataCard';
 
 function ContentStats(): React.JSX.Element {
   return (
