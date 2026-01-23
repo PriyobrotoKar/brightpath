@@ -121,17 +121,18 @@ enum Currency {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  name           String?
-  role           Role     @default(CREATOR)
-  profilePicture String?
-  bio            String?
-  links          String[]
-  phone          String?
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String?
+  role             Role     @default(CREATOR)
+  profilePicture   String?
+  bio              String?
+  links            String[]
+  phone            String?
+  lessonsCompleted Int      @default(0)
 
   courses       Course[]
-  accountStatus AccountStatus @default(UNVERIFIED)
+  accountStatus AccountStatus  @default(UNVERIFIED)
   subscription  Subscription?
   merchant      Merchant?
   enrollments   Enrollment[]
@@ -139,11 +140,13 @@ model User {
   videosWatched Video[]
   docsRead      Document[]
   comments      Comment[]
-  likedComments Comment[]     @relation("UserLikedComment")
+  likedComments Comment[]      @relation("UserLikedComment")
+  activities    UserActivity[]
 
-  isOnboardingFinished Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  isOnboardingFinished Boolean   @default(false)
+  courseCompletedAt    DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 model Merchant {
@@ -202,11 +205,12 @@ model Course {
   creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
 
-  pricing     Pricing?
-  Session     Session[]
-  Module      Module[]
-  enrollments Enrollment[]
-  orders      Order[]
+  pricing           Pricing?
+  Session           Session[]
+  Module            Module[]
+  enrollments       Enrollment[]
+  orders            Order[]
+  studentActivities UserActivity[]
 }
 
 model Module {
@@ -229,10 +233,11 @@ model Module {
 }
 
 model Document {
-  id       String @id @default(cuid())
-  name     String
-  content  String
-  duration Int
+  id             String @id @default(cuid())
+  name           String
+  content        String
+  duration       Int
+  completedCount Int    @default(0)
 
   module   Module @relation(fields: [moduleId], references: [id])
   moduleId String
@@ -245,13 +250,14 @@ model Document {
 }
 
 model Video {
-  id          String              @id @default(cuid())
-  name        String
-  description String?
-  source      String?
-  duration    Int
-  thumbnail   String?
-  status      VideoProgressStatus @default(NOT_STARTED)
+  id             String              @id @default(cuid())
+  name           String
+  description    String?
+  source         String?
+  duration       Int
+  thumbnail      String?
+  status         VideoProgressStatus @default(NOT_STARTED)
+  completedCount Int                 @default(0)
 
   module   Module @relation(fields: [moduleId], references: [id])
   moduleId String
@@ -420,4 +426,18 @@ model Payment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model UserActivity {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String
+
+  activityDate DateTime
+
+  @@unique([userId, courseId, activityDate])
 }
