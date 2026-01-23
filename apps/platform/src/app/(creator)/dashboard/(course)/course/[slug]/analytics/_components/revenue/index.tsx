@@ -28,10 +28,10 @@ async function RevenueStats({
         </Suspense>
         <RefundedAmount />
       </div>
+      <DailyIncome incomes={dailyIncomes} />
       <Suspense>
-        <DailyIncome incomes={dailyIncomes} />
+        <Enrollments courseSlug={slug} />
       </Suspense>
-      <Enrollments courseSlug={slug} />
     </div>
   );
 }

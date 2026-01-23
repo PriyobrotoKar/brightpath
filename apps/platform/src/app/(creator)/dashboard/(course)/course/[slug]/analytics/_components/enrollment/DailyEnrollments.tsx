@@ -20,10 +20,10 @@ import {
   DataCardTitle,
 } from '@/components/DataCard';
 
-interface DailyIncomeProps {
-  incomes: {
+interface DailyEnrollmentsProps {
+  enrollments: {
     date: string;
-    amount: number;
+    enrollment: number;
   }[];
 }
 
@@ -32,10 +32,10 @@ const generateRandomNumber = (min: number, max: number): number => {
 };
 
 const generateChartData = (
-  incomes: DailyIncomeProps['incomes'],
+  enrollments: DailyEnrollmentsProps['enrollments'],
 ): {
   date: string;
-  income: number;
+  enrollment: number;
 }[] => {
   const startDate = new Date();
   startDate.setHours(0, 0, 0, 0);
@@ -53,18 +53,21 @@ const generateChartData = (
       throw new Error('Invalid date');
     }
     const income =
-      incomes.find((i) => i.date === date)?.amount || generateRandomNumber(0, 1)
+      enrollments.find((i) => i.date === date)?.enrollment ||
+      generateRandomNumber(0, 1)
         ? generateRandomNumber(3000, 8000)
         : 0;
-    data.push({ date, income: Math.floor(income) });
+    data.push({ date, enrollment: Math.floor(income) });
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
   return data;
 };
 
-function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
-  const chartData = generateChartData(incomes);
+function DailyEnrollments({
+  enrollments,
+}: DailyEnrollmentsProps): React.JSX.Element {
+  const chartData = generateChartData(enrollments);
   const [timeRange, setTimeRange] = useState('90d');
 
   const filteredData = chartData.filter((item) => {
@@ -82,8 +85,8 @@ function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
   });
 
   const chartConfig = {
-    income: {
-      label: 'Income',
+    enrollment: {
+      label: 'Enrollment',
       color: 'var(--chart-1)',
     },
   } satisfies ChartConfig;
@@ -91,7 +94,7 @@ function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
   return (
     <DataCard>
       <DataCardHeader>
-        <DataCardTitle icon={IconCash} title="Daily Income" />
+        <DataCardTitle icon={IconCash} title="Daily Enrollments" />
         <ToggleGroup
           className="[&_[data-slot=toggle-group-item]]:h-8"
           onValueChange={setTimeRange}
@@ -111,12 +114,12 @@ function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
               <linearGradient id="fillIncome" x1="0" x2="0" y1="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor="hsl(var(--color-income))"
+                  stopColor="hsl(var(--color-enrollment))"
                   stopOpacity={0.6}
                 />
                 <stop
                   offset="95%"
-                  stopColor="hsl(var(--color-income))"
+                  stopColor="hsl(var(--color-enrollment))"
                   stopOpacity={0.1}
                 />
               </linearGradient>
@@ -151,10 +154,10 @@ function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
               cursor={false}
             />
             <Area
-              dataKey="income"
+              dataKey="enrollment"
               fill="url(#fillIncome)"
               stackId="a"
-              stroke="hsl(var(--color-income))"
+              stroke="hsl(var(--color-enrollment))"
               type="monotone"
             />
           </AreaChart>
@@ -164,4 +167,4 @@ function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
   );
 }
 
-export { DailyIncome };
+export { DailyEnrollments };

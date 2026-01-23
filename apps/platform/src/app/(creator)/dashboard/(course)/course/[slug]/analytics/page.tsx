@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { RevenueStats } from './_components/revenue';
 import { ContentStats } from './_components/content';
 import { EnrollmentStats } from './_components/enrollment';
@@ -35,7 +35,7 @@ export default function AnalyticsPage({
   const { tab } = searchParams;
 
   if (!tabs.includes(tab as Tab)) {
-    notFound();
+    redirect('?tab=revenue');
   }
 
   const PageComp = pages[tab as Tab];

@@ -1,21 +1,25 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import type { StatsPageProps } from '../../page';
+import { MostCompletedLesson } from './MostCompletedLesson';
+import { LeastCompletedLesson } from './LeastCompletedLesson';
+import { AverageCompletion } from './AverageCompletion';
 
-function ContentStats(): React.JSX.Element {
+type ContentStatsProps = StatsPageProps;
+
+function ContentStats({ slug }: ContentStatsProps): React.JSX.Element {
   return (
     <div>
-      Content Stats
-      {/*<DataCard>
-        <DataCardHeader>
-          <DataCardTitle icon={IconMoneybag} title="Monthly Income" />
-          <Button size="sm" variant="outline">
-            View
-          </Button>
-        </DataCardHeader>
-        <DataCardContent className="space-y-2">
-          <span className="text-xl">₹ 1,11,650</span>
-          <p className="text-xs">+80% (₹9,320) vs last month</p>
-        </DataCardContent>
-      </DataCard>*/}
+      <div className="flex gap-3 *:flex-1">
+        <Suspense>
+          <MostCompletedLesson slug={slug} />
+        </Suspense>
+        <Suspense>
+          <LeastCompletedLesson slug={slug} />
+        </Suspense>
+        <Suspense>
+          <AverageCompletion slug={slug} />
+        </Suspense>
+      </div>
     </div>
   );
 }

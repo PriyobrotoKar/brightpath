@@ -28,7 +28,7 @@ export class AnalyticsController {
   @Get('revenue/daily/:slug')
   async getDailyIncomeOfCourse(
     @Param('slug') slug: string,
-    @Query('range') range: string = '7d',
+    @Query('range') range: string = '90d',
     @CurrentUser() currentUser: JWTPayload,
   ) {
     return this.analyticsService.getDailyIncomeOfCourse(
@@ -89,7 +89,7 @@ export class AnalyticsController {
   @Get('enrollment/daily/:slug')
   async getDailyEnrollmentsOfCourse(
     @Param('slug') slug: string,
-    @Query('range') range: string = '7d',
+    @Query('range') range: string = '90d',
     @CurrentUser() currentUser: JWTPayload,
   ) {
     return this.analyticsService.getDailyEnrollments(slug, range, currentUser);
@@ -98,7 +98,7 @@ export class AnalyticsController {
   @Get('enrollment/daily/active/:slug')
   async getDailyActiveLearners(
     @Param('slug') slug: string,
-    @Query('range') range: string = '7d',
+    @Query('range') range: string = '90d',
     @CurrentUser() currentUser: JWTPayload,
   ) {
     return this.analyticsService.getDailyActiveLearners(

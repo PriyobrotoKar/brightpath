@@ -84,7 +84,7 @@ export async function CourseSidebar({
     },
     {
       name: 'Engagement & Analytics',
-      href: `/dashboard/course/${courseSlug}/analytics`,
+      href: `/dashboard/course/${courseSlug}/analytics?tab=revenue`,
       icon: IconBrandGoogleAnalytics,
     },
     {
