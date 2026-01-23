@@ -32,7 +32,7 @@ export default async function TotalEnrollments({
       <DataCardHeader>
         <DataCardTitle icon={IconCash} title="Total Enrollments" />
       </DataCardHeader>
-      <DataCardContent>
+      <DataCardContent className="space-y-2">
         <h4 className="text-xl">{total}</h4>
         <p className="text-muted-foreground text-xs">
           <span
@@ -42,7 +42,7 @@ export default async function TotalEnrollments({
             })}
           >
             {change !== 0 && sign}
-            {changePercentage}% ({change}%)
+            {changePercentage}% ({change})
           </span>{' '}
           vs last month
         </p>

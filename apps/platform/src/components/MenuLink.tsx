@@ -42,14 +42,16 @@ function MenuLink({
 }: MenuLinkProps): React.JSX.Element {
   const pathname = usePathname();
   const context = useContext(MenuContext);
+  const navLink = href.split('?')[0];
+  const isActive = context?.activeLink === navLink;
 
   useEffect(() => {
-    if (context) {
+    if (context && navLink) {
       if (
-        pathname.startsWith(href) &&
+        pathname.startsWith(navLink) &&
         context.activeLink.length <= pathname.length
       ) {
-        context.setActiveLink(href);
+        context.setActiveLink(navLink);
       }
     }
 
@@ -58,13 +60,13 @@ function MenuLink({
         context.setActiveLink('');
       }
     };
-  }, [context, href, pathname]);
+  }, [context, navLink, pathname]);
 
   return (
     <Link
       className={cn(
         buttonVariants({
-          variant: context?.activeLink === href ? 'secondary' : 'ghost',
+          variant: isActive ? 'secondary' : 'ghost',
         }),
         'w-full justify-start gap-2 px-3 transition-colors',
         className,

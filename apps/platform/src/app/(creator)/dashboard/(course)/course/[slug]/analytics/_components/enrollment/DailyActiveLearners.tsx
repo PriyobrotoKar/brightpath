@@ -16,6 +16,7 @@ import {
 } from '@/components/DataCard';
 
 interface DailyActiveLearnersProps {
+  className?: string;
   learners: {
     date: string;
     amount: number;
@@ -61,6 +62,7 @@ const generateChartData = (
 
 function DailyActiveLearners({
   learners,
+  className,
 }: DailyActiveLearnersProps): React.JSX.Element {
   const chartData = generateChartData(learners);
 
@@ -72,7 +74,7 @@ function DailyActiveLearners({
   } satisfies ChartConfig;
 
   return (
-    <DataCard>
+    <DataCard className={className}>
       <DataCardHeader>
         <DataCardTitle icon={IconCash} title="Daily Active Learners" />
       </DataCardHeader>

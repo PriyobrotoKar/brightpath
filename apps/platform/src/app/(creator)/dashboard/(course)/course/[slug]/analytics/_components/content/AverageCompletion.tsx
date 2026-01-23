@@ -33,10 +33,10 @@ async function AverageCompletion({
   return (
     <DataCard>
       <DataCardHeader>
-        <DataCardTitle icon={IconCash} title="Averate Completion" />
+        <DataCardTitle icon={IconCash} title="Completion Rate" />
       </DataCardHeader>
       <DataCardContent className="space-y-2">
-        <h4 className="text-lg">{completionRate.completionRate}</h4>
+        <h4 className="text-xl">{completionRate.completionRate}%</h4>
         <p className="text-muted-foreground text-xs">
           <span
             className={cn({

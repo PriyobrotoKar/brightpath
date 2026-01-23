@@ -27,7 +27,7 @@ export default function CourseLive({
       <CourseDetails course={course} pricing={pricing} />
       <div className="flex gap-2">
         <Link className="block flex-1" href={`/course/${course.slug}`}>
-          <Button>
+          <Button className="w-full">
             <IconExternalLink /> Visit Live Page
           </Button>
         </Link>

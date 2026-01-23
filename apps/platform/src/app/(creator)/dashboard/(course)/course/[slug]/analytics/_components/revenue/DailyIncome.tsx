@@ -21,6 +21,9 @@ import {
 } from '@/components/DataCard';
 
 interface DailyIncomeProps {
+  showFilter?: boolean;
+  defaultDateRange?: string;
+  className?: string;
   incomes: {
     date: string;
     amount: number;
@@ -63,9 +66,14 @@ const generateChartData = (
   return data;
 };
 
-function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
+function DailyIncome({
+  incomes,
+  defaultDateRange = '90d',
+  showFilter = true,
+  className,
+}: DailyIncomeProps): React.JSX.Element {
   const chartData = generateChartData(incomes);
-  const [timeRange, setTimeRange] = useState('90d');
+  const [timeRange, setTimeRange] = useState(defaultDateRange);
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date);
@@ -89,20 +97,22 @@ function DailyIncome({ incomes }: DailyIncomeProps): React.JSX.Element {
   } satisfies ChartConfig;
 
   return (
-    <DataCard>
+    <DataCard className={className}>
       <DataCardHeader>
         <DataCardTitle icon={IconCash} title="Daily Income" />
-        <ToggleGroup
-          className="[&_[data-slot=toggle-group-item]]:h-8"
-          onValueChange={setTimeRange}
-          type="single"
-          value={timeRange}
-          variant="outline"
-        >
-          <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-          <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-          <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
-        </ToggleGroup>
+        {showFilter ? (
+          <ToggleGroup
+            className="[&_[data-slot=toggle-group-item]]:h-8"
+            onValueChange={setTimeRange}
+            type="single"
+            value={timeRange}
+            variant="outline"
+          >
+            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
+            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
+            <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
+          </ToggleGroup>
+        ) : null}
       </DataCardHeader>
       <DataCardContent>
         <ChartContainer className="h-[200px] w-full" config={chartConfig}>

@@ -23,7 +23,7 @@ import {
 interface DailyEnrollmentsProps {
   enrollments: {
     date: string;
-    enrollment: number;
+    amount: number;
   }[];
 }
 
@@ -53,7 +53,7 @@ const generateChartData = (
       throw new Error('Invalid date');
     }
     const income =
-      enrollments.find((i) => i.date === date)?.enrollment ||
+      enrollments.find((i) => i.date === date)?.amount ||
       generateRandomNumber(0, 1)
         ? generateRandomNumber(3000, 8000)
         : 0;
