@@ -6,10 +6,10 @@ import FormInfo from '@/app/(creator)/dashboard/(lobby)/course/create/_component
 export default async function PricingPage({
   params,
 }: {
-  params: { id: string };
+  params: { slug: string };
 }): Promise<React.JSX.Element> {
-  const pricing = await getCoursePricing(params.id);
-  const coupons = await getCourseCoupons(params.id);
+  const pricing = await getCoursePricing(params.slug);
+  const coupons = await getCourseCoupons(params.slug);
 
   if (!pricing) {
     notFound();

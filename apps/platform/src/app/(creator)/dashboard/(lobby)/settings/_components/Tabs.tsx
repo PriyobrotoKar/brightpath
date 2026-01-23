@@ -20,7 +20,8 @@ function Tabs({ tabLinks }: TabsProps): React.JSX.Element {
   return (
     <div className="bg-muted w-fit space-x-1 rounded-lg border p-1">
       {tabLinks.map((link) => {
-        const isActive = `${path}?${searchParams}` === link.href;
+        const isActive =
+          `${path}${searchParams ? `?${searchParams}` : ''}` === link.href;
         return (
           <Link
             className={cn('relative inline-block px-3 py-1')}
@@ -37,7 +38,7 @@ function Tabs({ tabLinks }: TabsProps): React.JSX.Element {
             </span>
             {isActive ? (
               <motion.span
-                className="bg-secondary absolute left-0 top-0 h-full w-full rounded-md"
+                className="bg-secondary absolute left-0 top-0 h-full w-full rounded-md border"
                 layoutId="indicator"
               />
             ) : null}

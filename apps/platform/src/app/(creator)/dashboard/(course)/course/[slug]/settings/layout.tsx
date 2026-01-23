@@ -4,29 +4,29 @@ import Tabs from '@/app/(creator)/dashboard/(lobby)/settings/_components/Tabs';
 
 export default function CourseSettingsLayout({
   children,
-  params: { id },
+  params: { slug },
 }: {
   children: React.ReactNode;
-  params: { id: string };
+  params: { slug: string };
 }): React.JSX.Element {
-  const courseId = id;
+  const courseSlug = slug;
 
   const tabLinks: TabLink[] = [
     {
       name: 'Basic Info',
-      href: `/dashboard/course/${courseId}/settings`,
+      href: `/dashboard/course/${courseSlug}/settings`,
     },
     {
       name: 'Pricing',
-      href: `/dashboard/course/${courseId}/settings/pricing`,
+      href: `/dashboard/course/${courseSlug}/settings/pricing`,
     },
     {
       name: 'Schedule',
-      href: `/dashboard/course/${courseId}/settings/schedule`,
+      href: `/dashboard/course/${courseSlug}/settings/schedule`,
     },
     {
       name: 'Enrollment',
-      href: `/dashboard/course/${courseId}/settings/enrollment`,
+      href: `/dashboard/course/${courseSlug}/settings/enrollment`,
     },
   ];
 

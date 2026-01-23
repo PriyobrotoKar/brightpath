@@ -6,11 +6,11 @@ import { getCourse } from '@/api/services/course';
 export default async function EnrollmentPage({
   params,
 }: {
-  params: { id: string };
+  params: { slug: string };
 }): Promise<React.JSX.Element> {
-  const { id } = params;
+  const { slug } = params;
 
-  const course = await getCourse(id);
+  const course = await getCourse(slug);
 
   if (!course) {
     notFound();

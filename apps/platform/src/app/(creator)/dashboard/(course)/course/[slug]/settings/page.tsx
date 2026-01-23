@@ -6,9 +6,9 @@ import FormInfo from '@/app/(creator)/dashboard/(lobby)/course/create/_component
 export default async function SettingsPage({
   params,
 }: {
-  params: { id: string };
+  params: { slug: string };
 }): Promise<React.JSX.Element> {
-  const course = await getCourse(params.id);
+  const course = await getCourse(params.slug);
 
   if (!course) {
     notFound();

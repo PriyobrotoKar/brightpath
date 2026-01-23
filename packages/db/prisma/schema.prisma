@@ -135,12 +135,15 @@ model User {
   accountStatus AccountStatus  @default(UNVERIFIED)
   subscription  Subscription?
   merchant      Merchant?
+  organization  Organization?
   enrollments   Enrollment[]
   orders        Order[]
   videosWatched Video[]
   docsRead      Document[]
   comments      Comment[]
   likedComments Comment[]      @relation("UserLikedComment")
+  address       Address?       @relation(fields: [addressId], references: [id])
+  addressId     String?        @unique
   activities    UserActivity[]
 
   isOnboardingFinished Boolean   @default(false)
@@ -149,11 +152,39 @@ model User {
   updatedAt            DateTime  @updatedAt
 }
 
+model Organization {
+  id   String @id @default(cuid())
+  name String
+  logo String
+  slug String @unique
+
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId String @unique
+
+  address   Address? @relation(fields: [addressId], references: [id])
+  addressId String?  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Address {
+  id         String @id @default(cuid())
+  address    String
+  city       String
+  state      String
+  country    String
+  postalCode String
+
+  user         User?
+  organization Organization?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Merchant {
   id         String         @id @default(cuid())
-  name       String
-  logo       String
-  slug       String
   status     MerchantStatus @default(IN_BENE_CREATION)
   merchantId String         @unique
 

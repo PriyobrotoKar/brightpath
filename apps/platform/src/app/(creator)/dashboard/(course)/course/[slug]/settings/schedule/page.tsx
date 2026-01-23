@@ -6,11 +6,11 @@ import FormInfo from '@/app/(creator)/dashboard/(lobby)/course/create/_component
 export default async function SchedulePage({
   params,
 }: {
-  params: { id: string };
+  params: { slug: string };
 }): Promise<React.JSX.Element> {
-  const { id } = params;
+  const { slug } = params;
 
-  const course = await getCourseSchedule(id);
+  const course = await getCourseSchedule(slug);
 
   if (!course) {
     notFound();
