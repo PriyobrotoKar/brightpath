@@ -23,6 +23,7 @@ import { RoleGuard } from './auth/guard/role.guard';
 import { CommentModule } from './comment/comment.module';
 import { EnrollmentModule } from './enrollment/enrollment.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     CommentModule,
     EnrollmentModule,
     AnalyticsModule,
+    OrganizationModule,
   ],
   controllers: [AppController],
   providers: [

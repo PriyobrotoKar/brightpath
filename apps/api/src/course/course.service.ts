@@ -125,7 +125,7 @@ export class CourseService {
     const enrolledCourses = await this.prisma.course.findMany({
       where: {
         creator: {
-          merchant: {
+          organization: {
             slug: tenantSlug,
           },
         },

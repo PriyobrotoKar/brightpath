@@ -153,10 +153,10 @@ model User {
 }
 
 model Organization {
-  id   String @id @default(cuid())
+  id   String  @id @default(cuid())
   name String
-  logo String
-  slug String @unique
+  logo String?
+  slug String  @unique
 
   creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String @unique
@@ -169,12 +169,12 @@ model Organization {
 }
 
 model Address {
-  id         String @id @default(cuid())
-  address    String
-  city       String
-  state      String
-  country    String
-  postalCode String
+  id         String  @id @default(cuid())
+  address    String?
+  city       String?
+  state      String?
+  country    String?
+  postalCode String?
 
   user         User?
   organization Organization?
