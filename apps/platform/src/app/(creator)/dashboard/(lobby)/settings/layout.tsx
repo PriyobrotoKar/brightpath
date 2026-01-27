@@ -13,6 +13,10 @@ const tabLinks: TabLink[] = [
     href: '/dashboard/settings/account',
   },
   {
+    name: 'Organization',
+    href: '/dashboard/settings/organization',
+  },
+  {
     name: 'Billing',
     href: '/dashboard/settings/billing',
   },

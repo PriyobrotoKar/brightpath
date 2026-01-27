@@ -16,8 +16,12 @@ import CourseSelector from './CourseSelector';
 import Logo from '@/components/Logo';
 import { Menu, MenuLink } from '@/components/MenuLink';
 import { getCoursesForSelf } from '@/api/services/course';
+import { getOrganization } from '@/api/services/organization';
+import { OrganizationLogo } from '@/components/OrganizationLogo';
 
-export function PrimarySidebar(): React.JSX.Element {
+export async function PrimarySidebar(): Promise<React.JSX.Element> {
+  const { logo, name } = await getOrganization();
+
   const links = [
     {
       name: 'Home',
@@ -33,7 +37,7 @@ export function PrimarySidebar(): React.JSX.Element {
 
   return (
     <aside className="flex w-64 flex-shrink-0 flex-col gap-5 px-3 py-5">
-      <Logo />
+      <OrganizationLogo logo={logo} name={name} />
       <Search />
       <Menu className="flex-1">
         {links.map((link) => (
