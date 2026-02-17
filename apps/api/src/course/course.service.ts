@@ -152,6 +152,16 @@ export class CourseService {
     const category = await createCategoryIfNotExist(dto.category, this.prisma);
     const slug = await this.generateSlug(dto.name);
 
+    const organization = await this.prisma.organization.findUnique({
+      where: {
+        creatorId: user.id,
+      },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
     return await this.prisma.course.create({
       data: {
         name: dto.name,
@@ -163,6 +173,7 @@ export class CourseService {
         logo: dto.logo,
         thumbnails: dto.thumbnails,
         creatorId: user.id,
+        organizationId: organization.id,
       },
     });
   }

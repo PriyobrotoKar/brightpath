@@ -313,6 +313,18 @@ describe('Course Controller Tests', () => {
           name: 'Test Course 2',
           level: 'BEGINNER',
           slug: 'test-course-2',
+          organization: {
+            connectOrCreate: {
+              where: {
+                slug: '100xdevs',
+              },
+              create: {
+                slug: '100xdevs',
+                name: '100xDevs',
+                creatorId: creatorTestUser1.id,
+              },
+            },
+          },
           category: {
             connectOrCreate: {
               where: {

@@ -80,6 +80,29 @@ export class OrganizationService {
     return organization;
   }
 
+  async getOrganizationBySlug(slug: string) {
+    this.logger.log(`Requested to get organization by slug ${slug}`);
+
+    const organization = await this.prisma.organization.findUnique({
+      where: {
+        slug,
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        logo: true,
+      },
+    });
+
+    if (!organization) {
+      this.logger.error(`Organization with slug ${slug} not found`);
+      throw new NotFoundException('Organization not found');
+    }
+
+    return organization;
+  }
+
   async updateOrganization(dto: UpdateOrganizationDto, user: JWTPayload) {
     this.logger.log(`User ${user.id} requested to update organization`);
 

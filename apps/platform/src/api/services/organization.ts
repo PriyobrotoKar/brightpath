@@ -30,6 +30,12 @@ export const getOrganization = async (): Promise<OrganizationWithAddress> => {
   return apiClient.get(base);
 };
 
+export const getOrganizationBySlug = async (
+  slug: string,
+): Promise<Organization> => {
+  return apiClient.get(`${base}/${slug}`);
+};
+
 export const updateOrganization = async (
   data: UpdateOrganizationPayload,
 ): Promise<OrganizationWithAddress> => {

@@ -4,15 +4,25 @@ import apiClient from '../client';
 
 const base = '/auth';
 
-export const sendOtp = async (email: string): Promise<void> => {
-  return apiClient.post(`${base}/send-otp`, { email });
+export const sendOtp = async (
+  email: string,
+  tenant?: string,
+): Promise<void> => {
+  return apiClient.post(
+    `${base}/send-otp${tenant ? `?tenant=${encodeURIComponent(tenant)}` : ''}`,
+    { email, tenant },
+  );
 };
 
 export const verifyOtp = async (
   email: string,
   otp: string,
+  tenant?: string,
 ): Promise<{ access_token: string; refresh_token: string; user: User }> => {
-  return apiClient.post(`${base}/verify-otp`, { email, otp });
+  return apiClient.post(
+    `${base}/verify-otp${tenant ? `?tenant=${encodeURIComponent(tenant)}` : ''}`,
+    { email, otp },
+  );
 };
 
 export const refreshToken = async (

@@ -164,6 +164,8 @@ model Organization {
   address   Address? @relation(fields: [addressId], references: [id])
   addressId String?  @unique
 
+  courses Course[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -235,6 +237,9 @@ model Course {
 
   creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
 
   pricing           Pricing?
   Session           Session[]

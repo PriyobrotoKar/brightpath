@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   Post,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -20,8 +21,8 @@ export class AuthController {
 
   @Public()
   @Post('/send-otp')
-  sendOtp(@Body('email') email: string) {
-    return this.authService.sendOtp(email);
+  sendOtp(@Body('email') email: string, @Query('tenant') tenant?: string) {
+    return this.authService.sendOtp(email, tenant);
   }
 
   @Public()
@@ -30,9 +31,10 @@ export class AuthController {
   async verifyOtp(
     @Body() { email, otp }: { email: string; otp: string },
     @Res({ passthrough: true }) res: Response,
+    @Query('tenant') tenant?: string,
   ) {
     const { access_token, refresh_token, ...user } =
-      await this.authService.verifyOtp(email, otp);
+      await this.authService.verifyOtp(email, otp, tenant);
     setResponseCookie(res, 'access_token', access_token);
     setResponseCookie(res, 'refresh_token', refresh_token);
     return { access_token, refresh_token, user };

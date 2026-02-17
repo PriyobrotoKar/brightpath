@@ -1,11 +1,12 @@
 import type { IconProps } from '@tabler/icons-react';
 import { cn } from '@brightpath/ui/lib/utils';
+import { OrganizationLogo } from './OrganizationLogo';
 import ProfileMenu from '@/app/(creator)/dashboard/_components/ProfileMenu';
 import { getSession } from '@/lib/session';
 
 interface HeaderProps {
   title: string;
-  icon: React.FC<IconProps>;
+  icon: React.FC<IconProps> | string;
   className?: string;
 }
 
@@ -23,10 +24,15 @@ export default async function Header({
         className,
       )}
     >
-      <div className="flex items-center gap-2">
-        <Icon />
-        <h1 className="text-lg">{title}</h1>
-      </div>
+      {typeof Icon === 'string' ? (
+        <OrganizationLogo logo={Icon} name={title} />
+      ) : (
+        <div className="flex items-center gap-2">
+          <Icon />
+          <h1 className="text-lg">{title}</h1>
+        </div>
+      )}
+
       <ProfileMenu session={session} />
     </header>
   );

@@ -15,7 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JWTPayload } from './types/jwt-payload';
 import refreshJwtConfig from './config/refresh-jwt.config';
 import type { ConfigType } from '@nestjs/config';
-import { PrismaClient } from '@brightpath/db';
+import { PrismaClient, User } from '@brightpath/db';
 import argon2 from 'argon2';
 
 @Injectable()
@@ -34,11 +34,49 @@ export class AuthService {
     this.prisma = this.prismaService.client;
   }
 
-  async sendOtp(email: string) {
+  async sendOtp(email: string, tenant?: string) {
     if (!email || !email.includes('@')) {
       throw new BadRequestException('Invalid email');
     }
-    const user = await this.createUserIfNotExist(email);
+    let user: User;
+
+    if (tenant) {
+      const org = await this.prisma.organization.findUnique({
+        where: {
+          slug: tenant,
+        },
+      });
+
+      if (!org) {
+        this.logger.error(`Invalid organization: ${tenant}`);
+        throw new BadRequestException('Organization does not exist');
+      }
+
+      const student = await this.prisma.user.findUnique({
+        where: {
+          email,
+          role: 'STUDENT',
+          enrollments: {
+            some: {
+              course: {
+                organizationId: org.id,
+              },
+            },
+          },
+        },
+      });
+
+      if (!student) {
+        this.logger.error(
+          `Student does not exist: ${email} in organization ${org.id}`,
+        );
+        throw new NotFoundException('Student does not exist');
+      }
+
+      user = student;
+    } else {
+      user = await this.createUserIfNotExist(email);
+    }
 
     if (user.accountStatus === 'PENDING_DELETION') {
       throw new BadRequestException(
@@ -60,7 +98,7 @@ export class AuthService {
     return `OTP has been sent to ${email}`;
   }
 
-  async verifyOtp(email: string, otp: string) {
+  async verifyOtp(email: string, otp: string, tenant?: string) {
     if (!email || !email.includes('@')) {
       throw new BadRequestException('Invalid email');
     }
@@ -71,11 +109,28 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP');
     }
 
-    let user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
+    let user = tenant
+      ? await this.prisma.user.findUnique({
+          where: {
+            email,
+            role: 'STUDENT',
+            enrollments: {
+              some: {
+                course: {
+                  organization: {
+                    slug: tenant,
+                  },
+                },
+              },
+            },
+          },
+        })
+      : await this.prisma.user.findUnique({
+          where: {
+            email,
+            role: 'CREATOR',
+          },
+        });
 
     if (!user) {
       throw new NotFoundException('No user is found with this email');
