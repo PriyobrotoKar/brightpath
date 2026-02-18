@@ -34,7 +34,7 @@ export const getOrderStatus = async (
   orderId: string,
 ): Promise<OrderStatus | null> => {
   try {
-    return apiClient.get(`${base}/${orderId}/status`);
+    return await apiClient.get(`${base}/${orderId}/status`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return null;

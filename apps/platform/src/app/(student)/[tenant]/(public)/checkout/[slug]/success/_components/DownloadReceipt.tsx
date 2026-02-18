@@ -3,7 +3,7 @@ import { IconDownload } from '@tabler/icons-react';
 
 export default function DownloadReceipt(): React.JSX.Element {
   return (
-    <Button>
+    <Button className="w-full">
       <IconDownload /> Download Receipt
     </Button>
   );

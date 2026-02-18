@@ -141,7 +141,7 @@ export default async function PricingSidebar({
 
           <div className="flex gap-2">
             <Link className="w-full" href={`/checkout/${course.slug}`}>
-              <Button>Buy Now</Button>
+              <Button className="w-full">Buy Now</Button>
             </Link>
             <Button
               className="size-10 shrink-0"

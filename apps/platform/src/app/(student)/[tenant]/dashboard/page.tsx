@@ -14,7 +14,7 @@ export default async function HomePage({
 
   return (
     <div>
-      <Header icon={organization.logo ?? ''} title={organization.name} />
+      <Header orgSlug={organization.slug} />
     </div>
   );
 }

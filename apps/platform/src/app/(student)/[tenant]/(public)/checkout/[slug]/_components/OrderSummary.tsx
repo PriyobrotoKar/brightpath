@@ -2,18 +2,21 @@ import { notFound } from 'next/navigation';
 import { Separator } from '@brightpath/ui/components/separator';
 import { Button } from '@brightpath/ui/components/button';
 import Link from 'next/link';
+import type { User } from '@brightpath/db';
+import CouponSelector from '../../../[course]/_components/CouponSelector';
 import CourseDetails from './CourseDetails';
 import PricingSummary from './PricingSummary';
 import BuyCourseButton from './BuyCourseButton';
 import { getCourseBySlug, getCoursePricing } from '@/api/services/course';
-import CouponSelector from '@/app/(public)/course/[slug]/_components/CouponSelector';
 
 interface OrderSummaryProps {
   courseSlug: string;
+  currentUser: User | null;
 }
 
 export default async function OrderSummary({
   courseSlug,
+  currentUser,
 }: OrderSummaryProps): Promise<React.JSX.Element> {
   const course = await getCourseBySlug(courseSlug);
   const pricing = course && (await getCoursePricing(course.id));
@@ -29,7 +32,7 @@ export default async function OrderSummary({
       <Separator />
       <CouponSelector />
       <PricingSummary pricing={pricing} />
-      <BuyCourseButton courseSlug={course.slug} />
+      <BuyCourseButton courseSlug={course.slug} currentUser={currentUser} />
       <p className="text-muted-foreground text-center text-xs leading-normal">
         By completing your purchase, you agree to these{' '}
         <Link href="/terms-and-policy">

@@ -8,15 +8,20 @@ import Link from 'next/link';
 import InfoForm from './_components/InfoForm';
 import PaymentMethods from './_components/PaymentMethods';
 import OrderSummary from './_components/OrderSummary';
+import CurrentLoggedInUser from './_components/CurrentLoggedInUser';
+import { getSession } from '@/lib/session';
+import { getSelf } from '@/api/services/user';
 
-export default function CheckoutPage({
+export default async function CheckoutPage({
   params,
 }: {
   params: {
     slug: string;
   };
-}): React.JSX.Element {
+}): Promise<React.JSX.Element> {
   const { slug } = params;
+  const session = await getSession();
+  const currentUser = session ? await getSelf() : null;
 
   return (
     <div className="flex flex-1 items-stretch">
@@ -24,24 +29,30 @@ export default function CheckoutPage({
         <div className="mx-auto flex h-full w-full max-w-[922px] items-stretch">
           <main className="bg-background flex-[3_3_0%] space-y-10 p-10">
             <div className="space-y-5">
-              <Link href={`/course/${slug}`}>
+              <Link href={`/${slug}`}>
                 <Button size="sm" variant="ghost">
                   <IconArrowLeft /> Back
                 </Button>
               </Link>
               <h1 className="text-lg">Checkout</h1>
 
-              <UnauthenticatedWarning />
+              {session ? (
+                <CurrentLoggedInUser session={session} />
+              ) : (
+                <UnauthenticatedWarning />
+              )}
 
               <div className="flex items-center justify-between">
                 <h2 className="text-base-medium">Personal Information</h2>
-                <Link href="/auth/login">
-                  <Button className="h-fit p-0" size="sm" variant="link">
-                    Login
-                  </Button>
-                </Link>
+                {!session && (
+                  <Link href="/auth/login">
+                    <Button className="h-fit p-0" size="sm" variant="link">
+                      Login
+                    </Button>
+                  </Link>
+                )}
               </div>
-              <InfoForm />
+              <InfoForm currentUser={currentUser} />
             </div>
 
             <PaymentMethods />
@@ -59,7 +70,7 @@ export default function CheckoutPage({
             </div>
           </main>
 
-          <OrderSummary courseSlug={slug} />
+          <OrderSummary courseSlug={slug} currentUser={currentUser} />
         </div>
       </div>
     </div>

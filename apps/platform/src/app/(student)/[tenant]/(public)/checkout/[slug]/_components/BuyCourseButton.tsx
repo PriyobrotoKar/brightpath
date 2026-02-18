@@ -4,16 +4,19 @@ import { IconLockSquareRoundedFilled } from '@tabler/icons-react';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from '@brightpath/ui/components/sonner';
 import Script from 'next/script';
+import type { User } from '@brightpath/db';
 import { orderInfoForm } from './InfoForm';
 import type { CreateOrderPayload } from '@/api/services/order';
 import { createOrder } from '@/api/services/order';
 
 interface BuyCourseButtonProps {
   courseSlug: string;
+  currentUser: User | null;
 }
 
 export default function BuyCourseButton({
   courseSlug,
+  currentUser,
 }: BuyCourseButtonProps): React.JSX.Element {
   const mutation = useMutation({
     mutationFn: async (data: CreateOrderPayload) => {
@@ -38,13 +41,16 @@ export default function BuyCourseButton({
   const submit = orderInfoForm.handleSubmit((data) => {
     mutation.mutate({
       course: courseSlug,
-      ...data,
+      email: currentUser?.email || data.email,
+      fullname: currentUser?.name || data.fullname,
+      phone: currentUser?.phone || data.phone,
     });
   });
 
   return (
     <>
       <Button
+        className="w-full"
         onClick={async () => {
           await submit();
         }}

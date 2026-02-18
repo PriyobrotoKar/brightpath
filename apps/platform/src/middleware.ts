@@ -7,6 +7,32 @@ import {
 } from './lib/onboardingStatus';
 import { getSession, updateSession } from './lib/session';
 
+const ROOT_DOMAIN = 'brightpath.co' as const;
+
+function extractSubdomain(request: NextRequest): string | null {
+  const host = request.headers.get('host') ?? '';
+  const hostname = host.split(':')[0] ?? '';
+
+  // Check if it is in local development environment
+  if (hostname.includes('localhost')) {
+    if (hostname.endsWith('.localhost')) {
+      return hostname.split('.')[0] ?? null;
+    }
+    return null;
+  }
+
+  // Check if it is in production environment
+  if (
+    hostname !== ROOT_DOMAIN &&
+    hostname !== `www.${ROOT_DOMAIN}` &&
+    hostname.endsWith(`.${ROOT_DOMAIN}`)
+  ) {
+    return hostname.split('.')[0] ?? null;
+  }
+
+  return null;
+}
+
 export async function middleware(
   request: NextRequest,
 ): Promise<NextResponse | undefined> {
@@ -18,9 +44,29 @@ export async function middleware(
   }
 
   const session = await getSession();
+  const subdomain = extractSubdomain(request);
 
   // Retrieve the user's onboarding step status.
   const { step } = await getOnboardingStatus();
+
+  if (subdomain) {
+    NextResponse.rewrite(new URL(`/${subdomain}`, request.url));
+
+    if (!session) {
+      if (request.nextUrl.pathname.includes('/dashboard')) {
+        return NextResponse.redirect(new URL(`/auth/signin`, request.url));
+      }
+    } else if (request.nextUrl.pathname.startsWith('/auth')) {
+      return NextResponse.redirect(new URL(`/dashboard`, request.url));
+    }
+
+    return NextResponse.rewrite(
+      new URL(
+        `/${subdomain}${request.nextUrl.pathname}${request.nextUrl.search}`,
+        request.url,
+      ),
+    );
+  }
 
   // If a session exists and the user is trying to access an auth-related page (e.g., sign in/up), redirect them to the dashboard.
   if (

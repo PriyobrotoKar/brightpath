@@ -17,13 +17,22 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
+import Link from 'next/link';
 import { Menu, MenuLink } from '@/components/MenuLink';
-import Logo from '@/components/Logo';
 import Search from '@/app/(creator)/dashboard/_components/Search';
 import type { EnrolledCourse } from '@/api/services/course';
 import { getEnrolledCourses } from '@/api/services/course';
+import { OrganizationLogo } from '@/components/OrganizationLogo';
 
-export function CourseSidebar(): React.JSX.Element | null {
+interface CourseSidebarProps {
+  orgLogo: string;
+  orgName: string;
+}
+
+export function CourseSidebar({
+  orgLogo,
+  orgName,
+}: CourseSidebarProps): React.JSX.Element | null {
   const path = usePathname();
   const router = useRouter();
   const params = useParams();
@@ -64,7 +73,9 @@ export function CourseSidebar(): React.JSX.Element | null {
 
   return (
     <aside className="flex w-64 flex-shrink-0 flex-col gap-5 px-3 py-5">
-      <Logo />
+      <Link href="/dashboard">
+        <OrganizationLogo logo={orgLogo} name={orgName} />
+      </Link>
       <DropdownMenu>
         <DropdownMenuTrigger className="bg-muted flex w-full items-center gap-2 rounded-md border p-2">
           <div className="grow-0 space-y-1 text-left">

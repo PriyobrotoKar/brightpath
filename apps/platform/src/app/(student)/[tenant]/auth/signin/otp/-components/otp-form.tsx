@@ -78,7 +78,7 @@ export default function OtpForm({
         refreshToken: data.refresh_token,
       });
 
-      router.push(`/${orgSlug}`);
+      router.push(`/dashboard`);
     },
   });
 

@@ -54,6 +54,11 @@ export class OrderService {
         id: true,
         slug: true,
         pricing: true,
+        organization: {
+          select: {
+            slug: true,
+          },
+        },
       },
     });
 
@@ -112,6 +117,7 @@ export class OrderService {
         course.id,
         course.slug,
         course.pricing,
+        course.organization.slug,
       );
     }
     //
@@ -156,7 +162,13 @@ export class OrderService {
         await this.cacheService.setCache('user', user.id, user);
       }
 
-      return this.initializeOrder(user, course.id, course.slug, course.pricing);
+      return this.initializeOrder(
+        user,
+        course.id,
+        course.slug,
+        course.pricing,
+        course.organization.slug,
+      );
     }
 
     // if not, then create a new user
@@ -177,6 +189,7 @@ export class OrderService {
       course.id,
       course.slug,
       course.pricing,
+      course.organization.slug,
     );
   }
 
@@ -358,6 +371,7 @@ export class OrderService {
     courseId: string,
     courseSlug: string,
     pricing: Pricing,
+    orgSlug: string,
   ) {
     this.logger.log(
       `Initializing order for User: ${user.id}, Course: ${courseSlug}, Amount: ${pricing.price} ${Currency.INR}`,
@@ -384,7 +398,7 @@ export class OrderService {
         Date.now() + OrderService.ORDER_EXPIRES_IN,
       ).toISOString(),
       order_meta: {
-        return_url: `http://localhost:3000/checkout/${courseSlug}/success?orderId=${generatedOrderId}`,
+        return_url: `http://${orgSlug}.localhost:3000/checkout/${courseSlug}/success?orderId=${generatedOrderId}`,
       },
     });
 

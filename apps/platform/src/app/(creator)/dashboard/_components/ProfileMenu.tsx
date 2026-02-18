@@ -19,7 +19,7 @@ import { removeSession } from '@/lib/session';
 import { mediaUrl } from '@/lib/utils';
 
 interface ProfileMenuProps {
-  session: Session | null;
+  session: Session;
 }
 
 export default function ProfileMenu({
@@ -34,9 +34,9 @@ export default function ProfileMenu({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar>
-          <AvatarImage src={mediaUrl(session?.user.image) ?? undefined} />
+          <AvatarImage src={mediaUrl(session.user.image) ?? undefined} />
           <AvatarFallback>
-            {session?.user.name?.charAt(0).toUpperCase()}
+            {session.user.name?.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

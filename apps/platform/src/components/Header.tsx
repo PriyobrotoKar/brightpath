@@ -1,21 +1,26 @@
 import type { IconProps } from '@tabler/icons-react';
 import { cn } from '@brightpath/ui/lib/utils';
+import { Button } from '@brightpath/ui/components/button';
 import { OrganizationLogo } from './OrganizationLogo';
 import ProfileMenu from '@/app/(creator)/dashboard/_components/ProfileMenu';
 import { getSession } from '@/lib/session';
+import { getOrganizationBySlug } from '@/api/services/organization';
 
 interface HeaderProps {
-  title: string;
-  icon: React.FC<IconProps> | string;
+  orgSlug?: string;
+  title?: string;
+  icon?: React.FC<IconProps>;
   className?: string;
 }
 
 export default async function Header({
+  orgSlug,
   title,
   icon: Icon,
   className,
 }: HeaderProps): Promise<React.JSX.Element> {
   const session = await getSession();
+  const organization = orgSlug ? await getOrganizationBySlug(orgSlug) : null;
 
   return (
     <header
@@ -24,16 +29,22 @@ export default async function Header({
         className,
       )}
     >
-      {typeof Icon === 'string' ? (
-        <OrganizationLogo logo={Icon} name={title} />
+      {organization ? (
+        <OrganizationLogo logo={organization.logo} name={organization.name} />
       ) : (
         <div className="flex items-center gap-2">
-          <Icon />
-          <h1 className="text-lg">{title}</h1>
+          {Icon ? <Icon /> : null}
+          {title ? <h1 className="text-lg">{title}</h1> : null}
         </div>
       )}
 
-      <ProfileMenu session={session} />
+      {session ? (
+        <ProfileMenu session={session} />
+      ) : (
+        <Button size="sm" variant="secondary">
+          Sign in
+        </Button>
+      )}
     </header>
   );
 }

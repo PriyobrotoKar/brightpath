@@ -11,9 +11,9 @@ import Instructor from './_components/Instructor';
 import { getCourseMetadata } from '@/api/services/course';
 
 export default async function CourseLandingPage({
-  params: { slug },
+  params: { course: slug },
 }: {
-  params: { slug: string };
+  params: { course: string };
 }): Promise<React.JSX.Element> {
   const course = await getCourseMetadata(slug);
 

@@ -1,5 +1,6 @@
 'use client';
 
+import type { User } from '@brightpath/db';
 import {
   Form,
   FormField,
@@ -26,16 +27,30 @@ export const orderInfoForm = createFormControl({
   },
 });
 
-export default function InfoForm(): React.JSX.Element {
+interface InfoFormProps {
+  currentUser: User | null;
+}
+
+export default function InfoForm({
+  currentUser,
+}: InfoFormProps): React.JSX.Element {
   const form = useForm({
     formControl: orderInfoForm.formControl,
+    defaultValues: {
+      email: currentUser?.email || '',
+      fullname: currentUser?.name || '',
+      phone: currentUser?.phone || '',
+    },
   });
+
+  const isDisabled = Boolean(currentUser);
 
   return (
     <div>
       <Form {...form}>
         <form className="space-y-4">
           <FormField
+            disabled={isDisabled}
             name="email"
             render={({ field }) => {
               return (
@@ -48,6 +63,7 @@ export default function InfoForm(): React.JSX.Element {
           />
 
           <FormField
+            disabled={isDisabled}
             name="fullname"
             render={({ field }) => {
               return (
@@ -60,6 +76,7 @@ export default function InfoForm(): React.JSX.Element {
           />
 
           <FormField
+            disabled={isDisabled}
             name="phone"
             render={({ field }) => {
               return (
