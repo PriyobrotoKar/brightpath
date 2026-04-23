@@ -2,6 +2,10 @@
 
 BrightPath is a Learning Management System (LMS) for creators and students, with course authoring, enrollment, payments, analytics, and content delivery. The core technical highlight of this repository is its **cloud-native Video Transcoding Pipeline Project**, which powers scalable video lesson processing for the LMS.
 
+## Demo Video
+
+https://github.com/user-attachments/assets/2481fcf3-1553-4129-9014-9c951d4e8888
+
 ## Core Highlight: Video Transcoding Pipeline
 
 The pipeline ingests uploaded source videos, triggers background processing, transcodes them to adaptive HLS renditions, and publishes stream-ready outputs.
@@ -41,11 +45,6 @@ BrightPath is not only a transcoding pipeline; it is a full LMS platform with cr
 5. FFmpeg produces HLS playlists and segments.
 6. The transcoder uploads HLS artifacts to the primary bucket.
 7. The API receives status updates and reflects progress in the LMS.
-
-## Demo Video
-
-Use this section to upload or link a BrightPath LMS demo while emphasizing the video processing flow.
-
 
 ## Repository Structure
 
